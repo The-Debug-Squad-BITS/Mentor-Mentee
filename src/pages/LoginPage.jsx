@@ -1,171 +1,99 @@
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import LoginLeftPanel from "../components/login/LoginLeftPanel";
-// import LoginRightPanel from "../components/login/LoginRightPanel";
-// import LoginSuccessScreen from "../components/login/LoginSuccessScreen";
-// import { mentorDemo, studentDemo } from "../data/demoAccounts";
-
-// export default function LoginPage() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [demoSuccess, setDemoSuccess] = useState(null); // "admin" | "mentor" | "student" | null
-//   const [loggedInUser, setLoggedInUser] = useState(null);
-
-//   const navigate = useNavigate();
-
-//   // ── Handlers ──────────────────────────────────────────
-
-//   const handleDemoLogin = (account, key) => {
-//     setError("");
-//     setLoading(false);
-//     setEmail(account.email);
-//     setPassword(account.password);
-//     setDemoSuccess(key);
-//     setLoggedInUser(account.user);
-
-//     setTimeout(() => {
-//       if (account.user.role === "ADMIN") navigate("/admin-dashboard");
-//       else if (account.user.role === "MENTEE") navigate("/mentee-dashboard");
-//       else navigate("/mentor-dashboard");
-//     }, 300);
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     setError("");
-//     const matched = [mentorDemo, studentDemo].find(
-//       (a) => a.email === email && a.password === password,
-//     );
-//     if (matched) {
-//       const key = matched.user.role === "MENTOR" ? "mentor" : "student";
-//       handleDemoLogin(matched, key);
-//       return;
-//     }
-//     setError("Unable to login. Check your credentials or use a demo account.");
-//   };
-
-//   const handleGoogleLogin = () =>
-//     setError(
-//       "Google login is not available in demo mode. Use one of the demo options.",
-//     );
-
-//   const handleSignOut = () => {
-//     setLoggedInUser(null);
-//     setDemoSuccess(null);
-//     setEmail("");
-//     setPassword("");
-//   };
-
-//   // ── Render ────────────────────────────────────────────
-
-//   if (loggedInUser && demoSuccess) {
-//     return <LoginSuccessScreen user={loggedInUser} onSignOut={handleSignOut} />;
-//   }
-
-//   return (
-//     <div className="min-h-screen grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] font-sans text-ink overflow-x-hidden">
-//       <LoginLeftPanel />
-//       <LoginRightPanel
-//         email={email}
-//         setEmail={setEmail}
-//         password={password}
-//         setPassword={setPassword}
-//         loading={loading}
-//         error={error}
-//         demoSuccess={demoSuccess}
-//         onSubmit={handleSubmit}
-//         onDemoLogin={handleDemoLogin}
-//         onGoogleLogin={handleGoogleLogin}
-//       />
-//     </div>
-//   );
-// }
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { mentorDemo, studentDemo, adminDemo } from "../data/demoAccounts";
+import { demoAccounts } from "../data/demoAccounts";
 import LoginLeftPanel from "../components/login/LoginLeftPanel";
 import LoginRightPanel from "../components/login/LoginRightPanel";
 import LoginSuccessScreen from "../components/login/LoginSuccessScreen";
 
-import { db } from "../data/db";
+import api from "../lib/api";
+import { useAuthStore } from "../store/authStore";
 
 export default function LoginPage({ onNavigate, onBack }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [demoSuccess, setDemoSuccess] = useState(null);
+  const [email, setEmail]         = useState("");
+  const [password, setPassword]   = useState("");
+  const [error, setError]         = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [demoSuccess, setDemoSuccess]   = useState(null); // "admin" | "mentor" | "student" | null
   const [loggedInUser, setLoggedInUser] = useState(null);
 
   const navigate = useNavigate();
+  const { login } = useAuthStore();
 
-  const loginOfflineDemo = (demoAccount) => {
+  // ── Shared login logic (used by form submit AND demo buttons) ──────────
+  const doLogin = async (emailVal, passwordVal) => {
     setError("");
-    setLoading(false);
-    setEmail(demoAccount.email);
-    setPassword(demoAccount.password);
-    
-    const dbUser = db.users.getByEmail(demoAccount.email) || demoAccount.user;
-    localStorage.setItem("mentorFlow_currentUser", JSON.stringify(dbUser));
+    setLoading(true);
+    try {
+      const response = await api.post("/auth/login", {
+        email: emailVal,
+        password: passwordVal,
+      });
 
-    setDemoSuccess(
-      dbUser.role === "MENTOR"
-        ? "mentor"
-        : dbUser.role === "ADMIN"
-          ? "admin"
-          : "student",
-    );
-    setLoggedInUser(dbUser);
-    setTimeout(() => {
-      if (dbUser.role === "ADMIN") navigate("/admin-dashboard");
-      else if (dbUser.role === "MENTEE")
-        navigate("/mentee-dashboard");
-      else navigate("/mentor-dashboard");
-    }, 300);
+      const { token, user } = response.data.data;
+
+      // Persist to Zustand store + localStorage (via persist middleware)
+      login(user, token);
+
+      // Show brief success animation before redirect
+      setDemoSuccess(
+        user.role === "ADMIN"   ? "admin"
+        : user.role === "MENTOR" ? "mentor"
+        : "student"
+      );
+      setLoggedInUser(user);
+
+      setTimeout(() => {
+        // First-time login: must change temporary password
+        if (user.mustChangePassword) {
+          navigate("/change-password");
+          return;
+        }
+        // Role-based redirect
+        if (user.role === "ADMIN")  navigate("/admin/dashboard");
+        if (user.role === "MENTOR") navigate("/mentor/dashboard");
+        if (user.role === "MENTEE") navigate("/mentee/dashboard");
+      }, 300);
+
+    } catch (err) {
+      const status = err.response?.status;
+      const data   = err.response?.data;
+
+      if (status === 401) {
+        setError("Invalid email or password. Please try again.");
+      } else if (status === 400 && data?.errors?.length) {
+        // Field-level validation errors — show all messages
+        setError(data.errors.map((e) => e.message).join(" "));
+      } else if (data?.message) {
+        setError(data.message);
+      } else if (!err.response) {
+        setError(
+          "Cannot connect to the server. Make sure the backend is running on port 5000."
+        );
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ── Form submit ────────────────────────────────────────────────────────
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
+    doLogin(email, password);
+  };
 
-    // Try finding the user inside our relational database first!
-    const dbUser = db.users.getByEmail(email);
-    if (dbUser) {
-      localStorage.setItem("mentorFlow_currentUser", JSON.stringify(dbUser));
-      setDemoSuccess(
-        dbUser.role === "MENTOR"
-          ? "mentor"
-          : dbUser.role === "ADMIN"
-            ? "admin"
-            : "student",
-      );
-      setLoggedInUser(dbUser);
-      setTimeout(() => {
-        if (dbUser.role === "ADMIN") navigate("/admin-dashboard");
-        else if (dbUser.role === "MENTEE") navigate("/mentee-dashboard");
-        else navigate("/mentor-dashboard");
-      }, 300);
-      return;
-    }
-
-    const matched = [mentorDemo, studentDemo, adminDemo].find(
-      (a) => a.email === email && a.password === password,
-    );
-    if (matched) {
-      loginOfflineDemo(matched);
-      return;
-    }
-    setError("Unable to login. Check your credentials or use a demo account.");
+  // ── Demo button: fill fields + call real API with demo credentials ─────
+  const loginOfflineDemo = (demoAccount) => {
+    setEmail(demoAccount.email);
+    setPassword(demoAccount.password);
+    doLogin(demoAccount.email, demoAccount.password);
   };
 
   const handleGoogleLogin = () =>
-    setError(
-      "Google login is not available in demo mode. Use one of the demo options or enter your credentials.",
-    );
+    setError("Google login is not available. Please use your email and password.");
 
+  // ── Sign out from success screen ───────────────────────────────────────
   const handleSignOut = () => {
     setLoggedInUser(null);
     setDemoSuccess(null);
@@ -173,6 +101,7 @@ export default function LoginPage({ onNavigate, onBack }) {
     setPassword("");
   };
 
+  // ── Render success screen briefly before navigating away ──────────────
   if (loggedInUser && demoSuccess) {
     return (
       <LoginSuccessScreen
