@@ -2,40 +2,62 @@ const inputClass =
   "w-full px-4 py-3 bg-white border border-[#E2DDD8] rounded-xl text-[14px] text-[#1A1714] outline-none transition-colors duration-150 font-['DM_Sans',sans-serif] focus:border-[#1A1714]";
 
 export default function SignupForm({
-  name,
-  setName,
+  organizationName,
+  setOrganizationName,
+  adminName,
+  setAdminName,
   email,
   setEmail,
   password,
   setPassword,
-  confirmPassword,
-  setConfirmPassword,
+  fieldErrors,
   loading,
   error,
   onSubmit,
 }) {
   return (
     <form onSubmit={onSubmit} className="mt-1">
-      {/* Error */}
+      {/* Global error banner */}
       {error && (
         <div className="text-[12px] text-[#B91C1C] px-3.5 py-2.5 bg-[#FEF2F2] border border-[#FECACA] rounded-xl mb-3.5 leading-normal">
           {error}
         </div>
       )}
 
-      {/* Full name */}
+      {/* Organization Name */}
       <div className="mb-3.5">
         <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Full name
+          Organization Name
         </label>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={organizationName}
+          onChange={(e) => setOrganizationName(e.target.value)}
+          placeholder="BITS Pilani, Acme Corp…"
+          required
+          className={`${inputClass} ${fieldErrors?.organizationName ? "border-[#FECACA]" : ""}`}
+        />
+        {fieldErrors?.organizationName && (
+          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.organizationName}</p>
+        )}
+      </div>
+
+      {/* Admin Full Name */}
+      <div className="mb-3.5">
+        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
+          Your Full Name
+        </label>
+        <input
+          type="text"
+          value={adminName}
+          onChange={(e) => setAdminName(e.target.value)}
           placeholder="Jane Smith"
           required
-          className={inputClass}
+          className={`${inputClass} ${fieldErrors?.adminName ? "border-[#FECACA]" : ""}`}
         />
+        {fieldErrors?.adminName && (
+          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.adminName}</p>
+        )}
       </div>
 
       {/* Email */}
@@ -49,14 +71,17 @@ export default function SignupForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.com"
           required
-          className={inputClass}
+          className={`${inputClass} ${fieldErrors?.email ? "border-[#FECACA]" : ""}`}
         />
+        {fieldErrors?.email && (
+          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.email}</p>
+        )}
       </div>
 
       {/* Password */}
-      <div className="mb-3.5">
+      <div className="mb-1.5">
         <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Password
+          Password <span className="text-[#C5BEB8] font-normal">(min. 8 characters)</span>
         </label>
         <input
           type="password"
@@ -64,23 +89,11 @@ export default function SignupForm({
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
           required
-          className={inputClass}
+          className={`${inputClass} ${fieldErrors?.password ? "border-[#FECACA]" : ""}`}
         />
-      </div>
-
-      {/* Confirm password */}
-      <div className="mb-1.5">
-        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Confirm password
-        </label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-          className={inputClass}
-        />
+        {fieldErrors?.password && (
+          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.password}</p>
+        )}
       </div>
 
       <button

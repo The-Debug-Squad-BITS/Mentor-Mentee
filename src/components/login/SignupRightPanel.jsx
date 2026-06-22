@@ -13,14 +13,15 @@ function Divider({ label }) {
 }
 
 export default function SignupRightPanel({
-  name,
-  setName,
+  organizationName,
+  setOrganizationName,
+  adminName,
+  setAdminName,
   email,
   setEmail,
   password,
   setPassword,
-  confirmPassword,
-  setConfirmPassword,
+  fieldErrors,
   loading,
   error,
   onSubmit,
@@ -63,22 +64,26 @@ export default function SignupRightPanel({
         {/* Header */}
         <div className="mb-9">
           <p className="text-[11px] font-medium tracking-[0.18em] text-[#B09070] uppercase mb-2.5">
-            Join Mentora
+            Register your organization
           </p>
           <h2 className="font-['Fraunces',serif] text-[30px] font-light text-[#1A1714] leading-[1.2]">
             Create your account
           </h2>
+          <p className="text-[13px] text-[#9C948C] mt-2 leading-relaxed">
+            One admin registers the organization — then invite your mentors and mentees from the dashboard.
+          </p>
         </div>
 
         <SignupForm
-          name={name}
-          setName={setName}
+          organizationName={organizationName}
+          setOrganizationName={setOrganizationName}
+          adminName={adminName}
+          setAdminName={setAdminName}
           email={email}
           setEmail={setEmail}
           password={password}
           setPassword={setPassword}
-          confirmPassword={confirmPassword}
-          setConfirmPassword={setConfirmPassword}
+          fieldErrors={fieldErrors}
           loading={loading}
           error={error}
           onSubmit={onSubmit}
