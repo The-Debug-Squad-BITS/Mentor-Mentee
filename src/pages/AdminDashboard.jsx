@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminSidebar, { SidebarToggle } from "../components/admin/AdminSidebar";
 import AdminHeader from "../components/admin/AdminHeader";
 import DashboardOverview from "../components/admin/DashboardOverview";
@@ -10,16 +11,52 @@ import ActivityLogs from "../components/admin/ActivityLogs";
 import AdminSettings from "../components/admin/AdminSettings";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
 import CreateUserModal from "../components/admin/CreateUserModal";
+
+import api from "../lib/api";
+import { useAuthStore } from "../store/authStore";
+import { useDashboardStore } from "../store/dashboardStore";
 import { db } from "../data/db";
 
 export default function AdminDashboard() {
-  const [activeNav, setActiveNav] = useState("Dashboard");
-  const [projects, setProjects] = useState([]);
-  const [logs, setLogs] = useState([]);
-  const [showCreateUser, setShowCreateUser] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeNav, setActiveNav]               = useState("Dashboard");
+  const [projects, setProjects]                 = useState([]);
+  const [logs, setLogs]                         = useState([]);
+  const [showCreateUser, setShowCreateUser]     = useState(false);
+  const [mobileOpen, setMobileOpen]             = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [statsError, setStatsError]             = useState(null);
 
+  const navigate = useNavigate();
+  const { user, token, logout } = useAuthStore();
+  const { adminStats, setAdminStats } = useDashboardStore();
+
+  // ── Auth guard — redirect if not logged in or not admin ────────────
+  useEffect(() => {
+    if (!token || !user) {
+      navigate("/login");
+    }
+  }, [token, user, navigate]);
+
+  // ── Fetch real admin stats from backend ────────────────────────────
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get("/dashboard/admin");
+        setAdminStats(response.data.data);
+        setStatsError(null);
+      } catch (err) {
+        if (err.response?.status === 403) {
+          // Non-admin — interceptor handles 401, but 403 means wrong role
+          navigate("/login");
+        } else {
+          setStatsError("Could not load dashboard stats from server.");
+        }
+      }
+    };
+    if (token) fetchStats();
+  }, [token, setAdminStats, navigate]);
+
+  // ── Local db refresh (for projects table + activity feed) ──────────
   const refreshData = () => {
     setProjects(db.projects.getAll());
     setLogs(db.logs.getAll());
@@ -43,6 +80,12 @@ export default function AdminDashboard() {
     setCurrentProjectId(null);
   };
 
+  // ── Logout handler ─────────────────────────────────────────────────
+  const handleLogout = () => {
+    logout(); // Clears Zustand store + persisted localStorage
+    navigate("/login");
+  };
+
   const renderSection = () => {
     switch (activeNav) {
       case "Dashboard":
@@ -51,6 +94,7 @@ export default function AdminDashboard() {
             projects={projects}
             logs={logs}
             onAddProject={handleAddProject}
+            apiStats={adminStats}
           />
         );
       case "Projects":
@@ -107,7 +151,19 @@ export default function AdminDashboard() {
           mobileOpen={mobileOpen}
         />
 
-        <AdminHeader onAddUser={() => setShowCreateUser(true)} />
+        <AdminHeader
+          onAddUser={() => setShowCreateUser(true)}
+          userName={user?.name}
+          onLogout={handleLogout}
+        />
+
+        {/* Stats error banner */}
+        {statsError && (
+          <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            ⚠️ {statsError} Showing local data instead.
+          </div>
+        )}
+
         <div className="mt-6 md:mt-4">
           {renderSection()}
         </div>

@@ -10,7 +10,7 @@ const statusStyle = {
   Archived: "bg-slate-100 text-slate-500",
 };
 
-export default function DashboardOverview({ projects, logs, onAddProject }) {
+export default function DashboardOverview({ projects, logs, onAddProject, apiStats }) {
   const [newProjectName, setNewProjectName] = useState("");
   
   // Quick invite states
@@ -18,14 +18,14 @@ export default function DashboardOverview({ projects, logs, onAddProject }) {
   const [inviteRole, setInviteRole] = useState("MENTEE");
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
-  // Dynamic statistics
+  // ── Stats: prefer real API data, fall back to local db ──────────────
   const usersList = db.users.getAll();
-  const totalUsers = usersList.length;
-  const activeMentors = usersList.filter(u => u.role.toUpperCase() === "MENTOR").length;
-  const activeProjects = projects.filter(p => p.status === "Active").length;
-  
   const invitationsList = db.invitations.getAll();
-  const pendingInvites = invitationsList.filter(inv => inv.status === "PENDING").length;
+
+  const totalMentors     = apiStats?.totalMentors     ?? usersList.filter(u => u.role.toUpperCase() === "MENTOR").length;
+  const totalMentees     = apiStats?.totalMentees      ?? usersList.filter(u => u.role.toUpperCase() === "MENTEE").length;
+  const totalProjects    = apiStats?.totalProjects     ?? projects.filter(p => p.status === "Active").length;
+  const pendingInvites   = apiStats?.pendingInvitations ?? invitationsList.filter(inv => inv.status === "PENDING").length;
 
   const handleAdd = () => {
     if (!newProjectName.trim()) return;
@@ -50,29 +50,29 @@ export default function DashboardOverview({ projects, logs, onAddProject }) {
       {/* Dynamic Stat cards */}
       <div className="flex gap-5 flex-wrap">
         <StatCard
-          icon="👥"
-          label="Total Users"
-          value={totalUsers.toString()}
-          badge="Active Access"
-          badgeColor="blue"
-        />
-        <StatCard
           icon="🎓"
-          label="Active Mentors"
-          value={activeMentors.toString()}
+          label="Total Mentors"
+          value={totalMentors.toString()}
           badge="Mentorship Network"
           badgeColor="green"
         />
         <StatCard
+          icon="👥"
+          label="Total Mentees"
+          value={totalMentees.toString()}
+          badge="Active Learners"
+          badgeColor="blue"
+        />
+        <StatCard
           icon="📋"
-          label="Active Projects"
-          value={activeProjects.toString()}
+          label="Total Projects"
+          value={totalProjects.toString()}
           badge="Development Logs"
           badgeColor="blue"
         />
         <StatCard
           icon="✉️"
-          label="Pending Invites"
+          label="Pending Invitations"
           value={pendingInvites.toString()}
           badge="Requests Queue"
           badgeColor="green"
