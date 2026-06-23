@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
 
 export default function ActivityLogs() {
   const [logs, setLogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const refreshLogs = () => {
-    setLogs(db.logs.getAll());
+    // Stubbed until integrated with backend API
+    setLogs([]);
   };
 
   useEffect(() => {

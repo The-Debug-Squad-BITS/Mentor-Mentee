@@ -2,26 +2,25 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeProjects() {
   const [projects, setProjects] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   useEffect(() => {
-    const allProj = db.projects.getAll();
-    const assignedProj = allProj.filter(p => p.mentees && p.mentees.some(m => m.id === currentUser.id));
-    setProjects(assignedProj);
+    // Stubbed until integrated with backend API
+    setProjects([]);
   }, [currentUser.id]);
 
   const getProjTaskCount = (projectId) => {
-    const list = db.tasks.getAll().filter(t => t.projectId === projectId.toString());
-    return list.length;
+    return 0;
   };
 
   return (

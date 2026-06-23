@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -13,25 +13,17 @@ export default function MenteeTasks() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [submissionNotes, setSubmissionNotes] = useState("");
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   const refreshTasks = () => {
-    const list = db.tasks.getForMentee(currentUser.id);
-    setTasks(list);
-    
-    // Extract projects assigned to this mentee
-    const allProj = db.projects.getAll();
-    const assignedProj = allProj.filter(p => p.mentees && p.mentees.some(m => m.id === currentUser.id));
-    setProjects(assignedProj);
-
-    if (selectedTask) {
-      const updated = list.find(t => t.id === selectedTask.id);
-      setSelectedTask(updated || null);
-    }
+    // Stubbed until integrated with backend API
+    setTasks([]);
+    setProjects([]);
   };
 
   useEffect(() => {
@@ -42,7 +34,7 @@ export default function MenteeTasks() {
     e.preventDefault();
     if (!selectedTask || !submissionNotes.trim()) return;
 
-    db.tasks.submitWork(selectedTask.id, currentUser.id, submissionNotes.trim());
+    // Stubbed until integrated with backend API
     setSubmissionNotes("");
     refreshTasks();
     alert("Work submitted successfully for advisor review!");

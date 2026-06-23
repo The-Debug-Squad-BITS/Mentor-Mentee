@@ -1,39 +1,21 @@
 import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorTeam() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   useEffect(() => {
-    const mentorProj = db.projects.getAll().filter(p => p.mentor && p.mentor.id === currentUser.id);
-    const addedUserIds = new Set();
-    const list = [];
-
-    mentorProj.forEach(p => {
-      if (p.mentees) {
-        p.mentees.forEach(m => {
-          if (!addedUserIds.has(m.id)) {
-            addedUserIds.add(m.id);
-            list.push({
-              ...m,
-              projectName: p.name,
-              projectStatus: p.status,
-              progress: p.progress
-            });
-          }
-        });
-      }
-    });
-
-    setTeamMembers(list);
+    // Stubbed until integrated with backend API
+    setTeamMembers([]);
   }, [currentUser.id]);
 
   return (

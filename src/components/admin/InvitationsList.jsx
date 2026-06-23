@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
-
 export default function InvitationsList() {
   const [invitations, setInvitations] = useState([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -10,7 +8,8 @@ export default function InvitationsList() {
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   const refreshInvites = () => {
-    setInvitations(db.invitations.getAll());
+    // Stubbed until integrated with backend API
+    setInvitations([]);
   };
 
   useEffect(() => {
@@ -20,7 +19,7 @@ export default function InvitationsList() {
   const handleSendInvite = (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-    db.invitations.create(inviteEmail, inviteRole);
+    // Stubbed until integrated with backend API
     setInviteEmail("");
     setInviteRole("MENTEE");
     setShowInviteModal(false);
@@ -28,13 +27,13 @@ export default function InvitationsList() {
   };
 
   const handleResend = (id) => {
-    db.invitations.resend(id);
+    // Stubbed until integrated with backend API
     refreshInvites();
   };
 
   const handleCancel = (id) => {
     if (confirm("Are you sure you want to cancel this invitation?")) {
-      db.invitations.cancel(id);
+      // Stubbed until integrated with backend API
       refreshInvites();
     }
   };

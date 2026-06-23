@@ -1,22 +1,19 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeActivity() {
   const [logs, setLogs] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   useEffect(() => {
-    const allLogs = db.logs.getAll();
-    const studentLogs = allLogs.filter(l => {
-      const text = l.text.toLowerCase();
-      return text.includes("mentee") || text.includes(currentUser.name.toLowerCase()) || text.includes("deliverable") || text.includes("task");
-    });
-    setLogs(studentLogs);
+    // Stubbed until integrated with backend API
+    setLogs([]);
   }, [currentUser.id]);
 
   const getEventMeta = (text) => {

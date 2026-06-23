@@ -9,21 +9,22 @@ import MenteeProjects from "../components/mentee/MenteeProjects";
 import MenteeFeedback from "../components/mentee/MenteeFeedback";
 import MenteeActivity from "../components/mentee/MenteeActivity";
 import MenteeProfile from "../components/mentee/MenteeProfile";
-import { db } from "../data/db";
+import { useAuthStore } from "../store/authStore";
 
 export default function MenteeDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [menteeTasks, setMenteeTasks] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   const refreshMenteeData = () => {
-    setMenteeTasks(db.tasks.getForMentee(currentUser.id));
+    setMenteeTasks([]);
   };
 
   useEffect(() => {

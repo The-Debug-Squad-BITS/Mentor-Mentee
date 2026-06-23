@@ -1,6 +1,5 @@
 import { useState } from "react";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
 
 const inputClass =
   "w-full px-3 py-2.5 md:px-3.5 md:py-3 rounded-xl border border-slate-200 text-xs md:text-sm outline-none transition-colors focus:border-indigo-400 bg-white";
@@ -11,7 +10,7 @@ export default function CreateTasksSection({ tasks, onCreateTask }) {
   const [priority, setPriority] = useState("Medium");
   const [selectedMentee, setSelectedMentee] = useState("");
 
-  const menteesList = db.users.getAll().filter((u) => u.role.toUpperCase() === "MENTEE");
+  const menteesList = [];
 
   const handleCreate = () => {
     if (!desc || !selectedMentee) {

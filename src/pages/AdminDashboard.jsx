@@ -15,7 +15,6 @@ import CreateUserModal from "../components/admin/CreateUserModal";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import { useDashboardStore } from "../store/dashboardStore";
-import { db } from "../data/db";
 
 export default function AdminDashboard() {
   const [activeNav, setActiveNav]               = useState("Dashboard");
@@ -56,10 +55,10 @@ export default function AdminDashboard() {
     if (token) fetchStats();
   }, [token, setAdminStats, navigate]);
 
-  // ── Local db refresh (for projects table + activity feed) ──────────
+  // ── Local db refresh (stubbed out since mock DB is removed) ──────────
   const refreshData = () => {
-    setProjects(db.projects.getAll());
-    setLogs(db.logs.getAll());
+    setProjects([]);
+    setLogs([]);
   };
 
   useEffect(() => {
@@ -67,8 +66,7 @@ export default function AdminDashboard() {
   }, []);
 
   const handleAddProject = (name) => {
-    db.projects.create(name);
-    refreshData();
+    // Stubbed until integrated with backend api
   };
 
   const handleUserCreated = () => {

@@ -3,7 +3,7 @@ import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 const statusStyle = {
   Active: "bg-green-100 text-green-700",
@@ -17,17 +17,18 @@ export default function MentorOverview({ projects, onNavigate }) {
   const [completedTasksCount, setCompletedTasksCount] = useState(0);
   const [allTasksCount, setAllTasksCount] = useState(0);
   
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   useEffect(() => {
-    const list = db.tasks.getForMentor(currentUser.id);
-    setAllTasksCount(list.length);
-    setTasksAwaitingReview(list.filter(t => t.status === "SUBMITTED"));
-    setCompletedTasksCount(list.filter(t => t.status === "APPROVED").length);
+    // Stubbed until integrated with backend API
+    setAllTasksCount(0);
+    setTasksAwaitingReview([]);
+    setCompletedTasksCount(0);
   }, [currentUser.id]);
 
   // Extract real active assigned mentees count

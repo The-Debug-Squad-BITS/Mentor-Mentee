@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
 
 export default function AdminSettings() {
   const [orgName, setOrgName] = useState("Acme Corporation");
@@ -31,7 +30,7 @@ export default function AdminSettings() {
     localStorage.setItem("mentorFlow_settings_systemLog", systemLog.toString());
     localStorage.setItem("mentorFlow_settings_sessionExpiry", sessionExpiry);
 
-    db.logs.add(`Saved brand settings for organization '${orgName}'.`);
+    // db log stubbed
     
     setSavedSuccess(true);
     setTimeout(() => {

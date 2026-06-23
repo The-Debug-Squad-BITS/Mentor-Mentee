@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
-
 export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -27,17 +25,22 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [editStatus, setEditStatus] = useState("Active");
 
   const refreshProjectData = () => {
-    const proj = db.projects.getAll().find(p => p.id === projectId.toString());
-    if (proj) {
-      setProject(proj);
-      setEditName(proj.name);
-      setEditDesc(proj.description || "");
-      setEditStatus(proj.status);
-      const allTasks = db.tasks.getAll().filter(t => t.projectId === projectId.toString());
-      setTasks(allTasks);
-      const allLogs = db.logs.getAll().filter(l => l.text.includes(`'${proj.name}'`) || l.text.includes(proj.name));
-      setLogs(allLogs);
-    }
+    // Stubbed until integrated with backend API
+    const defaultProject = {
+      id: projectId,
+      name: "Project Tracker",
+      description: "This project is managed under your organization console. Members coordinate milestones, tasks, and reviews dynamically.",
+      status: "Active",
+      progress: 0,
+      mentor: null,
+      mentees: []
+    };
+    setProject(defaultProject);
+    setEditName(defaultProject.name);
+    setEditDesc(defaultProject.description);
+    setEditStatus(defaultProject.status);
+    setTasks([]);
+    setLogs([]);
   };
 
   useEffect(() => {
@@ -46,16 +49,11 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
   if (!project) return <div className="p-8 text-center text-slate-500 font-bold">Project not found.</div>;
 
-  const mentors = db.users.getAll().filter(u => u.role.toUpperCase() === "MENTOR");
-  const mentees = db.users.getAll().filter(u => u.role.toUpperCase() === "MENTEE");
+  const mentors = [];
+  const mentees = [];
 
   const handleConfirmAssignment = () => {
-    if (selectedMentor) {
-      db.projects.assignMentor(project.id, selectedMentor);
-    }
-    if (selectedMentee) {
-      db.projects.assignMentee(project.id, selectedMentee);
-    }
+    // Stubbed until integrated with backend API
     setSelectedMentor("");
     setSelectedMentee("");
     setShowAssignForm(false);
@@ -68,16 +66,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       alert("Please enter a task title and select a mentee.");
       return;
     }
-    db.tasks.create({
-      projectId: project.id,
-      createdById: project.mentor ? project.mentor.id : "demo-admin", // Fall back to admin if unassigned
-      assignedToId: taskMentee,
-      title: taskTitle,
-      description: taskTitle,
-      priority: taskPriority,
-      deadline: taskDeadline || "Next week"
-    });
-
+    // Stubbed until integrated with backend API
     setTaskTitle("");
     setTaskMentee("");
     setTaskPriority("Medium");
@@ -89,19 +78,10 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
   const handleSaveEdit = () => {
     if (!editName.trim()) return;
-    const allProjects = db.projects.getAll();
-    const idx = allProjects.findIndex(p => p.id === project.id.toString());
-    if (idx !== -1) {
-      allProjects[idx].name = editName.trim();
-      allProjects[idx].description = editDesc.trim();
-      allProjects[idx].status = editStatus;
-      const KEYS = { PROJECTS: "mentorFlow_projects_rel" };
-      localStorage.setItem(KEYS.PROJECTS, JSON.stringify(allProjects));
-      db.logs.add(`Project '${editName}' was updated by Admin.`);
-      setShowEditForm(false);
-      refreshProjectData();
-      if (onRefresh) onRefresh();
-    }
+    // Stubbed until integrated with backend API
+    setShowEditForm(false);
+    refreshProjectData();
+    if (onRefresh) onRefresh();
   };
 
   return (

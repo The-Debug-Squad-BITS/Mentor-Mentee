@@ -1,4 +1,5 @@
 import Avatar from "../ui/Avatar";
+import { useAuthStore } from "../../store/authStore";
 
 export function MenteeSidebarToggle({ onClick, mobileOpen }) {
   if (mobileOpen) return null;
@@ -35,7 +36,8 @@ export default function MenteeSidebar({
     setMobileOpen(false); // close drawer on mobile after selection
   };
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     name: "Emily Davies",
     role: "MENTEE",
     avatar: "ED",

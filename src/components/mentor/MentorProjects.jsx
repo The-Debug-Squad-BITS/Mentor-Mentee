@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorProjects() {
   const [projects, setProjects] = useState([]);
@@ -12,15 +12,16 @@ export default function MentorProjects() {
   // Grading actions inside nested Reviews
   const [gradeComment, setGradeComment] = useState("");
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   const refreshProjectsList = () => {
-    const list = db.projects.getAll().filter(p => p.mentor && p.mentor.id === currentUser.id);
-    setProjects(list);
+    // Stubbed until integrated with backend API
+    setProjects([]);
   };
 
   useEffect(() => {
@@ -28,11 +29,11 @@ export default function MentorProjects() {
   }, [currentUser.id]);
 
   const selectedProj = projects.find(p => p.id === selectedProjectId);
-  const projTasks = selectedProj ? db.tasks.getAll().filter(t => t.projectId === selectedProj.id) : [];
-  const projSubmissions = selectedProj ? db.tasks.getAll().filter(t => t.projectId === selectedProj.id && t.status === "SUBMITTED") : [];
+  const projTasks = [];
+  const projSubmissions = [];
 
   const handleGrade = (taskId, action) => {
-    db.tasks.addFeedback(taskId, currentUser.id, gradeComment || "Reviewed by mentor.", action);
+    // Stubbed until integrated with backend API
     setGradeComment("");
     refreshProjectsList();
   };

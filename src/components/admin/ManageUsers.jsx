@@ -1,32 +1,26 @@
 import { useState } from "react";
 import Avatar from "../ui/Avatar";
-import { db } from "../../data/db";
 import CreateUserModal from "./CreateUserModal";
 
 export default function ManageUsers({ onUserDeleted }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
-  const [users, setUsers] = useState(db.users.getAll());
+  const [users, setUsers] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   
   // Profile Drawer State
   const [selectedUser, setSelectedUser] = useState(null);
 
   const refreshUsersList = () => {
-    const freshUsers = db.users.getAll();
-    setUsers(freshUsers);
-    
-    // If a user was selected, update their details in case they changed
-    if (selectedUser) {
-      const updated = freshUsers.find(u => u.id === selectedUser.id);
-      setSelectedUser(updated || null);
-    }
+    // Stubbed until integrated with backend API
+    setUsers([]);
+    setSelectedUser(null);
   };
 
   const handleDelete = (id, name, e) => {
     e.stopPropagation(); // Avoid triggering profile view
     if (confirm(`Are you sure you want to delete ${name}? This will revoke their access and clear memberships.`)) {
-      db.users.delete(id);
+      // Stubbed until integrated with backend API
       refreshUsersList();
       if (onUserDeleted) onUserDeleted();
       if (selectedUser && selectedUser.id === id) {
@@ -36,8 +30,7 @@ export default function ManageUsers({ onUserDeleted }) {
   };
 
   const handleRoleChange = (userId, newRole) => {
-    db.users.update(userId, { role: newRole.toUpperCase() });
-    db.logs.add(`Admin updated user role of ${selectedUser.name} to ${newRole.toUpperCase()}.`);
+    // Stubbed until integrated with backend API
     refreshUsersList();
   };
 
@@ -48,16 +41,7 @@ export default function ManageUsers({ onUserDeleted }) {
 
   // Get projects assigned to user
   const getUserProjects = (user) => {
-    if (!user) return [];
-    const allProjects = db.projects.getAll();
-    return allProjects.filter(p => {
-      if (user.role === "MENTOR") {
-        return p.mentor && p.mentor.id === user.id;
-      } else if (user.role === "MENTEE") {
-        return p.mentees && p.mentees.some(m => m.id === user.id);
-      }
-      return false;
-    });
+    return [];
   };
 
   // Filter logic

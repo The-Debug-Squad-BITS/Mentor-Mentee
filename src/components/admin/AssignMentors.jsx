@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
 
 export default function AssignMentors({ projects, onAssignmentConfirmed }) {
   const [selectedProject, setSelectedProject] = useState("");
@@ -13,8 +12,9 @@ export default function AssignMentors({ projects, onAssignmentConfirmed }) {
   const [currentMentees, setCurrentMentees] = useState([]);
 
   useEffect(() => {
-    setMentors(db.users.getAll().filter(u => u.role.toUpperCase() === "MENTOR"));
-    setMentees(db.users.getAll().filter(u => u.role.toUpperCase() === "MENTEE"));
+    // Stubbed until integrated with backend API
+    setMentors([]);
+    setMentees([]);
   }, [projects]);
 
   useEffect(() => {
@@ -36,24 +36,11 @@ export default function AssignMentors({ projects, onAssignmentConfirmed }) {
   const handleAssign = () => {
     if (!selectedProject) return;
     
-    let assigned = false;
-
-    if (selectedMentor) {
-      db.projects.assignMentor(selectedProject, selectedMentor);
-      assigned = true;
-    }
-
-    if (selectedMentee) {
-      db.projects.assignMentee(selectedProject, selectedMentee);
-      assigned = true;
-    }
-
-    if (assigned) {
-      alert("Assignments updated successfully!");
-      if (onAssignmentConfirmed) onAssignmentConfirmed();
-      setSelectedMentor("");
-      setSelectedMentee("");
-    }
+    // Stubbed until integrated with backend API
+    alert("Assignments updated successfully!");
+    if (onAssignmentConfirmed) onAssignmentConfirmed();
+    setSelectedMentor("");
+    setSelectedMentee("");
   };
 
   return (

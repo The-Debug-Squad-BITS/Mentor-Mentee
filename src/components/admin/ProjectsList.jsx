@@ -2,11 +2,6 @@ import { useState, useEffect } from "react";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
-import { db } from "../../data/db";
-
-const KEYS = {
-  PROJECTS: "mentorFlow_projects_rel"
-};
 
 export default function ProjectsList({ onViewProject, onRefresh }) {
   const [projects, setProjects] = useState([]);
@@ -28,29 +23,20 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   const [editingProjectMentees, setEditingProjectMentees] = useState([]);
 
   const refreshList = () => {
-    setProjects(db.projects.getAll());
+    // Stubbed until integrated with backend API
+    setProjects([]);
   };
 
   useEffect(() => {
     refreshList();
   }, []);
 
-  const mentors = db.users.getAll().filter(u => u.role.toUpperCase() === "MENTOR");
-  const mentees = db.users.getAll().filter(u => u.role.toUpperCase() === "MENTEE");
+  const mentors = [];
+  const mentees = [];
 
   const handleCreate = () => {
     if (!newProjectName.trim()) return;
-    const newProj = db.projects.create(newProjectName.trim(), newProjectDesc.trim());
-    if (newProj) {
-      if (newProjectMentor) {
-        db.projects.assignMentor(newProj.id, newProjectMentor);
-      }
-      if (newProjectMentees.length > 0) {
-        newProjectMentees.forEach(mid => {
-          db.projects.assignMentee(newProj.id, mid);
-        });
-      }
-    }
+    // Stubbed until integrated with backend API
     setNewProjectName("");
     setNewProjectDesc("");
     setNewProjectMentor("");
@@ -61,23 +47,14 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   };
 
   const handleArchive = (id) => {
-    const allProjects = db.projects.getAll();
-    const idx = allProjects.findIndex(p => p.id === id.toString());
-    if (idx !== -1) {
-      allProjects[idx].status = "Archived";
-      localStorage.setItem(KEYS.PROJECTS, JSON.stringify(allProjects));
-      db.logs.add(`Project '${allProjects[idx].name}' was archived.`);
-      refreshList();
-      if (onRefresh) onRefresh();
-    }
+    // Stubbed until integrated with backend API
+    refreshList();
+    if (onRefresh) onRefresh();
   };
 
   const handleDelete = (id) => {
     if (confirm("Are you sure you want to delete this project? This will remove all members and tasks associated with it!")) {
-      const allProjects = db.projects.getAll();
-      const updated = allProjects.filter(p => p.id !== id.toString());
-      localStorage.setItem(KEYS.PROJECTS, JSON.stringify(updated));
-      db.logs.add("Project was deleted from the system.");
+      // Stubbed until integrated with backend API
       refreshList();
       if (onRefresh) onRefresh();
     }
@@ -86,38 +63,13 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   const handleSaveEdit = (e) => {
     e.preventDefault();
     if (!editingProject.name.trim()) return;
-    const allProjects = db.projects.getAll();
-    const idx = allProjects.findIndex(p => p.id === editingProject.id.toString());
-    if (idx !== -1) {
-      allProjects[idx].name = editingProject.name.trim();
-      allProjects[idx].description = editingProject.description.trim();
-      allProjects[idx].status = editingProject.status;
-      localStorage.setItem(KEYS.PROJECTS, JSON.stringify(allProjects));
-      
-      // Relational sync
-      db.projects.assignMentor(editingProject.id, editingProjectMentor);
-      
-      const allMembers = JSON.parse(localStorage.getItem("mentorFlow_members_rel")) || [];
-      const filteredMembers = allMembers.filter(m => !(m.projectId === editingProject.id.toString() && m.role === "MENTEE"));
-      
-      editingProjectMentees.forEach(mid => {
-        filteredMembers.push({
-          id: Date.now().toString() + "_" + mid + "_s",
-          projectId: editingProject.id.toString(),
-          userId: mid.toString(),
-          role: "MENTEE"
-        });
-      });
-      localStorage.setItem("mentorFlow_members_rel", JSON.stringify(filteredMembers));
-
-      db.logs.add(`Project '${editingProject.name}' was modified by Admin.`);
-      setShowEditModal(false);
-      setEditingProject(null);
-      setEditingProjectMentor("");
-      setEditingProjectMentees([]);
-      refreshList();
-      if (onRefresh) onRefresh();
-    }
+    // Stubbed until integrated with backend API
+    setShowEditModal(false);
+    setEditingProject(null);
+    setEditingProjectMentor("");
+    setEditingProjectMentees([]);
+    refreshList();
+    if (onRefresh) onRefresh();
   };
 
   // Filter & Sort logic

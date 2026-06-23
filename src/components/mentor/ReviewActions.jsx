@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function ReviewActions() {
   const [pendingTasks, setPendingTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const [comment, setComment] = useState("");
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || { id: "2" };
+  const { user } = useAuthStore();
+  const currentUser = user || { id: "2" };
 
   const refreshList = () => {
-    // Load all tasks assigned by this mentor that are submitted
-    const allTasks = db.tasks.getAll();
-    const submitted = allTasks.filter(t => t.status === "SUBMITTED" && t.createdById === currentUser.id);
-    setPendingTasks(submitted);
+    // Stubbed until integrated with backend API
+    setPendingTasks([]);
     setSelectedTask(null);
     setComment("");
   };
@@ -28,7 +27,7 @@ export default function ReviewActions() {
       return;
     }
 
-    db.tasks.addFeedback(selectedTask.id, currentUser.id, comment.trim(), actionType);
+    // Stubbed until integrated with backend API
     alert(`Task status updated: ${actionType === "approve" ? "Approved" : "Revision Requested"}`);
     refreshList();
   };

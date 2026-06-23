@@ -1,4 +1,5 @@
 import Avatar from "../ui/Avatar";
+import { useAuthStore } from "../../store/authStore";
 
 export { default as SidebarToggle } from "./SidebarToggle";
 
@@ -8,7 +9,8 @@ export default function AdminSidebar({
   mobileOpen,
   setMobileOpen,
 }) {
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     name: "System Admin",
     role: "ADMIN",
     avatar: "AD",

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import StatCard from "../ui/StatCard";
 import ProgressBar from "../ui/ProgressBar";
-import { db } from "../../data/db";
 
 const statusStyle = {
   Active: "bg-green-100 text-green-700",
@@ -18,14 +17,13 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   const [inviteRole, setInviteRole] = useState("MENTEE");
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
-  // ── Stats: prefer real API data, fall back to local db ──────────────
-  const usersList = db.users.getAll();
-  const invitationsList = db.invitations.getAll();
+  // ── Stats: prefer real API data, fall back to 0 ──────────────
+  const invitationsList = [];
 
-  const totalMentors     = apiStats?.totalMentors     ?? usersList.filter(u => u.role.toUpperCase() === "MENTOR").length;
-  const totalMentees     = apiStats?.totalMentees      ?? usersList.filter(u => u.role.toUpperCase() === "MENTEE").length;
-  const totalProjects    = apiStats?.totalProjects     ?? projects.filter(p => p.status === "Active").length;
-  const pendingInvites   = apiStats?.pendingInvitations ?? invitationsList.filter(inv => inv.status === "PENDING").length;
+  const totalMentors     = apiStats?.totalMentors     ?? 0;
+  const totalMentees     = apiStats?.totalMentees      ?? 0;
+  const totalProjects    = apiStats?.totalProjects     ?? 0;
+  const pendingInvites   = apiStats?.pendingInvitations ?? 0;
 
   const handleAdd = () => {
     if (!newProjectName.trim()) return;
@@ -36,7 +34,7 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   const handleQuickInvite = (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-    db.invitations.create(inviteEmail, inviteRole);
+    // Stubbed until integrated with backend API
     setInviteEmail("");
     setInviteRole("MENTEE");
     setInviteSuccess(true);

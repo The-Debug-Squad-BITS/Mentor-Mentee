@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorTasks() {
   const [tasks, setTasks] = useState([]);
@@ -23,26 +23,17 @@ export default function MentorTasks() {
   const [taskPriority, setTaskPriority] = useState("MEDIUM");
   const [taskDeadline, setTaskDeadline] = useState("");
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   const refreshTasksList = () => {
-    const list = db.tasks.getForMentor(currentUser.id);
-    setTasks(list);
-    
-    const mentorProj = db.projects.getAll().filter(p => p.mentor && p.mentor.id === currentUser.id);
-    setProjects(mentorProj);
-    if (mentorProj.length > 0 && !taskProjectId) {
-      setTaskProjectId(mentorProj[0].id);
-    }
-
-    if (selectedTask) {
-      const updated = list.find(t => t.id === selectedTask.id);
-      setSelectedTask(updated || null);
-    }
+    // Stubbed until integrated with backend API
+    setTasks([]);
+    setProjects([]);
   };
 
   useEffect(() => {
@@ -53,16 +44,7 @@ export default function MentorTasks() {
     e.preventDefault();
     if (!taskTitle || !taskMenteeId || !taskProjectId) return;
 
-    db.tasks.create({
-      projectId: taskProjectId,
-      createdById: currentUser.id,
-      assignedToId: taskMenteeId,
-      title: taskTitle,
-      description: taskDesc,
-      priority: taskPriority,
-      deadline: taskDeadline || "Next week"
-    });
-
+    // Stubbed until integrated with backend API
     setTaskTitle("");
     setTaskDesc("");
     setTaskMenteeId("");
@@ -74,15 +56,13 @@ export default function MentorTasks() {
 
   const handleGradeTask = (action) => {
     if (!selectedTask) return;
-    db.tasks.addFeedback(selectedTask.id, currentUser.id, gradeComment || "Reviewed by mentor.", action);
+    // Stubbed until integrated with backend API
     setGradeComment("");
     refreshTasksList();
   };
 
   // Extract mentees assigned to selected creation project
-  const currentProjMentees = taskProjectId 
-    ? (db.projects.getAll().find(p => p.id === taskProjectId.toString())?.mentees || [])
-    : [];
+  const currentProjMentees = [];
 
   // Filter Logic
   const filtered = tasks

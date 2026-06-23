@@ -11,8 +11,8 @@ import MentorReviews from "../components/mentor/MentorReviews";
 import MentorActivity from "../components/mentor/MentorActivity";
 import MentorProfile from "../components/mentor/MentorProfile";
 import NewUserModal from "../components/mentor/NewUserModal";
+import { useAuthStore } from "../store/authStore";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
-import { db } from "../data/db";
 
 export default function MentorDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
@@ -20,14 +20,15 @@ export default function MentorDashboard() {
   const [projects, setProjects] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   const refreshDashboardData = () => {
-    setProjects(db.projects.getAll().filter((p) => p.mentor && p.mentor.id === currentUser.id));
+    setProjects([]);
   };
 
   useEffect(() => {

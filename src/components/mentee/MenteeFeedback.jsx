@@ -1,38 +1,23 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [approvedNotes, setApprovedNotes] = useState([]);
   const [rejectedNotes, setRejectedNotes] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   useEffect(() => {
-    const list = db.tasks.getForMentee(currentUser.id);
-    
-    // Gather all feedbacks
-    const allFeedbacks = [];
-    list.forEach(t => {
-      if (t.feedbacks) {
-        t.feedbacks.forEach(f => {
-          allFeedbacks.push({
-            ...f,
-            taskTitle: t.title,
-            projectName: t.projectName,
-            status: t.status
-          });
-        });
-      }
-    });
-
-    setFeedbacks(allFeedbacks);
-    setApprovedNotes(allFeedbacks.filter(f => f.status === "APPROVED"));
-    setRejectedNotes(allFeedbacks.filter(f => f.status === "REJECTED"));
+    // Stubbed until integrated with backend API
+    setFeedbacks([]);
+    setApprovedNotes([]);
+    setRejectedNotes([]);
   }, [currentUser.id]);
 
   return (

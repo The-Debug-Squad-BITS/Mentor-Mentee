@@ -1,27 +1,19 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorActivity() {
   const [logs, setLogs] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   useEffect(() => {
-    const allLogs = db.logs.getAll();
-    const mentorProj = db.projects.getAll().filter(p => p.mentor && p.mentor.id === currentUser.id);
-    const projNames = mentorProj.map(p => p.name.toLowerCase());
-
-    // Filter logs that match the mentor's projects
-    const filteredLogs = allLogs.filter(l => {
-      const text = l.text.toLowerCase();
-      return projNames.some(name => text.includes(name)) || text.includes(currentUser.name.toLowerCase()) || text.includes("task") && text.includes("mentee");
-    });
-
-    setLogs(filteredLogs);
+    // Stubbed until integrated with backend API
+    setLogs([]);
   }, [currentUser.id]);
 
   const getEventMeta = (text) => {

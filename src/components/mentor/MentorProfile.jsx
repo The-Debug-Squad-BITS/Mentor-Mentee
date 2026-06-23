@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import StatCard from "../ui/StatCard";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorProfile() {
   const [profileName, setProfileName] = useState("Sarah Connor");
   const [profileEmail, setProfileEmail] = useState("mentor@demo.com");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR",
@@ -20,32 +21,20 @@ export default function MentorProfile() {
   useEffect(() => {
     setProfileName(currentUser.name);
     setProfileEmail(currentUser.email || "mentor@demo.com");
-  }, []);
+  }, [currentUser]);
 
   const handleSave = (e) => {
     e.preventDefault();
-    const allUsers = db.users.getAll();
-    const idx = allUsers.findIndex(u => u.id === currentUser.id);
-    if (idx !== -1) {
-      allUsers[idx].name = profileName;
-      allUsers[idx].email = profileEmail;
-      localStorage.setItem("mentorFlow_users_rel", JSON.stringify(allUsers));
-      
-      // Update session
-      const updatedUser = { ...currentUser, name: profileName, email: profileEmail };
-      localStorage.setItem("mentorFlow_currentUser", JSON.stringify(updatedUser));
-      db.logs.add(`Mentor '${profileName}' updated their profile credentials.`);
-      
-      setSaveSuccess(true);
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
-    }
+    // Stubbed until integrated with backend API
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+    }, 3000);
   };
 
-  const mentoredProjects = db.projects.getAll().filter(p => p.mentor && p.mentor.id === currentUser.id);
-  const totalTasks = db.tasks.getForMentor(currentUser.id).length;
-  const completedTasks = db.tasks.getForMentor(currentUser.id).filter(t => t.status === "APPROVED").length;
+  const mentoredProjects = [];
+  const totalTasks = 0;
+  const completedTasks = 0;
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl animate-fade-in pl-0 md:pl-4 lg:pl-8">

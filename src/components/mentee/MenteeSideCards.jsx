@@ -1,32 +1,19 @@
 import { useState, useEffect } from "react";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export function RecentFeedbackCard() {
   const [feedbacks, setFeedbacks] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   useEffect(() => {
-    const list = db.tasks.getForMentee(currentUser.id);
-    const allFeedbacks = [];
-    list.forEach(t => {
-      if (t.feedbacks) {
-        t.feedbacks.forEach(f => {
-          allFeedbacks.push({
-            id: f.id,
-            task: t.title,
-            mentor: "Sarah Connor",
-            text: f.comment,
-            date: f.createdAt
-          });
-        });
-      }
-    });
-    setFeedbacks(allFeedbacks.slice(0, 3));
+    // Stubbed until integrated with backend API
+    setFeedbacks([]);
   }, [currentUser.id]);
 
   return (
@@ -74,15 +61,16 @@ export function RecentFeedbackCard() {
 export function NotificationsCard() {
   const [notifications, setNotifications] = useState([]);
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
   const refreshNotifs = () => {
-    const list = db.notifications.getForUser(currentUser.id);
-    setNotifications(list.slice(0, 5));
+    // Stubbed until integrated with backend API
+    setNotifications([]);
   };
 
   useEffect(() => {
@@ -90,7 +78,7 @@ export function NotificationsCard() {
   }, [currentUser.id]);
 
   const handleMarkAllRead = () => {
-    db.notifications.markAllRead(currentUser.id);
+    // Stubbed until integrated with backend API
     refreshNotifs();
   };
 

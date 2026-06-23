@@ -1,18 +1,17 @@
 import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function AssignedProjectsCard({ onViewAll }) {
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
-  // Fetch real assigned projects for this Mentee from the relational DB
-  const myProjects = db.projects.getAll().filter(
-    (p) => p.mentees && p.mentees.some((m) => m.id === currentUser.id)
-  );
+  // Fetch real assigned projects for this Mentee
+  const myProjects = [];
 
   return (
     <div

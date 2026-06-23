@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { db } from "../../data/db";
 
 const inputStyle =
   "w-full px-3.5 py-3 rounded-xl border border-slate-200 text-sm outline-none transition-colors focus:border-blue-400";
@@ -11,11 +10,7 @@ export default function CreateUserModal({ onClose, onUserCreated }) {
 
   const handleCreate = () => {
     if (!name.trim() || !email.trim()) return;
-    db.users.create({
-      name: name.trim(),
-      email: email.trim(),
-      role: role
-    });
+    // Stubbed until integrated with backend API
     if (onUserCreated) onUserCreated();
     onClose();
   };

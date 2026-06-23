@@ -1,17 +1,18 @@
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeQuickStats() {
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "1",
     name: "Emily Davies",
     role: "MENTEE"
   };
 
-  const tasks = db.tasks.getForMentee(currentUser.id);
-  const totalCount = tasks.length;
-  const completedCount = tasks.filter(t => t.status === "APPROVED").length;
-  const rejectedCount = tasks.filter(t => t.status === "REJECTED").length;
-  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const tasks = [];
+  const totalCount = 0;
+  const completedCount = 0;
+  const rejectedCount = 0;
+  const progressPercent = 0;
 
   const stats = [
     {

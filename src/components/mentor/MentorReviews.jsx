@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import StatusBadge from "../ui/StatusBadge";
-import { db } from "../../data/db";
+import { useAuthStore } from "../../store/authStore";
 
 export default function MentorReviews() {
   const [reviews, setReviews] = useState([]);
@@ -8,16 +8,17 @@ export default function MentorReviews() {
   const [feedbackNotes, setFeedbackNotes] = useState("");
   const [reviewTab, setReviewTab] = useState("Pending"); // Pending | History
 
-  const currentUser = JSON.parse(localStorage.getItem("mentorFlow_currentUser")) || {
+  const { user } = useAuthStore();
+  const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
     role: "MENTOR"
   };
 
   const refreshReviews = () => {
-    const list = db.tasks.getForMentor(currentUser.id);
-    setReviews(list.filter(t => t.status === "SUBMITTED"));
-    setHistory(list.filter(t => t.status === "APPROVED" || t.status === "REJECTED"));
+    // Stubbed until integrated with backend API
+    setReviews([]);
+    setHistory([]);
   };
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function MentorReviews() {
   }, [currentUser.id]);
 
   const handleReviewAction = (taskId, action) => {
-    db.tasks.addFeedback(taskId, currentUser.id, feedbackNotes || "Reviewed.", action);
+    // Stubbed until integrated with backend API
     setFeedbackNotes("");
     refreshReviews();
   };
