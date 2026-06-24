@@ -1,37 +1,55 @@
+import { useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { useDashboardStore } from "../../store/dashboardStore";
+import api from "../../lib/api";
 
 export default function MenteeQuickStats() {
-  const { user } = useAuthStore();
-  const currentUser = user || {
-    id: "1",
-    name: "Emily Davies",
-    role: "MENTEE"
-  };
+  const { token } = useAuthStore();
+  const { menteeStats, setMenteeStats } = useDashboardStore();
 
-  const tasks = [];
-  const totalCount = 0;
-  const completedCount = 0;
-  const rejectedCount = 0;
-  const progressPercent = 0;
+  // ── Fetch mentee dashboard stats from backend ──────────────────────────
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get("/dashboard/mentee");
+        // response.data.data:
+        //   assignedTasks, completedTasks, pendingTasks, revisionRequests
+        setMenteeStats(response.data.data);
+      } catch (err) {
+        console.error("Failed to fetch mentee dashboard stats:", err);
+      }
+    };
+    if (token) fetchStats();
+  }, [token, setMenteeStats]);
+
+  const assignedTasks    = menteeStats?.assignedTasks    ?? 0;
+  const completedTasks   = menteeStats?.completedTasks   ?? 0;
+  const pendingTasks     = menteeStats?.pendingTasks      ?? 0;
+  const revisionRequests = menteeStats?.revisionRequests ?? 0;
+
+  const progressPercent =
+    assignedTasks > 0
+      ? Math.round((completedTasks / assignedTasks) * 100)
+      : 0;
 
   const stats = [
     {
       label: "Overall Progress",
       value: `${progressPercent}%`,
-      suffix: `Target Track`,
+      suffix: `${completedTasks} / ${assignedTasks} tasks done`,
       suffixColor: "#10b981",
     },
     {
-      label: "Tasks Completed",
-      value: completedCount.toString(),
-      suffix: `/ ${totalCount} assigned`,
+      label: "Pending Tasks",
+      value: pendingTasks.toString(),
+      suffix: "still to do",
       suffixColor: "#64748b",
     },
     {
       label: "Revision Requests",
-      value: rejectedCount.toString(),
-      suffix: `Needs changes`,
-      suffixColor: rejectedCount > 0 ? "#ef4444" : "#64748b",
+      value: revisionRequests.toString(),
+      suffix: "needs changes",
+      suffixColor: revisionRequests > 0 ? "#ef4444" : "#64748b",
     },
   ];
 
@@ -50,10 +68,7 @@ export default function MenteeQuickStats() {
             <span className="text-[26px] md:text-[32px] lg:text-3xl font-black text-slate-800 leading-none">
               {s.value}
             </span>
-            <span
-              className="text-xs font-bold"
-              style={{ color: s.suffixColor }}
-            >
+            <span className="text-xs font-bold" style={{ color: s.suffixColor }}>
               {s.suffix}
             </span>
           </div>
