@@ -1,3 +1,5 @@
+import NotificationBell from "../ui/NotificationBell";
+
 export default function MenteeHeader({ activeNav, onMessageMentor }) {
   return (
     <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-8 gap-3">
@@ -12,7 +14,9 @@ export default function MenteeHeader({ activeNav, onMessageMentor }) {
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-2 md:gap-2.5 lg:gap-3 shrink-0">
+      <div className="flex gap-2 md:gap-2.5 lg:gap-3 shrink-0 items-center">
+        <NotificationBell />
+
         {/* Message Mentor */}
         <button
           onClick={onMessageMentor}

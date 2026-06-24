@@ -1,3 +1,5 @@
+import NotificationBell from "../ui/NotificationBell";
+
 export default function AdminHeader({ onAddUser, userName, onLogout }) {
   return (
     <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-7 gap-3">
@@ -15,6 +17,8 @@ export default function AdminHeader({ onAddUser, userName, onLogout }) {
 
       {/* Action buttons */}
       <div className="flex items-center gap-2 shrink-0">
+        <NotificationBell />
+
         {/* Logout button */}
         {onLogout && (
           <button
