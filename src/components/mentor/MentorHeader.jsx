@@ -1,3 +1,5 @@
+import NotificationBell from "../ui/NotificationBell";
+
 export default function MentorHeader({ userName, onNewUser, onLogout }) {
   return (
     <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-7 pl-0 md:pl-4 lg:pl-8 gap-3">
@@ -15,6 +17,7 @@ export default function MentorHeader({ userName, onNewUser, onLogout }) {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        <NotificationBell />
         <button
           onClick={onNewUser}
           className="flex items-center gap-1.5 md:gap-2 text-white border-0 rounded-xl
