@@ -1,6 +1,6 @@
 import NotificationBell from "../ui/NotificationBell";
 
-export default function MenteeHeader({ activeNav, onMessageMentor }) {
+export default function MenteeHeader({ activeNav, onMessageMentor, userName, onLogout }) {
   return (
     <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-8 gap-3">
       {/* Title */}
@@ -9,7 +9,9 @@ export default function MenteeHeader({ activeNav, onMessageMentor }) {
           {activeNav === "Dashboard" ? "My Dashboard" : activeNav}
         </h1>
         <p className="text-slate-500 mt-1.5 text-[11px] md:text-xs lg:text-sm">
-          Track your progress, manage tasks, and connect with your mentors.
+          {userName
+            ? `Welcome, ${userName} — track your progress, manage tasks, and connect with your mentors.`
+            : "Track your progress, manage tasks, and connect with your mentors."}
         </p>
       </div>
 
@@ -72,6 +74,16 @@ export default function MenteeHeader({ activeNav, onMessageMentor }) {
           <span className="hidden sm:inline">Request Meeting</span>
           <span className="sm:hidden">Meeting</span>
         </button>
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="px-3 py-2 md:px-4 md:py-2.5 rounded-xl border border-slate-200 hover:border-red-300 text-slate-500 hover:text-red-500 text-[11px] md:text-xs font-bold cursor-pointer transition-colors shrink-0"
+            style={{ fontFamily: "inherit" }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </div>
   );

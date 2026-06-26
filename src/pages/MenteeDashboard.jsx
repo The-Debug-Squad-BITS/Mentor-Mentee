@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MenteeSidebar, {
   MenteeSidebarToggle,
 } from "../components/mentee/MenteeSidebar";
@@ -16,11 +17,20 @@ export default function MenteeDashboard() {
   const [menteeTasks, setMenteeTasks] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { user } = useAuthStore();
-  const currentUser = user || {
-    id: "1",
-    name: "Emily Davies",
-    role: "MENTEE"
+  const navigate = useNavigate();
+  const { user, token, logout } = useAuthStore();
+
+  // ── Auth guard — redirect if not logged in ──────────────────────────
+  useEffect(() => {
+    if (!token || !user) {
+      navigate("/login");
+    }
+  }, [token, user, navigate]);
+
+  // ── Logout handler ──────────────────────────────────────────────────
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   const refreshMenteeData = () => {
@@ -29,7 +39,7 @@ export default function MenteeDashboard() {
 
   useEffect(() => {
     refreshMenteeData();
-  }, [currentUser.id]);
+  }, [user?._id]);
 
   const handleActiveNavChange = (name) => {
     setActiveNav(name);
@@ -89,6 +99,8 @@ export default function MenteeDashboard() {
         <MenteeHeader
           activeNav={activeNav}
           onMessageMentor={() => handleActiveNavChange("Feedback")}
+          userName={user?.name}
+          onLogout={handleLogout}
         />
         
         <div className="mt-6 md:mt-4">
