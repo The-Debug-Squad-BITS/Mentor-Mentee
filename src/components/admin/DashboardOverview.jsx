@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import StatCard from "../ui/StatCard";
 import ProgressBar from "../ui/ProgressBar";
+import api from "../../lib/api";
 
 const statusStyle = {
   Active: "bg-green-100 text-green-700",
@@ -31,16 +32,36 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
     setNewProjectName("");
   };
 
-  const handleQuickInvite = (e) => {
+  const [inviteError, setInviteError] = useState("");
+
+  const handleQuickInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-    // Stubbed until integrated with backend API
-    setInviteEmail("");
-    setInviteRole("MENTEE");
-    setInviteSuccess(true);
-    setTimeout(() => {
-      setInviteSuccess(false);
-    }, 3000);
+    setInviteError("");
+    try {
+      // Use email username as a default name for the quick invite flow
+      const defaultName = inviteEmail.split("@")[0].replace(/[._-]/g, " ");
+      await api.post("/users/invite", {
+        name: defaultName,
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+      setInviteEmail("");
+      setInviteRole("MENTEE");
+      setInviteSuccess(true);
+      setTimeout(() => {
+        setInviteSuccess(false);
+      }, 3000);
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setInviteError("This email is already registered.");
+      } else if (err.response?.status === 400) {
+        setInviteError(err.response.data?.message || "Validation error.");
+      } else {
+        setInviteError("Failed to send invite. Please try again.");
+      }
+      setTimeout(() => setInviteError(""), 4000);
+    }
   };
 
   return (
@@ -172,6 +193,12 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
             {inviteSuccess && (
               <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[11px] font-bold p-2.5 rounded-xl">
                 ✓ Invite dispatched successfully!
+              </div>
+            )}
+
+            {inviteError && (
+              <div className="bg-red-50 border border-red-100 text-red-700 text-[11px] font-bold p-2.5 rounded-xl">
+                ⚠️ {inviteError}
               </div>
             )}
 
