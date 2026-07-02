@@ -68,7 +68,7 @@ export default function SignupPage({ onNavigate, onBack }) {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
       {/* Reuse the exact same left panel as login */}
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
 

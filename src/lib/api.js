@@ -13,11 +13,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// If 401 received — auto logout and redirect to login
+// If 401 received — auto logout and redirect to login (only if not already on the login page)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
       localStorage.removeItem('eduflow_auth');
       window.location.href = '/login';
     }

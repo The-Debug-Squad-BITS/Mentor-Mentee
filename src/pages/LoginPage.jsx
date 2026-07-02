@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { demoAccounts } from "../data/demoAccounts";
 import LoginLeftPanel from "../components/login/LoginLeftPanel";
 import LoginRightPanel from "../components/login/LoginRightPanel";
 import LoginSuccessScreen from "../components/login/LoginSuccessScreen";
+import ResetPasswordModal from "../components/login/ResetPasswordModal";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
@@ -15,6 +15,7 @@ export default function LoginPage({ onNavigate, onBack }) {
   const [loading, setLoading]     = useState(false);
   const [demoSuccess, setDemoSuccess]   = useState(null); // "admin" | "mentor" | "student" | null
   const [loggedInUser, setLoggedInUser] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
@@ -83,13 +84,6 @@ export default function LoginPage({ onNavigate, onBack }) {
     doLogin(email, password);
   };
 
-  // ── Demo button: fill fields + call real API with demo credentials ─────
-  const loginOfflineDemo = (demoAccount) => {
-    setEmail(demoAccount.email);
-    setPassword(demoAccount.password);
-    doLogin(demoAccount.email, demoAccount.password);
-  };
-
   const handleGoogleLogin = () =>
     setError("Google login is not available. Please use your email and password.");
 
@@ -114,7 +108,7 @@ export default function LoginPage({ onNavigate, onBack }) {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
       <LoginRightPanel
         email={email}
@@ -123,13 +117,18 @@ export default function LoginPage({ onNavigate, onBack }) {
         setPassword={setPassword}
         loading={loading}
         error={error}
-        demoSuccess={demoSuccess}
         onSubmit={handleSubmit}
-        onDemoLogin={loginOfflineDemo}
         onGoogleLogin={handleGoogleLogin}
         onNavigate={onNavigate}
         onBack={onBack}
+        onForgotPassword={() => setShowResetModal(true)}
       />
+      {showResetModal && (
+        <ResetPasswordModal
+          initialEmail={email}
+          onClose={() => setShowResetModal(false)}
+        />
+      )}
     </div>
   );
 }

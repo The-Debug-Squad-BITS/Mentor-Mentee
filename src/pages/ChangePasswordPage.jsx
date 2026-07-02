@@ -14,6 +14,10 @@ export default function ChangePasswordPage() {
   const [loading, setLoading]                 = useState(false);
   const [success, setSuccess]                 = useState(false);
 
+  const [showCurrent, setShowCurrent]         = useState(false);
+  const [showNew, setShowNew]                 = useState(false);
+  const [showConfirm, setShowConfirm]         = useState(false);
+
   // Guard: must be logged in to access this page
   useEffect(() => {
     if (!token || !user) {
@@ -128,15 +132,24 @@ export default function ChangePasswordPage() {
                 <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
                   Current Password
                 </label>
-                <input
-                  id="current-password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Your current password"
-                  required
-                  className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white"
-                />
+                <div className="relative">
+                  <input
+                    id="current-password"
+                    type={showCurrent ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Your current password"
+                    required
+                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent(!showCurrent)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+                  >
+                    {showCurrent ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {/* New Password */}
@@ -144,15 +157,24 @@ export default function ChangePasswordPage() {
                 <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
                   New Password
                 </label>
-                <input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min. 8 characters"
-                  required
-                  className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white"
-                />
+                <div className="relative">
+                  <input
+                    id="new-password"
+                    type={showNew ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min. 8 characters"
+                    required
+                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew(!showNew)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+                  >
+                    {showNew ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {/* Confirm New Password */}
@@ -160,15 +182,24 @@ export default function ChangePasswordPage() {
                 <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
                   Confirm New Password
                 </label>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat your new password"
-                  required
-                  className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white"
-                />
+                <div className="relative">
+                  <input
+                    id="confirm-password"
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat your new password"
+                    required
+                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+                  >
+                    {showConfirm ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {/* Submit */}

@@ -43,7 +43,7 @@ export default function SignupRightPanel({
   };
 
   return (
-    <div className="bg-[#F7F4EF] flex flex-col justify-center items-center lg:items-start px-5 sm:px-10 lg:px-14 py-14">
+    <div className="bg-[#F7F4EF] flex flex-col items-center lg:items-start px-5 sm:px-10 lg:px-14 py-10 lg:py-12 h-full overflow-y-auto w-full">
       {/* Mobile logo */}
       <div className="flex lg:hidden items-center gap-2.5 mb-10 w-full max-w-90">
         <div className="w-8 h-8 bg-[#E8B86D] rounded-[9px] flex items-center justify-center">
@@ -60,7 +60,7 @@ export default function SignupRightPanel({
         </button>
       </div>
 
-      <div className="max-w-90 w-full">
+      <div className="max-w-90 w-full my-auto">
         {/* Header */}
         <div className="mb-9">
           <p className="text-[11px] font-medium tracking-[0.18em] text-[#B09070] uppercase mb-2.5">

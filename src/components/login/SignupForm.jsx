@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const inputClass =
   "w-full px-4 py-3 bg-white border border-[#E2DDD8] rounded-xl text-[14px] text-[#1A1714] outline-none transition-colors duration-150 font-['DM_Sans',sans-serif] focus:border-[#1A1714]";
 
@@ -15,6 +17,8 @@ export default function SignupForm({
   error,
   onSubmit,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <form onSubmit={onSubmit} className="mt-1">
       {/* Global error banner */}
@@ -83,14 +87,23 @@ export default function SignupForm({
         <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
           Password <span className="text-[#C5BEB8] font-normal">(min. 8 characters)</span>
         </label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-          className={`${inputClass} ${fieldErrors?.password ? "border-[#FECACA]" : ""}`}
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            className={`${inputClass} pr-12 ${fieldErrors?.password ? "border-[#FECACA]" : ""}`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
         {fieldErrors?.password && (
           <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.password}</p>
         )}

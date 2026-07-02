@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { toast } from "react-toastify";
+
 const inputClass =
-  "w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm text-ink outline-none font-sans transition-colors duration-150 focus:border-ink";
+  "w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm text-[#1A1714] outline-none font-sans transition-colors duration-150 focus:border-[#1A1714]";
 
 export default function LoginForm({
   email,
@@ -9,7 +12,10 @@ export default function LoginForm({
   loading,
   error,
   onSubmit,
+  onForgotPassword,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <form onSubmit={onSubmit} className="mt-1">
       {/* Error */}
@@ -42,25 +48,42 @@ export default function LoginForm({
           </label>
           <a
             href="#"
-            className="text-xs text-stone-400 border-b border-stone-300 hover:text-ink hover:border-ink transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              if (!email || !email.trim()) {
+                toast.warning("Please enter your email address first to reset your password.");
+                return;
+              }
+              if (onForgotPassword) onForgotPassword();
+            }}
+            className="text-xs text-stone-400 border-b border-stone-300 hover:text-[#1A1714] hover:border-[#1A1714] transition-colors"
           >
             Forgot password?
           </a>
         </div>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-          className={inputClass}
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            className={`${inputClass} pr-12`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full mt-4 py-3.5 bg-amber text-ink text-sm font-medium rounded-xl border-0 cursor-pointer tracking-wide transition-colors duration-150 hover:bg-amber-hover disabled:opacity-70 disabled:cursor-not-allowed"
+        className="w-full mt-5 py-3.5 bg-[#1A1714] text-[#F7F4EF] text-sm font-medium rounded-xl border-none cursor-pointer tracking-wide transition-colors duration-150 hover:bg-[#2E2A26] disabled:opacity-70 disabled:cursor-not-allowed"
         style={{ fontFamily: "inherit" }}
       >
         {loading ? "Signing in…" : "Sign in"}
