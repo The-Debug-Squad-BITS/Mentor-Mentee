@@ -77,15 +77,15 @@ export default function NotificationBell() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
-        className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors cursor-pointer"
+        className="relative flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer shadow-sm"
         style={{ fontFamily: "inherit" }}
       >
         <svg
-          width="16"
-          height="16"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#64748b"
+          stroke="#475569"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -96,7 +96,7 @@ export default function NotificationBell() {
 
         {/* Red badge for unread count */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 leading-none">
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1.5 leading-none shadow-sm ring-2 ring-white">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -105,59 +105,59 @@ export default function NotificationBell() {
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-11 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[999] overflow-hidden animate-fade-in"
-          style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.12)" }}
+          className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-slate-200 rounded-xl shadow-xl z-[999] overflow-hidden animate-fade-in"
         >
           {/* Dropdown header */}
-          <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-            <span className="text-xs font-black text-slate-800">Notifications</span>
+          <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <span className="text-sm font-bold text-slate-800">Notifications</span>
             {unreadCount > 0 && (
-              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
                 {unreadCount} unread
               </span>
             )}
           </div>
 
           {/* List */}
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-[350px] overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-xs text-slate-400 font-semibold">
-                🔔 No notifications yet
+              <div className="px-5 py-10 text-center text-sm text-slate-500 font-medium flex flex-col items-center gap-2">
+                <span className="text-2xl">📭</span>
+                No notifications yet
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n._id}
                   onClick={() => handleNotificationClick(n)}
-                  className={`flex items-start gap-3 px-4 py-3 border-b border-slate-50 cursor-pointer transition-colors hover:bg-slate-50 ${
-                    !n.isRead ? "bg-indigo-50/40" : ""
+                  className={`flex items-start gap-3.5 px-5 py-4 border-b border-slate-100 cursor-pointer transition-colors hover:bg-slate-50 ${
+                    !n.isRead ? "bg-blue-50/30" : ""
                   }`}
                 >
-                  <span className="text-base shrink-0 mt-0.5">
+                  <span className="text-xl shrink-0 mt-0.5 opacity-80">
                     {typeIcons[n.type] || "🔔"}
                   </span>
 
-                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
                     <span
-                      className={`text-xs leading-snug ${
+                      className={`text-[13px] leading-snug ${
                         !n.isRead
-                          ? "font-black text-slate-800"
+                          ? "font-bold text-slate-900"
                           : "font-semibold text-slate-600"
                       }`}
                     >
                       {n.title}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-semibold leading-relaxed truncate">
+                    <span className="text-[12px] text-slate-500 font-medium leading-relaxed truncate">
                       {n.message}
                     </span>
-                    <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wide">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
                       {timeAgo(n.createdAt)}
                     </span>
                   </div>
 
                   {/* Unread dot */}
                   {!n.isRead && (
-                    <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-1" />
+                    <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5 shadow-sm" />
                   )}
                 </div>
               ))
