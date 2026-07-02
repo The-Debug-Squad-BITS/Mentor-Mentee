@@ -3,6 +3,7 @@ import Avatar from "../ui/Avatar";
 import CreateUserModal from "./CreateUserModal";
 import api from "../../lib/api";
 import { useUserStore } from "../../store/userStore";
+import { toast } from "react-toastify";
 
 export default function ManageUsers({ onUserDeleted }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,8 +65,9 @@ export default function ManageUsers({ onUserDeleted }) {
       if (selectedUser && selectedUser._id === userId) {
         setSelectedUser(null);
       }
+      toast.success("User deactivated successfully.");
     } catch (err) {
-      alert("Failed to deactivate user. Please try again.");
+      toast.error("Failed to deactivate user. Please try again.");
       console.error("Error deactivating user:", err);
     }
   };

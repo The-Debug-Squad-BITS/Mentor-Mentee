@@ -3,6 +3,7 @@ import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
 import api from "../../lib/api";
 import { useProjectStore } from "../../store/projectStore";
+import { toast } from "react-toastify";
 
 export default function ProjectsList({ onViewProject, onRefresh }) {
   const [statusFilter, setStatusFilter] = useState("All");
@@ -84,8 +85,9 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       await api.delete(`/projects/${projectId}`);
       loadProjects();
       if (onRefresh) onRefresh();
+      toast.success("Project deleted successfully.");
     } catch (err) {
-      alert("Failed to delete project.");
+      toast.error("Failed to delete project.");
       console.error("Delete project error:", err);
     }
   };

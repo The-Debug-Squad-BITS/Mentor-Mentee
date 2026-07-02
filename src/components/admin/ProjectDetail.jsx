@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Avatar from "../ui/Avatar";
 import StatusBadge from "../ui/StatusBadge";
 import api from "../../lib/api";
+import { toast } from "react-toastify";
 
 export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [project, setProject] = useState(null);
@@ -97,8 +98,9 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       await api.patch(`/projects/${projectId}/assign-mentor`, { mentorId: selectedMentor });
       refreshProjectData();
       if (onRefresh) onRefresh();
+      toast.success("Mentor assigned successfully.");
     } catch (err) {
-      alert("Failed to assign mentor.");
+      toast.error("Failed to assign mentor.");
       console.error("Assign mentor error:", err);
     } finally {
       setAssignLoading(false);
@@ -113,8 +115,9 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       await api.patch(`/projects/${projectId}/assign-mentees`, { mentees: selectedMentees });
       refreshProjectData();
       if (onRefresh) onRefresh();
+      toast.success("Mentees assigned successfully.");
     } catch (err) {
-      alert("Failed to assign mentees.");
+      toast.error("Failed to assign mentees.");
       console.error("Assign mentees error:", err);
     } finally {
       setAssignLoading(false);
@@ -129,9 +132,10 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
     try {
       await api.delete(`/projects/${projectId}`);
       if (onRefresh) onRefresh();
+      toast.success("Project deleted successfully.");
       onBack(); // Navigate back to projects list
     } catch (err) {
-      alert("Failed to delete project.");
+      toast.error("Failed to delete project.");
       console.error("Delete project error:", err);
     }
   };

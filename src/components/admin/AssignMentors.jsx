@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 export default function AssignMentors({ projects, onAssignmentConfirmed }) {
   const [selectedProject, setSelectedProject] = useState("");
@@ -8,14 +9,20 @@ export default function AssignMentors({ projects, onAssignmentConfirmed }) {
   const [mentors, setMentors] = useState([]);
   const [mentees, setMentees] = useState([]);
 
+  // Mock users
+  useEffect(() => {
+    setMentors([
+      { id: "1", name: "Dr. Prasad" },
+      { id: "2", name: "Prof. Sharma" }
+    ]);
+    setMentees([
+      { id: "10", name: "Amit" },
+      { id: "11", name: "Rahul" }
+    ]);
+  }, []);
+
   const [currentMentor, setCurrentMentor] = useState(null);
   const [currentMentees, setCurrentMentees] = useState([]);
-
-  useEffect(() => {
-    // Stubbed until integrated with backend API
-    setMentors([]);
-    setMentees([]);
-  }, [projects]);
 
   useEffect(() => {
     if (!selectedProject) {
@@ -37,7 +44,7 @@ export default function AssignMentors({ projects, onAssignmentConfirmed }) {
     if (!selectedProject) return;
     
     // Stubbed until integrated with backend API
-    alert("Assignments updated successfully!");
+    toast.success("Assignments updated successfully!");
     if (onAssignmentConfirmed) onAssignmentConfirmed();
     setSelectedMentor("");
     setSelectedMentee("");

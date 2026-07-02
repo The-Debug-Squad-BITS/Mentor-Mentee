@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { toast } from "react-toastify";
 
 export default function ReviewActions() {
   const [pendingTasks, setPendingTasks] = useState([]);
@@ -23,12 +24,12 @@ export default function ReviewActions() {
   const handleReview = (actionType) => {
     if (!selectedTask) return;
     if (!comment.trim()) {
-      alert("Please provide a comment for the feedback.");
+      toast.warning("Please provide a comment for the feedback.");
       return;
     }
 
     // Stubbed until integrated with backend API
-    alert(`Task status updated: ${actionType === "approve" ? "Approved" : "Revision Requested"}`);
+    toast.success(`Task status updated: ${actionType === "approve" ? "Approved" : "Revision Requested"}`);
     refreshList();
   };
 

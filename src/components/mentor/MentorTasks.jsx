@@ -3,6 +3,7 @@ import StatusBadge from "../ui/StatusBadge";
 import { useAuthStore } from "../../store/authStore";
 import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
+import { toast } from "react-toastify";
 
 export default function MentorTasks() {
   const [projects, setProjects] = useState([]);
@@ -58,7 +59,7 @@ export default function MentorTasks() {
   // ── Load mentees for dropdown ───────────────────────────────────────
   const loadMentees = useCallback(async () => {
     try {
-      const response = await api.get("/users", { params: { role: "MENTEE", limit: 100 } });
+      const response = await api.get("/users/mentees", { params: { limit: 100 } });
       setMentees(response.data.data.users || []);
     } catch (err) {
       console.error("Error fetching mentees:", err);
@@ -96,6 +97,7 @@ export default function MentorTasks() {
       setTaskDeadline("");
       setShowCreateModal(false);
       loadTasks(); // Refresh list
+      toast.success("Task assigned successfully!");
     } catch (err) {
       if (err.response?.status === 400) {
         setCreateError(err.response.data.message || "Validation error. Check all fields.");
@@ -120,8 +122,9 @@ export default function MentorTasks() {
       if (selectedTask && selectedTask._id === taskId) {
         setSelectedTask(null);
       }
+      toast.success("Task deleted successfully.");
     } catch (err) {
-      alert("Failed to delete task.");
+      toast.error("Failed to delete task.");
       console.error("Delete task error:", err);
     }
   };

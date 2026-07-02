@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
 import TaskSubmitModal from "./TaskSubmitModal";
+import { toast } from "react-toastify";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -15,9 +16,6 @@ export default function MenteeTasks() {
 
   // Per-task "Start Task" loading
   const [startingTaskId, setStartingTaskId] = useState(null);
-
-  // Toast
-  const [toast, setToast] = useState(null);
 
   const { token } = useAuthStore();
 
@@ -41,23 +39,16 @@ export default function MenteeTasks() {
     if (token) loadMyTasks();
   }, [token, loadMyTasks]);
 
-  // ── Toast helper ───────────────────────────────────────────────────────
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
-
   // ── "Start Task" button — changes status TODO → IN_PROGRESS ───────────
   const handleStartTask = async (taskId) => {
     setStartingTaskId(taskId);
     try {
       await api.patch(`/tasks/${taskId}/status`, { status: "IN_PROGRESS" });
-      showToast("🚀 Task started!");
+      toast.success("Task started!");
       loadMyTasks();
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Failed to start task.",
-        "error"
+      toast.error(
+        err.response?.data?.message || "Failed to start task."
       );
     } finally {
       setStartingTaskId(null);
@@ -67,7 +58,7 @@ export default function MenteeTasks() {
   // ── After successful submission from modal ─────────────────────────────
   const handleSubmitSuccess = () => {
     setSubmitTask(null);
-    showToast("✅ Work submitted! Your mentor will review it.");
+    toast.success("Work submitted! Your mentor will review it.");
     loadMyTasks();
   };
 
@@ -109,16 +100,6 @@ export default function MenteeTasks() {
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed top-5 right-5 z-[9999] px-5 py-3 rounded-2xl text-xs font-bold shadow-xl ${
-            toast.type === "error" ? "bg-red-600 text-white" : "bg-emerald-600 text-white"
-          }`}
-        >
-          {toast.msg}
-        </div>
-      )}
 
       {/* Header */}
       <div
