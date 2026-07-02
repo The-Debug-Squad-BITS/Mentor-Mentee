@@ -4,6 +4,7 @@ import Footer from "../components/layout/Footer";
 import HeroSection from "../components/sections/HeroSection";
 import DashboardPreview from "../components/sections/DashboardPreview";
 import FeaturesSection from "../components/sections/FeaturesSection";
+import ProductComparisonSection from "../components/sections/ProductComparisonSection";
 
 export default function LandingPage({ initialPage = null }) {
   return (
@@ -19,6 +20,7 @@ export default function LandingPage({ initialPage = null }) {
         </main>
 
         <FeaturesSection />
+        <ProductComparisonSection />
         <Footer />
       </div>
     </div>

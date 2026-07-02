@@ -32,7 +32,7 @@ export default function Footer() {
           <StarIcon size={10} />
         </div>
         <span className="text-[13px] text-[#9C948C]">
-          © 2025 Mentora. All rights reserved.
+          © 2026 Mentora. All rights reserved.
         </span>
       </div>
 

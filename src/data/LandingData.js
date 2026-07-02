@@ -1,32 +1,32 @@
 export const metrics = [
-  { label: "Average attendance", value: "88%", sub: "+2.4% this week" },
-  { label: "Interventions logged", value: "156", sub: "12 pending review" },
-  { label: "Satisfaction score", value: "94%", sub: "Based on 340 responses" },
+  { label: "Deliverables approved", value: "94.6%", sub: "+3.2% this week" },
+  { label: "Milestones completed", value: "1,480", sub: "84 pending review" },
+  { label: "User satisfaction", value: "98.2%", sub: "Across 40+ organizations" },
 ];
 
 export const features = [
   {
-    icon: "◎",
-    title: "Structured sessions",
-    desc: "Plan and track every mentoring session with built-in agendas, notes, and follow-ups.",
+    icon: "❖",
+    title: "Structured Milestones",
+    desc: "Deconstruct complex projects into trackable milestones. Assign due dates, prioritize tasks, and attach guidelines seamlessly.",
   },
   {
-    icon: "◈",
-    title: "Progress tracking",
-    desc: "Visualise growth over time with dashboards that surface what matters most.",
+    icon: "✦",
+    title: "Seamless Submissions",
+    desc: "Mentees submit image assets, PDF files, or code links. Mentors review, request revisions, and offer feedback in real-time.",
   },
   {
-    icon: "◇",
-    title: "Smart matching",
-    desc: "Pair mentors and mentees based on skills, goals, and availability — automatically.",
+    icon: "⚙",
+    title: "Admin Controls",
+    desc: "Manage users, projects, and permissions. Administrators orchestrate organizational invites and mentor assignments.",
   },
 ];
 
-export const navLinks = ["Home", "Services", "Sessions", "Contact"];
+export const navLinks = ["Platform", "Features", "Pricing", "Support"];
 
-export const footerLinks = ["Privacy", "Terms", "Contact"];
+export const footerLinks = ["Privacy Policy", "Terms of Service", "Status"];
 
 export const stats = [
-  { label: "Active mentors", value: "124" },
-  { label: "Projects launched", value: "84" },
+  { label: "Active Connections", value: "1,250+" },
+  { label: "Deliverables Submitted", value: "8,900+" },
 ];

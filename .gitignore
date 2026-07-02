@@ -24,4 +24,5 @@ dist-ssr
 *.sw?
 
 FRONTEND-INTEGRATION-GUIDE.md
+TESTING_GUIDE.md
 .env
