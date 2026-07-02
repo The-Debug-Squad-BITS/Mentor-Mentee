@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
+import Button from "../ui/Button";
 import api from "../../lib/api";
 import { useProjectStore } from "../../store/projectStore";
 import { toast } from "react-toastify";
@@ -111,7 +112,7 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Projects summary stats */}
-      <div className="flex gap-5 flex-wrap">
+      <div className="flex gap-4 flex-wrap">
         <StatCard
           icon="📁"
           label="Total Projects"
@@ -143,21 +144,19 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       </div>
 
       {/* Search, Filter, Action Bar */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
+      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div className="flex gap-3 flex-wrap items-center">
           <input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 bg-slate-50 font-sans"
-            style={{ minWidth: 200 }}
+            className="px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
+            style={{ minWidth: 240 }}
           />
-
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 text-xs bg-slate-50 font-bold text-slate-600 outline-none"
-            style={{ fontFamily: "inherit" }}
+            className="px-4 py-2 rounded-lg border border-slate-300 text-sm bg-slate-50 focus:bg-white font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
           >
             <option value="All">All Statuses</option>
             <option value="PLANNED">Planned</option>
@@ -167,81 +166,80 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
           </select>
         </div>
 
-        <button
+        <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-5 py-3 rounded-xl border-none text-xs cursor-pointer transition-colors shadow-lg shadow-blue-500/20"
-          style={{ fontFamily: "inherit" }}
+          className="px-4 py-2 text-sm font-medium"
         >
           + Create Project
-        </button>
+        </Button>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
           ⚠️ {error}
         </div>
       )}
 
       {/* Project Grid Table */}
-      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
-        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/20">
-          <h2 className="m-0 text-sm md:text-base font-extrabold text-slate-800">All Organization Projects ({filtered.length})</h2>
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+          <h2 className="m-0 text-base font-bold text-slate-900">All Organization Projects ({filtered.length})</h2>
         </div>
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-xs font-semibold">Loading projects...</div>
+          <div className="p-12 text-center text-slate-500 text-sm font-medium">Loading projects...</div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-xs font-semibold">No projects match the filters.</div>
+          <div className="p-12 text-center text-slate-500 text-sm font-medium">No projects match the filters.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-150">
+            <table className="w-full border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-slate-50">
                   {["Project Name", "Assigned Mentor", "Mentees", "Status", "Dates", "Actions"].map(h => (
-                    <th key={h} className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 tracking-wide border-b border-slate-100">{h}</th>
+                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {filtered.map(p => (
-                  <tr key={p._id} className="border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
+                  <tr key={p._id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="block font-black text-slate-800 text-xs md:text-sm lg:text-base">{p.title}</span>
+                      <span className="block font-semibold text-slate-900 text-sm">{p.title}</span>
                       {p.description && (
-                        <span className="block text-[10px] text-slate-400 mt-0.5 truncate max-w-[200px]">{p.description}</span>
+                        <span className="block text-xs text-slate-500 mt-1 truncate max-w-[250px]">{p.description}</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500 font-semibold">
-                      {p.mentorId?.name || "Unassigned"}
+                    <td className="px-6 py-4 text-sm text-slate-700">
+                      {p.mentorId?.name || <span className="italic text-slate-400">Unassigned</span>}
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500 font-semibold">
+                    <td className="px-6 py-4 text-sm text-slate-700">
                       {p.mentees && p.mentees.length > 0 ? (
                         <span>{p.mentees.length} assigned</span>
                       ) : (
-                        <span className="text-slate-400 italic font-medium">Unassigned</span>
+                        <span className="text-slate-400 italic">Unassigned</span>
                       )}
                     </td>
                     <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                    <td className="px-6 py-4 text-[10px] text-slate-400 font-semibold">
+                    <td className="px-6 py-4 text-xs text-slate-600">
                       {p.startDate ? new Date(p.startDate).toLocaleDateString() : "—"}
                       {" → "}
                       {p.endDate ? new Date(p.endDate).toLocaleDateString() : "—"}
                     </td>
                     <td className="px-6 py-4 flex gap-2">
-                      <button
+                      <Button
+                        variant="secondary"
                         onClick={() => onViewProject(p._id)}
-                        className="bg-transparent border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 cursor-pointer transition-colors"
-                        style={{ fontFamily: "inherit" }}
+                        className="text-xs px-3 py-1.5"
                       >
                         View
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="danger"
                         onClick={() => handleDelete(p._id)}
-                        className="bg-transparent border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 cursor-pointer transition-colors"
-                        style={{ fontFamily: "inherit" }}
+                        className="text-xs px-3 py-1.5"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -253,66 +251,68 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
 
       {/* Creation Modal Overlay */}
       {showCreateModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-250 p-4" style={{ background: "rgba(15,23,42,0.5)" }} onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
-          <div className="bg-white rounded-3xl p-8 w-full max-w-sm flex flex-col gap-5" style={{ boxShadow: "0 24px 80px rgba(59,130,246,0.15)" }}>
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="bg-white rounded-xl p-8 w-full max-w-md flex flex-col gap-6 shadow-xl" onClick={e => e.stopPropagation()}>
             <div>
-              <h3 className="m-0 text-lg font-black text-slate-800">Create New Project</h3>
-              <p className="m-0 mt-1 text-slate-400 text-xs font-semibold">Launch a new organizational tracking workspace.</p>
+              <h3 className="m-0 text-xl font-bold text-slate-900">Create New Project</h3>
+              <p className="m-0 mt-1 text-slate-500 text-sm">Launch a new organizational tracking workspace.</p>
             </div>
 
             {createError && (
-              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 font-semibold">
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
                 ⚠️ {createError}
               </div>
             )}
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Project Title</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Project Title</label>
                 <input
                   value={newProjectTitle}
                   onChange={(e) => setNewProjectTitle(e.target.value)}
                   placeholder="e.g. AI Chatbot Project"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 font-sans"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   disabled={createLoading}
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Description</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
                 <textarea
                   value={newProjectDesc}
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   placeholder="Describe project details..."
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 resize-none font-sans"
-                  style={{ minHeight: 65 }}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                  style={{ minHeight: 80 }}
                   disabled={createLoading}
                 />
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Start Date</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">Start Date</label>
                   <input
                     type="date"
                     value={newProjectStartDate}
                     onChange={(e) => setNewProjectStartDate(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 font-sans"
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                     disabled={createLoading}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">End Date</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">End Date</label>
                   <input
                     type="date"
                     value={newProjectEndDate}
                     onChange={(e) => setNewProjectEndDate(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 font-sans"
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                     disabled={createLoading}
                   />
                 </div>
               </div>
             </div>
-            <div className="flex gap-3 mt-2">
-              <button
+            
+            <div className="flex gap-3 mt-2 justify-end">
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setShowCreateModal(false);
                   setNewProjectTitle("");
@@ -321,20 +321,16 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                   setNewProjectEndDate("");
                   setCreateError(null);
                 }}
-                className="flex-1 py-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-500 cursor-pointer hover:bg-slate-50 transition-colors"
-                style={{ fontFamily: "inherit" }}
                 disabled={createLoading}
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleCreate}
                 disabled={createLoading}
-                className="flex-1 py-3 rounded-xl border-none bg-blue-500 hover:bg-blue-600 text-xs font-bold text-white cursor-pointer transition-colors disabled:opacity-60"
-                style={{ fontFamily: "inherit", boxShadow: "0 4px 12px rgba(59,130,246,0.25)" }}
               >
-                {createLoading ? "Creating..." : "Launch"}
-              </button>
+                {createLoading ? "Creating..." : "Launch Project"}
+              </Button>
             </div>
           </div>
         </div>

@@ -1,14 +1,9 @@
 import { useState, useEffect } from "react";
 import StatCard from "../ui/StatCard";
 import ProgressBar from "../ui/ProgressBar";
+import StatusBadge from "../ui/StatusBadge";
+import Button from "../ui/Button";
 import api from "../../lib/api";
-
-const statusStyle = {
-  Active: "bg-green-100 text-green-700",
-  "On Hold": "bg-amber-100 text-amber-700",
-  Completed: "bg-blue-100 text-blue-700",
-  Archived: "bg-slate-100 text-slate-500",
-};
 
 export default function DashboardOverview({ projects, logs, onAddProject, apiStats }) {
   const [newProjectName, setNewProjectName] = useState("");
@@ -67,33 +62,33 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   return (
     <div className="flex flex-col gap-6">
       {/* Dynamic Stat cards */}
-      <div className="flex gap-5 flex-wrap">
+      <div className="flex gap-4 flex-wrap">
         <StatCard
           icon="🎓"
           label="Total Mentors"
           value={totalMentors.toString()}
-          badge="Mentorship Network"
+          badge="Network"
           badgeColor="green"
         />
         <StatCard
           icon="👥"
           label="Total Mentees"
           value={totalMentees.toString()}
-          badge="Active Learners"
+          badge="Learners"
           badgeColor="blue"
         />
         <StatCard
           icon="📋"
           label="Total Projects"
           value={totalProjects.toString()}
-          badge="Development Logs"
+          badge="Active"
           badgeColor="blue"
         />
         <StatCard
           icon="✉️"
-          label="Pending Invitations"
+          label="Pending Invites"
           value={pendingInvites.toString()}
-          badge="Requests Queue"
+          badge="Queue"
           badgeColor="green"
         />
       </div>
@@ -102,70 +97,57 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         {/* Left Column: Active Projects List */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <div
-            className="bg-white rounded-3xl border border-slate-100 overflow-hidden"
-            style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}
-          >
-            <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-slate-50/20">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-slate-50/50">
               <div>
-                <h2 className="m-0 text-sm md:text-base font-black text-slate-800">
+                <h2 className="m-0 text-base font-bold text-slate-900">
                   Active Projects Overview
                 </h2>
-                <p className="m-0 text-slate-400 text-[11px] font-semibold mt-0.5">Projects currently in development and assigned to members.</p>
+                <p className="m-0 text-slate-500 text-sm mt-1">Projects currently in development.</p>
               </div>
               <div className="flex gap-2">
                 <input
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                  placeholder="Quick create project..."
-                  className="px-3 py-2 rounded-xl border border-slate-200 outline-none text-xs flex-1 sm:flex-none font-sans"
+                  placeholder="Project name..."
+                  className="px-3 py-2 rounded-lg border border-slate-300 outline-none text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all flex-1 sm:w-48"
                 />
-                <button
-                  onClick={handleAdd}
-                  className="bg-blue-500 text-white border-0 px-4 py-2 rounded-xl cursor-pointer text-xs font-bold hover:bg-blue-600 transition-colors shadow-md shadow-blue-500/10"
-                  style={{ fontFamily: "inherit" }}
-                >
-                  Launch
-                </button>
+                <Button onClick={handleAdd}>Create</Button>
               </div>
             </div>
 
             {/* Scrollable table */}
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-120">
+              <table className="w-full border-collapse min-w-[600px] text-sm">
                 <thead>
                   <tr className="bg-slate-50">
                     {["Project Name", "Lead Mentor", "Status", "Progress"].map((h) => (
                       <th
                         key={h}
-                        className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 tracking-wide border-b border-slate-100"
+                        className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200"
                       >
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-200">
                   {projects.filter(p => p.status !== "Archived").map((p) => (
                     <tr
                        key={p.id}
-                       className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                       className="hover:bg-slate-50 transition-colors"
                     >
-                      <td className="px-6 py-4 font-black text-slate-800 text-xs md:text-sm">
+                      <td className="px-6 py-4 font-semibold text-slate-900">
                         {p.name}
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-500 font-semibold">
+                      <td className="px-6 py-4 text-slate-600">
                         {p.mentorName || "Unassigned"}
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border uppercase tracking-wider ${statusStyle[p.status] || statusStyle.Active}`}
-                        >
-                          {p.status}
-                        </span>
+                        <StatusBadge status={p.status} />
                       </td>
-                      <td className="px-6 py-4 w-40">
+                      <td className="px-6 py-4 w-48">
                         <ProgressBar value={p.progress} />
                       </td>
                     </tr>
@@ -179,25 +161,22 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
         {/* Right Column: Side Actions & Feeds */}
         <div className="flex flex-col gap-6">
           {/* Quick Invite Form */}
-          <div
-            className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col gap-4"
-            style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}
-          >
-            <div>
-              <h2 className="m-0 text-sm md:text-base font-black text-slate-800">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="m-0 text-base font-bold text-slate-900">
                 Quick Invite Member
               </h2>
-              <p className="m-0 text-slate-400 text-[11px] font-semibold mt-0.5">Issue brand new credentials to joining users.</p>
+              <p className="m-0 text-slate-500 text-sm mt-1">Issue credentials to joining users.</p>
             </div>
             
             {inviteSuccess && (
-              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[11px] font-bold p-2.5 rounded-xl">
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium p-3 rounded-lg mb-4">
                 ✓ Invite dispatched successfully!
               </div>
             )}
 
             {inviteError && (
-              <div className="bg-red-50 border border-red-100 text-red-700 text-[11px] font-bold p-2.5 rounded-xl">
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-3 rounded-lg mb-4">
                 ⚠️ {inviteError}
               </div>
             )}
@@ -209,53 +188,42 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
                 placeholder="User email address..."
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 font-sans"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
               <div className="flex gap-2">
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white flex-1 font-bold text-slate-600 outline-none"
-                  style={{ fontFamily: "inherit" }}
+                  className="px-3 py-2.5 rounded-lg border border-slate-300 text-sm bg-white flex-1 font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 >
-                  <option value="MENTEE">Mentee (Student)</option>
-                  <option value="MENTOR">Mentor (Advisor)</option>
-                  <option value="ADMIN">Administrator</option>
+                  <option value="MENTEE">Mentee</option>
+                  <option value="MENTOR">Mentor</option>
+                  <option value="ADMIN">Admin</option>
                 </select>
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded-xl border-none text-xs cursor-pointer transition-colors shadow-md shadow-blue-500/10"
-                  style={{ fontFamily: "inherit" }}
-                >
-                  Dispatch
-                </button>
+                <Button type="submit">Invite</Button>
               </div>
             </form>
           </div>
 
           {/* Pending Invitations Panel */}
-          <div
-            className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col gap-4"
-            style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}
-          >
-            <div>
-              <h2 className="m-0 text-sm md:text-base font-black text-slate-800">
-                Pending Invitations ({pendingInvites})
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="m-0 text-base font-bold text-slate-900">
+                Pending Invitations <span className="text-slate-400 font-normal">({pendingInvites})</span>
               </h2>
-              <p className="m-0 text-slate-400 text-[11px] font-semibold mt-0.5">Invitations waiting for member acceptance.</p>
             </div>
             
-            <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto">
               {invitationsList.filter(i => i.status === "PENDING").length === 0 ? (
-                <div className="text-center py-4 text-slate-400 text-xs font-semibold">No pending invitations.</div>
+                <div className="text-center py-6 text-slate-500 text-sm">No pending invitations.</div>
               ) : (
                 invitationsList.filter(i => i.status === "PENDING").map(inv => (
-                  <div key={inv.id} className="flex justify-between items-center bg-slate-50/50 border border-slate-100 rounded-2xl p-3">
+                  <div key={inv.id} className="flex justify-between items-center bg-slate-50 border border-slate-200 rounded-lg p-3">
                     <div className="min-w-0">
-                      <span className="block font-bold text-slate-700 text-xs truncate">{inv.email}</span>
-                      <span className="block text-[10px] text-slate-400 font-bold uppercase">{inv.role}</span>
+                      <span className="block font-semibold text-slate-900 text-sm truncate">{inv.email}</span>
+                      <span className="block text-xs text-slate-500 uppercase tracking-wide mt-0.5">{inv.role}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100 uppercase">
+                    <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded-full uppercase">
                       Pending
                     </span>
                   </div>
@@ -265,31 +233,27 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           </div>
 
           {/* Activity feed */}
-          <div
-            className="bg-white rounded-3xl border border-slate-100 p-6 flex flex-col gap-4"
-            style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}
-          >
-            <div>
-              <h2 className="m-0 text-sm md:text-base font-black text-slate-800">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="mb-4">
+              <h2 className="m-0 text-base font-bold text-slate-900">
                 Recent Operations Feed
               </h2>
-              <p className="m-0 text-slate-400 text-[11px] font-semibold mt-0.5">Timeline of system processes and assignments.</p>
             </div>
             
-            <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
+            <div className="flex flex-col max-h-[300px] overflow-y-auto">
               {logs.length === 0 ? (
-                <div className="text-center py-4 text-slate-400 text-xs font-semibold">No activities logged.</div>
+                <div className="text-center py-6 text-slate-500 text-sm">No activities logged.</div>
               ) : (
                 logs.slice(0, 5).map((act) => (
-                  <div key={act.id} className="flex gap-3 items-start border-b border-slate-50 pb-2.5 last:border-0 last:pb-0">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 bg-blue-50 text-blue-600">
+                  <div key={act.id} className="flex gap-4 items-start border-b border-slate-100 py-3 last:border-0 last:pb-0">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-slate-100 text-slate-600 border border-slate-200 text-sm">
                       ⚡
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="m-0 text-xs text-slate-600 font-semibold leading-relaxed">
+                      <p className="m-0 text-sm text-slate-800 leading-snug">
                         {act.text}
                       </p>
-                      <span className="text-[10px] text-slate-400 mt-0.5 block font-bold">
+                      <span className="text-xs text-slate-500 mt-1 block">
                         {act.time}
                       </span>
                     </div>

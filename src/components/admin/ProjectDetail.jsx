@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Avatar from "../ui/Avatar";
 import StatusBadge from "../ui/StatusBadge";
+import Button from "../ui/Button";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 
@@ -140,59 +141,57 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-400 font-semibold text-xs">Loading project details...</div>;
-  if (error || !project) return <div className="p-8 text-center text-slate-500 font-bold">{error || "Project not found."}</div>;
+  if (loading) return <div className="p-8 text-center text-slate-500 text-sm">Loading project details...</div>;
+  if (error || !project) return <div className="p-8 text-center text-slate-700 font-medium">{error || "Project not found."}</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
+      <div className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            variant="secondary"
             onClick={onBack}
-            className="w-10 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 rounded-xl flex items-center justify-center cursor-pointer transition-colors"
+            className="w-10 h-10 p-0 flex items-center justify-center text-lg rounded-lg"
           >
             ←
-          </button>
+          </Button>
           <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="m-0 text-xl md:text-2xl font-black text-slate-800 tracking-tight">{project.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">{project.title}</h1>
               <StatusBadge status={project.status} />
             </div>
-            <p className="m-0 mt-1 text-slate-400 text-xs font-semibold">Project Overseer & Deliverables Console</p>
+            <p className="m-0 mt-1 text-slate-500 text-sm">Project Overseer & Deliverables Console</p>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="secondary"
             onClick={() => setShowAssignForm(!showAssignForm)}
-            className="bg-transparent border border-slate-200 hover:border-slate-300 text-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors"
-            style={{ fontFamily: "inherit" }}
           >
             {showAssignForm ? "Cancel" : "Assign Members"}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="danger"
             onClick={handleDeleteProject}
-            className="bg-transparent border border-red-200 hover:border-red-400 text-red-500 px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors"
-            style={{ fontFamily: "inherit" }}
           >
             Delete Project
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Assignment overlay panel */}
       {showAssignForm && (
-        <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-6 flex flex-col gap-5">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-6 shadow-sm">
           {/* Assign Mentor */}
           <div className="flex gap-4 flex-wrap items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Assign Mentor</label>
+              <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Assign Mentor</label>
               <select
                 value={selectedMentor}
                 onChange={(e) => setSelectedMentor(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs bg-white outline-none focus:border-blue-400"
-                style={{ fontFamily: "inherit" }}
+                className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
                 <option value="">-- Choose Mentor --</option>
                 {mentors.map(m => (
@@ -200,31 +199,29 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                 ))}
               </select>
             </div>
-            <button
+            <Button
               onClick={handleAssignMentor}
               disabled={!selectedMentor || assignLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs border-0 cursor-pointer transition-colors disabled:opacity-50"
-              style={{ fontFamily: "inherit" }}
             >
               {assignLoading ? "Saving..." : "Save Mentor"}
-            </button>
+            </Button>
           </div>
 
-          <hr className="border-0 border-t border-blue-100 m-0" />
+          <hr className="border-0 border-t border-blue-200 m-0" />
 
           {/* Assign Mentees (multi-select with checkboxes) */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
               Assign Mentees ({selectedMentees.length} selected)
             </label>
-            <div className="border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto flex flex-col gap-2 bg-white">
+            <div className="border border-slate-300 rounded-lg p-3 max-h-48 overflow-y-auto flex flex-col gap-2 bg-white shadow-inner">
               {mentees.length === 0 ? (
-                <div className="text-xs text-slate-400 italic py-2">No mentees available.</div>
+                <div className="text-sm text-slate-500 italic py-2">No mentees available.</div>
               ) : (
                 mentees.map(st => {
                   const isChecked = selectedMentees.includes(st._id);
                   return (
-                    <label key={st._id} className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg transition-colors">
+                    <label key={st._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors">
                       <input
                         type="checkbox"
                         checked={isChecked}
@@ -235,23 +232,22 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                             setSelectedMentees([...selectedMentees, st._id]);
                           }
                         }}
-                        className="rounded text-blue-500 focus:ring-blue-400"
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
                       />
-                      <span className="text-xs font-bold text-slate-700">{st.name}</span>
-                      <span className="text-[10px] text-slate-400 ml-auto">{st.email}</span>
+                      <span className="text-sm font-medium text-slate-800">{st.name}</span>
+                      <span className="text-xs text-slate-500 ml-auto">{st.email}</span>
                     </label>
                   );
                 })
               )}
             </div>
-            <button
+            <Button
               onClick={handleAssignMentees}
               disabled={selectedMentees.length === 0 || assignLoading}
-              className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs border-0 cursor-pointer transition-colors disabled:opacity-50"
-              style={{ fontFamily: "inherit" }}
+              className="mt-4"
             >
               {assignLoading ? "Saving..." : "Save Mentees"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -261,86 +257,86 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
         {/* Left 2 Columns */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Description & Dates */}
-          <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
-            <h2 className="m-0 mb-4 text-sm md:text-base font-extrabold text-slate-800">Project Description</h2>
-            <p className="m-0 mb-6 text-slate-500 text-xs md:text-sm leading-relaxed font-medium">
+          <div className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 shadow-sm">
+            <h2 className="m-0 mb-4 text-base font-bold text-slate-900">Project Description</h2>
+            <p className="m-0 mb-6 text-slate-700 text-sm leading-relaxed">
               {project.description || "No description provided for this project."}
             </p>
-            <div className="flex gap-6 text-xs text-slate-500 font-semibold">
+            <div className="flex gap-8 text-sm text-slate-700">
               <div>
-                <span className="block text-[10px] text-slate-400 font-bold uppercase mb-0.5">Start Date</span>
+                <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">Start Date</span>
                 {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
               </div>
               <div>
-                <span className="block text-[10px] text-slate-400 font-bold uppercase mb-0.5">End Date</span>
+                <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">End Date</span>
                 {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Not set"}
               </div>
             </div>
           </div>
 
           {/* Members assigned */}
-          <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
-            <h2 className="m-0 mb-5 text-sm md:text-base font-extrabold text-slate-800">Project Team Members</h2>
+          <div className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 shadow-sm">
+            <h2 className="m-0 mb-5 text-base font-bold text-slate-900">Project Team Members</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Mentor */}
-              <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50">
-                <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Assigned Mentor</span>
+              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50">
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Assigned Mentor</span>
                 {project.mentorId ? (
                   <div className="flex items-center gap-3">
-                    <Avatar initials={getInitials(project.mentorId.name)} color={getColor(project.mentorId.name)} size={36} />
+                    <Avatar initials={getInitials(project.mentorId.name)} color={getColor(project.mentorId.name)} size={40} />
                     <div className="min-w-0">
-                      <span className="block font-bold text-slate-800 text-xs md:text-sm truncate">{project.mentorId.name}</span>
-                      <span className="block text-[11px] text-slate-400 font-semibold">{project.mentorId.email || ""}</span>
+                      <span className="block font-semibold text-slate-900 text-sm truncate">{project.mentorId.name}</span>
+                      <span className="block text-xs text-slate-500 mt-0.5">{project.mentorId.email || ""}</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-400 italic py-2 font-medium">No mentor assigned yet.</div>
+                  <div className="text-sm text-slate-500 italic py-2">No mentor assigned yet.</div>
                 )}
               </div>
 
               {/* Mentees */}
-              <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50">
-                <span className="block text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Assigned Mentees ({project.mentees?.length || 0})</span>
+              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50">
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Assigned Mentees ({project.mentees?.length || 0})</span>
                 {project.mentees && project.mentees.length > 0 ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     {project.mentees.map(m => (
-                      <div key={m._id} className="flex items-center gap-2">
-                        <Avatar initials={getInitials(m.name)} color={getColor(m.name)} size={24} />
-                        <span className="font-bold text-slate-700 text-xs truncate">{m.name}</span>
+                      <div key={m._id} className="flex items-center gap-3">
+                        <Avatar initials={getInitials(m.name)} color={getColor(m.name)} size={28} />
+                        <span className="font-medium text-slate-800 text-sm truncate">{m.name}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-xs text-slate-400 italic py-2 font-medium">No mentees assigned yet.</div>
+                  <div className="text-sm text-slate-500 italic py-2">No mentees assigned yet.</div>
                 )}
               </div>
             </div>
           </div>
 
           {/* Task Summary Table */}
-          <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
-            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/20">
-              <h2 className="m-0 text-sm md:text-base font-extrabold text-slate-800">Task Summary ({tasks.length})</h2>
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <h2 className="m-0 text-base font-bold text-slate-900">Task Summary ({tasks.length})</h2>
             </div>
             {tasks.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-xs font-semibold">No tasks assigned under this project yet.</div>
+              <div className="p-8 text-center text-slate-500 text-sm">No tasks assigned under this project yet.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-100">
+                <table className="w-full border-collapse min-w-[500px]">
                   <thead>
-                    <tr className="bg-slate-50">
+                    <tr className="bg-white border-b border-slate-200">
                       {["Task Title", "Assignee", "Priority", "Status"].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-bold text-slate-400 tracking-wide border-b border-slate-100">{h}</th>
+                        <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100">
                     {tasks.map(t => (
-                      <tr key={t._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td className="px-5 py-3.5 font-bold text-slate-800 text-xs md:text-sm">{t.title}</td>
-                        <td className="px-5 py-3.5 text-xs text-slate-500 font-semibold">{t.assignedTo?.name || "Unassigned"}</td>
-                        <td className="px-5 py-3.5 text-xs text-slate-400 font-bold">{t.priority}</td>
-                        <td className="px-5 py-3.5"><StatusBadge status={t.status} /></td>
+                      <tr key={t._id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{t.title}</td>
+                        <td className="px-6 py-4 text-sm text-slate-700">{t.assignedTo?.name || "Unassigned"}</td>
+                        <td className="px-6 py-4 text-sm text-slate-700 font-medium">{t.priority}</td>
+                        <td className="px-6 py-4"><StatusBadge status={t.status} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -351,32 +347,32 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
         </div>
 
         {/* Right 1 Column — Project Info */}
-        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 flex flex-col gap-5" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
-          <h2 className="m-0 text-sm md:text-base font-extrabold text-slate-800">Project Info</h2>
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">Status</span>
+        <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-6 shadow-sm">
+          <h2 className="m-0 text-base font-bold text-slate-900">Project Info</h2>
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Status</span>
               <StatusBadge status={project.status} />
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">Mentor</span>
-              <span className="font-bold text-slate-700">{project.mentorId?.name || "None"}</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Mentor</span>
+              <span className="font-medium text-slate-900">{project.mentorId?.name || "None"}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">Mentees</span>
-              <span className="font-bold text-slate-700">{project.mentees?.length || 0}</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Mentees</span>
+              <span className="font-medium text-slate-900">{project.mentees?.length || 0}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">Tasks</span>
-              <span className="font-bold text-slate-700">{tasks.length}</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Tasks</span>
+              <span className="font-medium text-slate-900">{tasks.length}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">Start</span>
-              <span className="font-bold text-slate-700">{project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">Start</span>
+              <span className="font-medium text-slate-900">{project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}</span>
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-slate-400">End</span>
-              <span className="font-bold text-slate-700">{project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-semibold text-slate-500">End</span>
+              <span className="font-medium text-slate-900">{project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}</span>
             </div>
           </div>
         </div>

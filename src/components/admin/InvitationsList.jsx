@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Button from "../ui/Button";
+
 export default function InvitationsList() {
   const [invitations, setInvitations] = useState([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -43,47 +45,45 @@ export default function InvitationsList() {
     .filter(inv => inv.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const statusStyles = {
-    PENDING: "bg-blue-50 text-blue-600 border-blue-100",
-    ACCEPTED: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    CANCELLED: "bg-rose-50 text-rose-500 border-rose-100",
+    PENDING: "bg-blue-50 text-blue-700 border-blue-200",
+    ACCEPTED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    CANCELLED: "bg-slate-100 text-slate-700 border-slate-200",
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Title & Actions bar */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
+      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-black text-slate-800 tracking-tight">Organization Invitations</h1>
-          <p className="m-0 mt-1 text-slate-400 text-xs font-semibold">Invite new administrators, mentors, and students and manage active requests.</p>
+          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Organization Invitations</h1>
+          <p className="m-0 mt-1 text-slate-500 text-sm">Invite new administrators, mentors, and students and manage active requests.</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowInviteModal(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-5 py-3 rounded-xl border-none text-xs cursor-pointer transition-colors shadow-lg shadow-blue-500/20"
-          style={{ fontFamily: "inherit" }}
+          className="px-4 py-2 text-sm font-medium shrink-0"
         >
           + Invite Member
-        </button>
+        </Button>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
+      <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm">
         <input
           placeholder="Search by email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-64 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 bg-slate-50 font-sans"
+          className="w-full sm:w-64 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg">
           {["ALL", "PENDING", "ACCEPTED", "CANCELLED"].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+              className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 statusFilter === status
-                  ? "bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-500/10"
-                  : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "bg-transparent text-slate-600 hover:text-slate-900"
               }`}
-              style={{ fontFamily: "inherit" }}
             >
               {status}
             </button>
@@ -92,49 +92,49 @@ export default function InvitationsList() {
       </div>
 
       {/* Invitations Table */}
-      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden" style={{ boxShadow: "0 2px 16px rgba(59,130,246,0.03)" }}>
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-xs font-semibold">No invitations found.</div>
+          <div className="p-12 text-center text-slate-500 text-sm font-medium">No invitations found.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-150">
+            <table className="w-full border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-slate-50">
                   {["Email Address", "Target Role", "Sent Date", "Status", "Actions"].map(h => (
-                    <th key={h} className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 tracking-wide border-b border-slate-100">{h}</th>
+                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="border-b border-slate-50 hover:bg-slate-50/30 transition-colors">
-                    <td className="px-6 py-4 font-black text-slate-800 text-xs md:text-sm">{inv.email}</td>
-                    <td className="px-6 py-4 text-xs text-slate-500 font-bold">
-                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">{inv.role}</span>
-                    </td>
-                    <td className="px-6 py-4 text-xs text-slate-400 font-semibold">{inv.sentAt}</td>
+                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{inv.email}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border uppercase tracking-wider ${statusStyles[inv.status]}`}>
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-md text-slate-700 text-xs font-medium">{inv.role}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{inv.sentAt}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${statusStyles[inv.status]}`}>
                         {inv.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-2">
-                      <button
+                      <Button
+                        variant="secondary"
                         onClick={() => handleResend(inv.id)}
                         disabled={inv.status === "ACCEPTED"}
-                        className="bg-transparent border border-blue-200 hover:border-blue-400 disabled:opacity-30 disabled:pointer-events-none px-3 py-1.5 rounded-lg text-xs font-bold text-blue-500 cursor-pointer transition-colors"
-                        style={{ fontFamily: "inherit" }}
+                        className="text-xs px-3 py-1.5"
                       >
                         Resend
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="danger"
                         onClick={() => handleCancel(inv.id)}
                         disabled={inv.status === "ACCEPTED" || inv.status === "CANCELLED"}
-                        className="bg-transparent border border-red-200 hover:border-red-400 disabled:opacity-30 disabled:pointer-events-none px-3 py-1.5 rounded-lg text-xs font-bold text-red-500 cursor-pointer transition-colors"
-                        style={{ fontFamily: "inherit" }}
+                        className="text-xs px-3 py-1.5"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -146,31 +146,30 @@ export default function InvitationsList() {
 
       {/* Invite Modal Overlay */}
       {showInviteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-250 p-4" style={{ background: "rgba(15,23,42,0.5)" }} onClick={(e) => e.target === e.currentTarget && setShowInviteModal(false)}>
-          <form onSubmit={handleSendInvite} className="bg-white rounded-3xl p-8 w-full max-w-sm flex flex-col gap-5" style={{ boxShadow: "0 24px 80px rgba(59,130,246,0.15)" }}>
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowInviteModal(false)}>
+          <form onSubmit={handleSendInvite} className="bg-white rounded-xl p-8 w-full max-w-sm flex flex-col gap-6 shadow-xl">
             <div>
-              <h3 className="m-0 text-lg font-black text-slate-800">Invite New Member</h3>
-              <p className="m-0 mt-1 text-slate-400 text-xs font-semibold">An invitation email will be issued to join the workspace.</p>
+              <h3 className="m-0 text-xl font-bold text-slate-900">Invite New Member</h3>
+              <p className="m-0 mt-1 text-slate-500 text-sm">An invitation email will be issued to join the workspace.</p>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Email Address</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Email Address</label>
                 <input
                   type="email"
                   required
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="e.g. user@organization.com"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 font-sans"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Assigned Role</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Assigned Role</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-blue-400 bg-white"
-                  style={{ fontFamily: "inherit" }}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
                 >
                   <option value="MENTEE">Mentee (Student)</option>
                   <option value="MENTOR">Mentor (Advisor)</option>
@@ -178,22 +177,17 @@ export default function InvitationsList() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 mt-2">
-              <button
+            <div className="flex gap-3 mt-2 justify-end">
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setShowInviteModal(false)}
-                className="flex-1 py-3 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-500 cursor-pointer hover:bg-slate-50 transition-colors"
-                style={{ fontFamily: "inherit" }}
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 py-3 rounded-xl border-none bg-blue-500 hover:bg-blue-600 text-xs font-bold text-white cursor-pointer transition-colors shadow-md shadow-blue-500/10"
-                style={{ fontFamily: "inherit" }}
-              >
+              </Button>
+              <Button type="submit">
                 Send Invite
-              </button>
+              </Button>
             </div>
           </form>
         </div>
