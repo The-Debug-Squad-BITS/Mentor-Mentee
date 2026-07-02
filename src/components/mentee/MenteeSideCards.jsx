@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import Button from "../ui/Button";
 
 export function RecentFeedbackCard() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -17,37 +18,34 @@ export function RecentFeedbackCard() {
   }, [currentUser.id]);
 
   return (
-    <div
-      className="bg-white rounded-2xl p-5 border border-slate-100 flex flex-col gap-4 animate-fade-in"
-      style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.03)" }}
-    >
-      <h2 className="m-0 text-sm md:text-base font-black text-slate-800">
+    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
+      <h2 className="m-0 text-base font-bold text-slate-900">
         Recent Advisor Feedback
       </h2>
 
       <div className="flex flex-col gap-3">
         {feedbacks.length === 0 ? (
-          <div className="text-center py-6 text-slate-400 text-xs font-semibold bg-slate-50/50 rounded-xl border border-slate-100">
+          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
             No advisor comments logged yet.
           </div>
         ) : (
           feedbacks.map((fb) => (
             <div
               key={fb.id}
-              className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex flex-col gap-1.5"
+              className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2"
             >
-              <div className="flex justify-between mb-1">
-                <span className="text-[11px] font-extrabold text-indigo-500 truncate max-w-[130px]">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-semibold text-blue-600 truncate max-w-[130px]">
                   {fb.task}
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold">
+                <span className="text-xs text-slate-500 font-medium">
                   {fb.date}
                 </span>
               </div>
-              <p className="m-0 text-[11px] md:text-xs text-slate-600 leading-relaxed italic">
+              <p className="m-0 text-sm text-slate-700 leading-relaxed italic">
                 "{fb.text}"
               </p>
-              <span className="text-[10px] text-slate-400 font-bold self-end mt-1">
+              <span className="text-xs text-slate-500 font-medium self-end mt-1">
                 — {fb.mentor}
               </span>
             </div>
@@ -85,52 +83,50 @@ export function NotificationsCard() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div
-      className="bg-white rounded-2xl p-5 border border-slate-100 flex flex-col gap-4 animate-fade-in"
-      style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.03)" }}
-    >
+    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
       <div className="flex justify-between items-center">
-        <h2 className="m-0 text-sm md:text-base font-black text-slate-800 font-sans">
+        <h2 className="m-0 text-base font-bold text-slate-900">
           Notifications Feed
         </h2>
         {unreadCount > 0 ? (
-          <button
+          <Button
+            variant="ghost"
             onClick={handleMarkAllRead}
-            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-lg text-[9px] font-black border-none cursor-pointer transition-colors uppercase tracking-wider"
+            className="text-xs py-1 px-2 text-blue-600 hover:text-blue-700"
           >
             Mark Read
-          </button>
+          </Button>
         ) : (
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">All Read</span>
+          <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">All Read</span>
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {notifications.length === 0 ? (
-          <div className="text-center py-6 text-slate-400 text-xs font-semibold bg-slate-50/50 rounded-xl border border-slate-100">
+          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200 mt-1">
             No notifications inboxed.
           </div>
         ) : (
           notifications.map((n) => (
             <div
               key={n.id}
-              className="flex gap-2.5 py-2.5 border-b border-slate-50 last:border-0"
+              className="flex gap-3 py-3 border-b border-slate-100 last:border-0"
             >
               <div
-                className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                style={{ background: !n.isRead ? "#6366f1" : "#cbd5e1" }}
+                className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                style={{ background: !n.isRead ? "#2563eb" : "#cbd5e1" }}
               />
               <div className="min-w-0">
                 <div
-                  className="text-xs leading-relaxed mb-0.5 truncate max-w-[200px]"
+                  className="text-sm leading-snug mb-1"
                   style={{
-                    color: !n.isRead ? "#1e293b" : "#64748b",
-                    fontWeight: !n.isRead ? 700 : 500,
+                    color: !n.isRead ? "#0f172a" : "#475569",
+                    fontWeight: !n.isRead ? 600 : 400,
                   }}
                 >
                   {n.body}
                 </div>
-                <div className="text-[9px] text-slate-400 font-bold uppercase">
+                <div className="text-xs text-slate-500 font-medium">
                   {n.createdAt}
                 </div>
               </div>

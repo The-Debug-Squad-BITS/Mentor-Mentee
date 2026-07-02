@@ -37,19 +37,19 @@ export default function MenteeQuickStats() {
       label: "Overall Progress",
       value: `${progressPercent}%`,
       suffix: `${completedTasks} / ${assignedTasks} tasks done`,
-      suffixColor: "#10b981",
+      suffixColor: "#10b981", // emerald-500
     },
     {
       label: "Pending Tasks",
       value: pendingTasks.toString(),
       suffix: "still to do",
-      suffixColor: "#64748b",
+      suffixColor: "#64748b", // slate-500
     },
     {
       label: "Revision Requests",
       value: revisionRequests.toString(),
       suffix: "needs changes",
-      suffixColor: revisionRequests > 0 ? "#ef4444" : "#64748b",
+      suffixColor: revisionRequests > 0 ? "#ef4444" : "#64748b", // red-500 or slate-500
     },
   ];
 
@@ -58,17 +58,16 @@ export default function MenteeQuickStats() {
       {stats.map((s) => (
         <div
           key={s.label}
-          className="bg-white p-5 rounded-2xl border border-slate-100 flex-1 min-w-40"
-          style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.03)" }}
+          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center min-w-[160px]"
         >
-          <div className="text-[10px] md:text-[11px] lg:text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">
+          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">
             {s.label}
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[26px] md:text-[32px] lg:text-3xl font-black text-slate-800 leading-none">
+            <span className="text-3xl font-bold text-slate-900 leading-none">
               {s.value}
             </span>
-            <span className="text-xs font-bold" style={{ color: s.suffixColor }}>
+            <span className="text-sm font-medium" style={{ color: s.suffixColor }}>
               {s.suffix}
             </span>
           </div>

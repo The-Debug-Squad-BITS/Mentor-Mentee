@@ -3,6 +3,7 @@ import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
 import TaskSubmitModal from "./TaskSubmitModal";
 import { toast } from "react-toastify";
+import Button from "../ui/Button";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -71,11 +72,11 @@ export default function MenteeTasks() {
 
   const statusStyles = {
     TODO:            "bg-slate-100 text-slate-600 border-slate-200",
-    IN_PROGRESS:     "bg-blue-50 text-blue-600 border-blue-100",
-    SUBMITTED:       "bg-amber-50 text-amber-600 border-amber-100",
-    UNDER_REVIEW:    "bg-purple-50 text-purple-600 border-purple-100",
-    APPROVED:        "bg-emerald-50 text-emerald-600 border-emerald-100",
-    REVISION_NEEDED: "bg-red-50 text-red-600 border-red-100",
+    IN_PROGRESS:     "bg-blue-50 text-blue-700 border-blue-200",
+    SUBMITTED:       "bg-amber-50 text-amber-700 border-amber-200",
+    UNDER_REVIEW:    "bg-purple-50 text-purple-700 border-purple-200",
+    APPROVED:        "bg-emerald-50 text-emerald-700 border-emerald-200",
+    REVISION_NEEDED: "bg-red-50 text-red-700 border-red-200",
   };
 
   const statusLabels = {
@@ -88,9 +89,9 @@ export default function MenteeTasks() {
   };
 
   const priorityStyles = {
-    LOW:    "bg-slate-100 text-slate-500",
-    MEDIUM: "bg-amber-50 text-amber-600",
-    HIGH:   "bg-red-50 text-red-600",
+    LOW:    "bg-slate-100 text-slate-600 border-slate-200",
+    MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
+    HIGH:   "bg-red-50 text-red-700 border-red-200",
   };
 
   const allStatuses = [
@@ -102,41 +103,34 @@ export default function MenteeTasks() {
     <div className="flex flex-col gap-6 animate-fade-in">
 
       {/* Header */}
-      <div
-        className="bg-white rounded-3xl p-6 border border-slate-100"
-        style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.04)" }}
-      >
-        <h1 className="m-0 text-xl md:text-2xl font-black text-slate-800 tracking-tight">
+      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
           My Assigned Tasks
         </h1>
-        <p className="m-0 mt-1 text-slate-400 text-xs font-semibold">
+        <p className="m-0 mt-1 text-slate-500 text-sm">
           Start tasks, submit your work, and track mentor feedback.
         </p>
       </div>
 
       {/* Filter toolbar */}
-      <div
-        className="bg-white rounded-3xl p-5 border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4"
-        style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.04)" }}
-      >
+      <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
         <input
           placeholder="Search deliverables..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-400 bg-slate-50 font-sans w-full md:w-48"
+          className="w-full md:w-64 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
         />
 
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg overflow-x-auto w-full md:w-auto">
           {allStatuses.map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
                 statusFilter === status
-                  ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/10"
-                  : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "bg-transparent text-slate-600 hover:text-slate-900"
               }`}
-              style={{ fontFamily: "inherit" }}
             >
               {status === "ALL" ? "All Tracks" : statusLabels[status]}
             </button>
@@ -146,44 +140,37 @@ export default function MenteeTasks() {
 
       {/* Error banner */}
       {error && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
           ⚠️ {error}
         </div>
       )}
 
       {/* Tasks grid */}
       {loading ? (
-        <div
-          className="bg-white rounded-3xl p-12 border border-slate-100 text-center text-slate-400 text-xs font-semibold"
-          style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.04)" }}
-        >
+        <div className="bg-white rounded-xl p-12 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
           Loading tasks...
         </div>
       ) : filtered.length === 0 ? (
-        <div
-          className="bg-white rounded-3xl p-12 border border-slate-100 text-center text-slate-400 text-xs font-semibold"
-          style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.04)" }}
-        >
+        <div className="bg-white rounded-xl p-12 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
           No tasks match active filter thresholds.
         </div>
       ) : (
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           {filtered.map((task) => {
             const isStarting = startingTaskId === task._id;
             return (
               <div
                 key={task._id}
-                className="bg-white border border-slate-100 rounded-3xl p-6 flex flex-col justify-between gap-4 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200"
-                style={{ boxShadow: "0 2px 16px rgba(99,102,241,0.04)" }}
+                className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between gap-5 transition-all hover:-translate-y-1 hover:shadow-lg duration-200 shadow-sm"
               >
                 {/* Top */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-start flex-wrap gap-2">
-                    <span className="px-2 py-0.5 bg-slate-100 text-[9px] font-bold text-slate-500 rounded uppercase">
+                    <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-semibold text-slate-600 rounded-md uppercase tracking-wider border border-slate-200">
                       {task.projectId?.title || "Project"}
                     </span>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
                         statusStyles[task.status] || ""
                       }`}
                     >
@@ -191,23 +178,23 @@ export default function MenteeTasks() {
                     </span>
                   </div>
 
-                  <h3 className="m-0 text-sm md:text-base font-black text-slate-800 tracking-tight leading-snug">
+                  <h3 className="m-0 text-base md:text-lg font-bold text-slate-900 tracking-tight leading-snug">
                     {task.title}
                   </h3>
 
                   {task.description && (
-                    <p className="m-0 text-slate-400 text-xs font-semibold leading-relaxed line-clamp-2">
+                    <p className="m-0 text-slate-600 text-sm leading-relaxed line-clamp-2">
                       {task.description}
                     </p>
                   )}
 
                   {/* Show mentor feedback when REVISION_NEEDED */}
                   {task.status === "REVISION_NEEDED" && task.feedback && (
-                    <div className="mt-1 p-3 bg-red-50 border border-red-200 rounded-xl">
-                      <div className="text-[10px] font-black text-red-500 uppercase mb-1">
+                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="text-[10px] font-bold text-red-700 uppercase tracking-wider mb-1">
                         Mentor Feedback:
                       </div>
-                      <div className="text-xs text-red-800 font-semibold leading-relaxed">
+                      <div className="text-sm text-red-900 leading-relaxed">
                         "{task.feedback}"
                       </div>
                     </div>
@@ -215,69 +202,68 @@ export default function MenteeTasks() {
                 </div>
 
                 {/* Bottom */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold border-t border-slate-50 pt-3">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center text-xs text-slate-500 font-medium border-t border-slate-100 pt-4">
                     <span>
-                      DEADLINE:{" "}
-                      {task.dueDate
-                        ? new Date(task.dueDate).toLocaleDateString()
-                        : "No deadline"}
+                      Deadline:{" "}
+                      <span className="text-slate-900">
+                        {task.dueDate
+                          ? new Date(task.dueDate).toLocaleDateString()
+                          : "None"}
+                      </span>
                     </span>
                     <span
-                      className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wide ${
-                        priorityStyles[task.priority] || "bg-slate-100 text-slate-500"
+                      className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${
+                        priorityStyles[task.priority] || "bg-slate-100 text-slate-600 border-slate-200"
                       }`}
                     >
-                      {task.priority}
+                      {task.priority} Priority
                     </span>
                   </div>
 
                   {/* Action button based on task status */}
                   {task.status === "TODO" && (
-                    <button
+                    <Button
                       onClick={() => handleStartTask(task._id)}
                       disabled={isStarting}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition-colors shadow-md shadow-indigo-500/20 border-none disabled:opacity-60"
-                      style={{ fontFamily: "inherit" }}
+                      className="w-full justify-center text-sm py-2.5"
                     >
                       {isStarting ? "Starting..." : "🚀 Start Task"}
-                    </button>
+                    </Button>
                   )}
 
                   {task.status === "IN_PROGRESS" && (
-                    <button
+                    <Button
                       onClick={() => setSubmitTask(task)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition-colors shadow-md shadow-blue-500/20 border-none"
-                      style={{ fontFamily: "inherit" }}
+                      className="w-full justify-center text-sm py-2.5 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
                     >
                       📤 Submit Work
-                    </button>
+                    </Button>
                   )}
 
                   {task.status === "REVISION_NEEDED" && (
-                    <button
+                    <Button
                       onClick={() => setSubmitTask(task)}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition-colors shadow-md shadow-orange-500/20 border-none"
-                      style={{ fontFamily: "inherit" }}
+                      className="w-full justify-center text-sm py-2.5 bg-orange-600 hover:bg-orange-700 focus:ring-orange-500 text-white"
                     >
                       🔄 Resubmit Work
-                    </button>
+                    </Button>
                   )}
 
                   {task.status === "SUBMITTED" && (
-                    <div className="w-full text-center py-2.5 rounded-xl text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100">
+                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200">
                       ⏳ Pending Review
                     </div>
                   )}
 
                   {task.status === "UNDER_REVIEW" && (
-                    <div className="w-full text-center py-2.5 rounded-xl text-xs font-bold text-purple-600 bg-purple-50 border border-purple-100">
+                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-purple-700 bg-purple-50 border border-purple-200">
                       🔍 Under Review
                     </div>
                   )}
 
                   {task.status === "APPROVED" && (
-                    <div className="w-full text-center py-2.5 rounded-xl text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100">
+                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
                       ✅ Approved
                     </div>
                   )}

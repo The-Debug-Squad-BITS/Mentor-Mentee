@@ -1,14 +1,15 @@
 import NotificationBell from "../ui/NotificationBell";
+import Button from "../ui/Button";
 
 export default function MenteeHeader({ activeNav, onMessageMentor, userName, onLogout }) {
   return (
-    <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-8 gap-3">
+    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 lg:mb-8 gap-4">
       {/* Title */}
       <div>
-        <h1 className="text-[18px] md:text-xl lg:text-2xl font-black text-slate-800 tracking-tight uppercase m-0">
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 m-0 tracking-tight capitalize">
           {activeNav === "Dashboard" ? "My Dashboard" : activeNav}
         </h1>
-        <p className="text-slate-500 mt-1.5 text-[11px] md:text-xs lg:text-sm">
+        <p className="text-slate-500 mt-1 text-sm md:text-[15px]">
           {userName
             ? `Welcome, ${userName} — track your progress, manage tasks, and connect with your mentors.`
             : "Track your progress, manage tasks, and connect with your mentors."}
@@ -16,23 +17,27 @@ export default function MenteeHeader({ activeNav, onMessageMentor, userName, onL
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-2 md:gap-2.5 lg:gap-3 shrink-0 items-center">
+      <div className="flex items-center gap-3 shrink-0">
         <NotificationBell />
 
+        {/* Logout button */}
+        {onLogout && (
+          <Button variant="ghost" onClick={onLogout} className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span className="hidden sm:inline font-semibold">Logout</span>
+          </Button>
+        )}
+
         {/* Message Mentor */}
-        <button
-          onClick={onMessageMentor}
-          className="flex items-center gap-1.5 md:gap-2 bg-white text-slate-800 border border-slate-200 rounded-xl
-            px-2.5 py-2 text-[11px]
-            md:px-3.5 md:py-2.5 md:text-xs
-            lg:px-4 lg:py-2.5 lg:text-sm
-            font-bold cursor-pointer hover:border-slate-300 transition-colors"
-          style={{ fontFamily: "inherit" }}
-        >
+        <Button variant="secondary" onClick={onMessageMentor} className="text-sm">
           <svg
-            width="14"
-            height="14"
-            className="md:w-4 md:h-4 lg:w-4.5 lg:h-4.5"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -42,25 +47,13 @@ export default function MenteeHeader({ activeNav, onMessageMentor, userName, onL
           </svg>
           <span className="hidden sm:inline">Message Mentor</span>
           <span className="sm:hidden">Message</span>
-        </button>
+        </Button>
 
         {/* Request Meeting */}
-        <button
-          className="flex items-center gap-1.5 md:gap-2 text-white border-0 rounded-xl
-            px-2.5 py-2 text-[11px]
-            md:px-3.5 md:py-2.5 md:text-xs
-            lg:px-4 lg:py-2.5 lg:text-sm
-            font-bold cursor-pointer"
-          style={{
-            background: "linear-gradient(135deg, #6366f1, #818cf8)",
-            boxShadow: "0 4px 16px rgba(99,102,241,0.3)",
-            fontFamily: "inherit",
-          }}
-        >
+        <Button className="text-sm">
           <svg
-            width="14"
-            height="14"
-            className="md:w-4 md:h-4 lg:w-4.5 lg:h-4.5"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -73,17 +66,7 @@ export default function MenteeHeader({ activeNav, onMessageMentor, userName, onL
           </svg>
           <span className="hidden sm:inline">Request Meeting</span>
           <span className="sm:hidden">Meeting</span>
-        </button>
-
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            className="px-3 py-2 md:px-4 md:py-2.5 rounded-xl border border-slate-200 hover:border-red-300 text-slate-500 hover:text-red-500 text-[11px] md:text-xs font-bold cursor-pointer transition-colors shrink-0"
-            style={{ fontFamily: "inherit" }}
-          >
-            Logout
-          </button>
-        )}
+        </Button>
       </div>
     </div>
   );
