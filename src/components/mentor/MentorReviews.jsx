@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
+import { toast } from "react-toastify";
 
 export default function MentorReviews() {
   const [submissions, setSubmissions] = useState([]);
@@ -13,8 +14,6 @@ export default function MentorReviews() {
   const [actionLoading, setActionLoading] = useState({});
   // Per-submission inline error
   const [actionError, setActionError] = useState({});
-  // Toast message
-  const [toast, setToast] = useState(null);
 
   // ── Load all submissions ──────────────────────────────────────────────
   const loadSubmissions = useCallback(async () => {
@@ -35,12 +34,6 @@ export default function MentorReviews() {
     loadSubmissions();
   }, [loadSubmissions]);
 
-  // ── Show toast ────────────────────────────────────────────────────────
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
-
   // ── Approve submission ────────────────────────────────────────────────
   const handleApprove = async (submissionId) => {
     const feedback = (feedbackMap[submissionId] || "").trim();
@@ -56,13 +49,12 @@ export default function MentorReviews() {
 
     try {
       await api.patch(`/submissions/${submissionId}/approve`, { feedback });
-      showToast("✅ Submission approved! Mentee has been notified.");
+      toast.success("Submission approved! Mentee has been notified.");
       setFeedbackMap((prev) => ({ ...prev, [submissionId]: "" }));
       loadSubmissions();
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Failed to approve submission.",
-        "error"
+      toast.error(
+        err.response?.data?.message || "Failed to approve submission."
       );
     } finally {
       setActionLoading((prev) => ({ ...prev, [submissionId]: null }));
@@ -84,13 +76,12 @@ export default function MentorReviews() {
 
     try {
       await api.patch(`/submissions/${submissionId}/revision`, { feedback });
-      showToast("🔄 Revision requested. Mentee has been notified.");
+      toast.success("Revision requested. Mentee has been notified.");
       setFeedbackMap((prev) => ({ ...prev, [submissionId]: "" }));
       loadSubmissions();
     } catch (err) {
-      showToast(
-        err.response?.data?.message || "Failed to request revision.",
-        "error"
+      toast.error(
+        err.response?.data?.message || "Failed to request revision."
       );
     } finally {
       setActionLoading((prev) => ({ ...prev, [submissionId]: null }));
@@ -117,16 +108,6 @@ export default function MentorReviews() {
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed top-5 right-5 z-[9999] px-5 py-3 rounded-2xl text-xs font-bold shadow-xl ${
-            toast.type === "error" ? "bg-red-600 text-white" : "bg-emerald-600 text-white"
-          }`}
-        >
-          {toast.msg}
-        </div>
-      )}
 
       {/* Header */}
       <div
@@ -231,21 +212,55 @@ export default function MentorReviews() {
                       </div>
                     )}
 
-                    {/* File link — opens in new tab */}
-                    {sub.fileUrl && (
-                      <a
-                        href={sub.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition-colors w-fit"
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
+                    {/* Submission content — smart display per type */}
+                    {sub.submissionType === "file" && sub.fileUrl && (
+                      <div className="flex flex-col gap-2">
+                        {/* Inline image preview */}
+                        {sub.mimeType && sub.mimeType.startsWith("image/") && (
+                          <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                            <img
+                              src={sub.fileUrl}
+                              alt="Submitted work"
+                              className="w-full max-h-56 object-contain"
+                              style={{ display: "block" }}
+                            />
+                          </div>
+                        )}
+                        {/* PDF open link */}
+                        <a
+                          href={sub.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-indigo-600 font-bold text-xs hover:text-indigo-800 transition-colors w-fit"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                          </svg>
+                          {sub.mimeType?.startsWith("image/") ? "Open Full Image ↗" : "Open PDF ↗"}
+                        </a>
+                      </div>
+                    )}
+
+                    {/* URL submission — clickable chip */}
+                    {sub.submissionType === "url" && sub.submissionUrl && (
+                      <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2.5">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                         </svg>
-                        View Submitted File ↗
-                      </a>
+                        <span className="text-xs font-semibold text-indigo-700 flex-1 truncate max-w-xs">
+                          {sub.submissionUrl}
+                        </span>
+                        <a
+                          href={sub.submissionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors shrink-0"
+                        >
+                          Open ↗
+                        </a>
+                      </div>
                     )}
 
                     {/* Per-submission error */}
@@ -332,14 +347,23 @@ export default function MentorReviews() {
                         {sub.submittedBy?.name || "Unknown"}
                       </td>
                       <td className="px-6 py-4">
-                        {sub.fileUrl ? (
+                        {sub.submissionType === "file" && sub.fileUrl ? (
                           <a
                             href={sub.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo-600 text-xs font-bold hover:text-indigo-800 transition-colors"
                           >
-                            View File ↗
+                            {sub.mimeType?.startsWith("image/") ? "🖼 View Image ↗" : "📄 View PDF ↗"}
+                          </a>
+                        ) : sub.submissionType === "url" && sub.submissionUrl ? (
+                          <a
+                            href={sub.submissionUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 text-xs font-bold hover:text-indigo-800 transition-colors"
+                          >
+                            🔗 Open Link ↗
                           </a>
                         ) : (
                           <span className="text-slate-400 text-xs">—</span>
