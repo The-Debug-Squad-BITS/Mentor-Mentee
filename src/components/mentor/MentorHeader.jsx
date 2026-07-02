@@ -1,63 +1,57 @@
 import NotificationBell from "../ui/NotificationBell";
+import Button from "../ui/Button";
 
 export default function MentorHeader({ userName, onNewUser, onLogout }) {
   return (
-    <div className="flex justify-between items-start mb-5 md:mb-6 lg:mb-7 pl-0 md:pl-4 lg:pl-8 gap-3">
+    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 lg:mb-8 pl-0 md:pl-4 lg:pl-8 gap-4">
       {/* Title + Mentor Name */}
       <div>
-        <h1 className="text-[18px] md:text-xl lg:text-2xl font-black text-slate-800 tracking-tight m-0">
-          MENTOR DASHBOARD
+        <h1 className="text-xl md:text-2xl font-bold text-slate-900 m-0 tracking-tight">
+          Mentor Dashboard
         </h1>
         {userName && (
-          <p className="m-0 mt-0.5 text-slate-400 text-xs font-semibold">
-            Signed in as <span className="text-indigo-500 font-bold">{userName}</span>
+          <p className="text-slate-500 mt-1 text-sm">
+            Signed in as <span className="text-slate-900 font-semibold">{userName}</span>
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 shrink-0">
         <NotificationBell />
-        <button
-          onClick={onNewUser}
-          className="flex items-center gap-1.5 md:gap-2 text-white border-0 rounded-xl
-            px-3 py-2 text-[11px]
-            md:px-4 md:py-2.5 md:text-xs
-            lg:px-5 lg:py-3 lg:text-sm
-            font-bold cursor-pointer transition-transform duration-150 hover:-translate-y-px shrink-0"
-          style={{
-            background: "linear-gradient(135deg, #6366f1, #818cf8)",
-            boxShadow: "0 4px 16px rgba(99,102,241,0.35)",
-            fontFamily: "inherit",
-          }}
-        >
+        
+        {/* Logout button */}
+        {onLogout && (
+          <Button variant="ghost" onClick={onLogout} className="px-3 py-2 text-sm text-slate-500 hover:text-slate-900 font-medium">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span className="hidden sm:inline font-semibold">Logout</span>
+          </Button>
+        )}
+
+        {/* Add user button */}
+        <Button onClick={onNewUser} className="text-sm px-4 py-2">
           <svg
-            width="14"
-            height="14"
-            className="md:w-4 md:h-4 lg:w-4.5 lg:h-4.5"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
+            className="mr-1.5"
           >
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <line x1="19" y1="8" x2="19" y2="14" />
             <line x1="22" y1="11" x2="16" y2="11" />
           </svg>
-          <span className="hidden sm:inline">NEW USER</span>
-          <span className="sm:hidden">ADD</span>
-        </button>
-
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            className="px-3 py-2 md:px-4 md:py-2.5 rounded-xl border border-slate-200 hover:border-red-300 text-slate-500 hover:text-red-500 text-[11px] md:text-xs font-bold cursor-pointer transition-colors shrink-0"
-            style={{ fontFamily: "inherit" }}
-          >
-            Logout
-          </button>
-        )}
+          <span className="hidden sm:inline">New User</span>
+          <span className="sm:hidden">Add</span>
+        </Button>
       </div>
     </div>
   );

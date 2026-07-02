@@ -6,15 +6,14 @@ export function MentorSidebarToggle({ onClick, mobileOpen }) {
   return (
     <button
       onClick={onClick}
-      className="md:hidden fixed top-4 left-4 z-200 w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center cursor-pointer"
-      style={{ boxShadow: "0 2px 12px rgba(99,102,241,0.1)" }}
+      className="md:hidden fixed top-4 left-4 z-[200] w-10 h-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center cursor-pointer shadow-sm"
     >
       <svg
-        width="18"
-        height="18"
+        width="20"
+        height="20"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#1e293b"
+        stroke="#0f172a"
         strokeWidth="2.5"
       >
         <line x1="3" y1="6" x2="21" y2="6" />
@@ -117,47 +116,45 @@ export default function MentorSidebar({
 
   return (
     <>
-      {/* Mobile backdrop — tap to close */}
+      {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/30 z-90 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 bg-slate-900/60 z-[90] backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={[
-          "bg-white border-r border-slate-100 flex flex-col fixed top-0 left-0 bottom-0 z-100 transition-all duration-300",
-          "w-65",
+          "bg-slate-900 text-slate-300 flex flex-col fixed top-0 left-0 bottom-0 z-[100] transition-transform duration-300",
+          "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
-          "md:translate-x-0 md:w-55",
+          "md:translate-x-0 md:w-56",
           "lg:w-64",
         ].join(" ")}
-        style={{ boxShadow: "2px 0 20px rgba(99,102,241,0.06)" }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 md:px-4 lg:px-6 pb-7 pt-7">
+        <div className="flex items-center gap-3 px-5 md:px-4 lg:px-6 pb-6 pt-6">
           <div
-            className="w-9 h-9 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center text-white font-black text-[16px] lg:text-lg shrink-0"
-            style={{ background: "linear-gradient(135deg, #6366f1, #818cf8)" }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 bg-blue-600 shadow-sm"
           >
             M
           </div>
-          <span className="font-black text-[17px] md:text-[16px] lg:text-xl text-slate-800 tracking-tight truncate">
+          <span className="font-bold text-[17px] md:text-[16px] lg:text-[18px] text-white tracking-tight truncate">
             MentorFlow
           </span>
           {/* Close button — mobile only */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="md:hidden ml-auto shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+            className="md:hidden ml-auto shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <svg
-              width="14"
-              height="14"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
+              strokeWidth="2"
             >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -166,31 +163,28 @@ export default function MentorSidebar({
         </div>
 
         {/* Nav */}
-        <div className="px-3 md:px-3 lg:px-4 flex-1 overflow-y-auto">
-          <div className="text-[11px] font-bold text-slate-400 tracking-[1.2px] mb-4 pl-2 uppercase">
-            MAIN WORKSPACE
+        <div className="px-3 md:px-3 lg:px-4 flex-1 overflow-y-auto mt-2">
+          <div className="text-[10px] font-bold text-slate-500 tracking-widest mb-3 pl-3 uppercase">
+            Main Workspace
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1">
             {menuItems.map(({ name, icon }) => {
               const active = activeNav === name;
               return (
                 <button
                   key={name}
                   onClick={() => handleNavClick(name)}
-                  className="flex items-center gap-3 w-full px-3.5 py-3 border-none rounded-xl cursor-pointer text-[13px] md:text-[12px] lg:text-sm font-bold transition-all duration-200"
-                  style={{
-                    background: active
-                      ? "linear-gradient(135deg, #6366f1, #818cf8)"
-                      : "transparent",
-                    color: active ? "#fff" : "#64748b",
-                    boxShadow: active
-                      ? "0 4px 14px rgba(99,102,241,0.25)"
-                      : "none",
-                    fontFamily: "inherit",
-                  }}
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg cursor-pointer text-[13px] lg:text-sm font-medium transition-colors duration-150 border-0 ${
+                    active 
+                      ? "bg-blue-600/10 text-blue-400 font-semibold" 
+                      : "bg-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                  }`}
+                  style={{ fontFamily: "inherit" }}
                 >
-                  {icon}
+                  <span className={`${active ? "text-blue-400" : "text-slate-500"}`}>
+                    {icon}
+                  </span>
                   {name}
                 </button>
               );
@@ -199,19 +193,16 @@ export default function MentorSidebar({
         </div>
 
         {/* Bottom user */}
-        <div className="mx-3 lg:mx-4 pt-3.5 pb-4 border-t border-slate-100 flex items-center gap-3">
-          <Avatar initials={currentUser.avatar} color={currentUser.color} size={36} />
+        <div className="mx-4 mt-auto mb-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 flex items-center gap-3 hover:bg-slate-800 transition-colors cursor-pointer">
+          <Avatar initials={currentUser.avatar} color={currentUser.color} size={32} />
           <div className="min-w-0">
-            <div className="text-[13px] lg:text-sm font-bold text-slate-800 truncate">
+            <div className="text-[13px] font-semibold text-slate-200 truncate">
               {currentUser.name}
             </div>
-            <div className="text-[11px] lg:text-xs text-slate-400">
+            <div className="text-[11px] text-slate-400 font-medium">
               Workspace Lead
             </div>
           </div>
-          <span className="ml-auto bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-bold shrink-0">
-            Active
-          </span>
         </div>
       </aside>
     </>
