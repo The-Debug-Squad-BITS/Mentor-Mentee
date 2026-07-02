@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginLeftPanel from "../components/login/LoginLeftPanel";
 import LoginRightPanel from "../components/login/LoginRightPanel";
-import LoginSuccessScreen from "../components/login/LoginSuccessScreen";
 import ResetPasswordModal from "../components/login/ResetPasswordModal";
 
 import api from "../lib/api";
@@ -13,14 +12,11 @@ export default function LoginPage({ onNavigate, onBack }) {
   const [password, setPassword]   = useState("");
   const [error, setError]         = useState("");
   const [loading, setLoading]     = useState(false);
-  const [demoSuccess, setDemoSuccess]   = useState(null); // "admin" | "mentor" | "student" | null
-  const [loggedInUser, setLoggedInUser] = useState(null);
   const [showResetModal, setShowResetModal] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
-  // ── Shared login logic (used by form submit AND demo buttons) ──────────
   const doLogin = async (emailVal, passwordVal) => {
     setError("");
     setLoading(true);
@@ -35,25 +31,15 @@ export default function LoginPage({ onNavigate, onBack }) {
       // Persist to Zustand store + localStorage (via persist middleware)
       login(user, token);
 
-      // Show brief success animation before redirect
-      setDemoSuccess(
-        user.role === "ADMIN"   ? "admin"
-        : user.role === "MENTOR" ? "mentor"
-        : "student"
-      );
-      setLoggedInUser(user);
-
-      setTimeout(() => {
-        // First-time login: must change temporary password
-        if (user.mustChangePassword) {
-          navigate("/change-password");
-          return;
-        }
-        // Role-based redirect
-        if (user.role === "ADMIN")  navigate("/admin/dashboard");
-        if (user.role === "MENTOR") navigate("/mentor/dashboard");
-        if (user.role === "MENTEE") navigate("/mentee/dashboard");
-      }, 300);
+      // First-time login: must change temporary password
+      if (user.mustChangePassword) {
+        navigate("/change-password");
+        return;
+      }
+      // Role-based redirect
+      if (user.role === "ADMIN")  navigate("/admin/dashboard");
+      if (user.role === "MENTOR") navigate("/mentor/dashboard");
+      if (user.role === "MENTEE") navigate("/mentee/dashboard");
 
     } catch (err) {
       const status = err.response?.status;
@@ -78,7 +64,6 @@ export default function LoginPage({ onNavigate, onBack }) {
     }
   };
 
-  // ── Form submit ────────────────────────────────────────────────────────
   const handleSubmit = (e) => {
     e.preventDefault();
     doLogin(email, password);
@@ -87,28 +72,8 @@ export default function LoginPage({ onNavigate, onBack }) {
   const handleGoogleLogin = () =>
     setError("Google login is not available. Please use your email and password.");
 
-  // ── Sign out from success screen ───────────────────────────────────────
-  const handleSignOut = () => {
-    setLoggedInUser(null);
-    setDemoSuccess(null);
-    setEmail("");
-    setPassword("");
-  };
-
-  // ── Render success screen briefly before navigating away ──────────────
-  if (loggedInUser && demoSuccess) {
-    return (
-      <LoginSuccessScreen
-        user={loggedInUser}
-        onSignOut={handleSignOut}
-        onNavigate={onNavigate}
-        onBack={onBack}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
       <LoginRightPanel
         email={email}
