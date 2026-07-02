@@ -163,7 +163,12 @@ export default function AdminSidebar({
 
         {/* User strip */}
         <div className="mx-4 mt-auto mb-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 flex items-center gap-3 hover:bg-slate-800 transition-colors cursor-pointer">
-          <Avatar initials={currentUser.avatar} color={currentUser.color} size={32} />
+          <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-slate-200 truncate">
               {currentUser.name}
