@@ -4,6 +4,7 @@ import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
 import api from "../../lib/api";
+import { formatActivityLine } from "./ActivityLogs";
 
 export default function DashboardOverview({ projects, logs, onAddProject, apiStats }) {
   const [newProjectName, setNewProjectName] = useState("");
@@ -90,6 +91,20 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           value={pendingInvites.toString()}
           badge="Queue"
           badgeColor="green"
+        />
+        <StatCard
+          icon="🏁"
+          label="Total Milestones"
+          value={(apiStats?.totalMilestones ?? 0).toString()}
+          badge="Checkpoints"
+          badgeColor="purple"
+        />
+        <StatCard
+          icon="📈"
+          label="Milestone Completion"
+          value={`${apiStats?.milestoneCompletionRate ?? 0}%`}
+          badge="Progress"
+          badgeColor="emerald"
         />
       </div>
 
@@ -241,20 +256,26 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
             </div>
             
             <div className="flex flex-col max-h-[300px] overflow-y-auto">
-              {logs.length === 0 ? (
+              {!apiStats?.recentActivities || apiStats.recentActivities.length === 0 ? (
                 <div className="text-center py-6 text-slate-500 text-sm">No activities logged.</div>
               ) : (
-                logs.slice(0, 5).map((act) => (
-                  <div key={act.id} className="flex gap-4 items-start border-b border-slate-100 py-3 last:border-0 last:pb-0">
+                apiStats.recentActivities.map((act, idx) => (
+                  <div key={act._id || idx} className="flex gap-4 items-start border-b border-slate-100 py-3 last:border-0 last:pb-0">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-slate-100 text-slate-600 border border-slate-200 text-sm">
-                      ⚡
+                      {act.action?.includes("PROJECT") ? "🗂️" :
+                       act.action?.includes("TASK") ? "✅" :
+                       act.action?.includes("SUBMISSION") ? "📤" :
+                       act.action?.includes("MILESTONE") ? "🏁" :
+                       act.action?.includes("COMMENT") ? "💬" :
+                       act.action?.includes("TEMPLATE") ? "📋" :
+                       act.action?.includes("USER") ? "👤" : "⚡"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="m-0 text-sm text-slate-800 leading-snug">
-                        {act.text}
+                        {formatActivityLine(act)}
                       </p>
-                      <span className="text-xs text-slate-500 mt-1 block">
-                        {act.time}
+                      <span className="text-xs text-slate-500 mt-1 block font-medium">
+                        {new Date(act.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   </div>
