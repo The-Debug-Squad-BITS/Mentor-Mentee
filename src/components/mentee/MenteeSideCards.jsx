@@ -1,21 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import { useDashboardStore } from "../../store/dashboardStore";
 import Button from "../ui/Button";
 
 export function RecentFeedbackCard() {
-  const [feedbacks, setFeedbacks] = useState([]);
-
-  const { user } = useAuthStore();
-  const currentUser = user || {
-    id: "1",
-    name: "Emily Davies",
-    role: "MENTEE"
-  };
-
-  useEffect(() => {
-    // Stubbed until integrated with backend API
-    setFeedbacks([]);
-  }, [currentUser.id]);
+  const { menteeStats } = useDashboardStore();
+  const feedbacks = menteeStats?.recentFeedback || [];
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
@@ -26,30 +16,37 @@ export function RecentFeedbackCard() {
       <div className="flex flex-col gap-3">
         {feedbacks.length === 0 ? (
           <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No advisor comments logged yet.
+            No advisor feedback logged yet.
           </div>
         ) : (
-          feedbacks.map((fb) => (
-            <div
-              key={fb.id}
-              className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2"
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-semibold text-blue-600 truncate max-w-[130px]">
-                  {fb.task}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  {fb.date}
+          feedbacks.map((fb, idx) => {
+            const taskTitle = fb.taskId?.title || fb.taskTitle || "Task Review";
+            const feedbackText = fb.feedback || fb.content || fb.text || "No feedback text provided.";
+            const dateStr = fb.reviewedAt || fb.updatedAt || fb.createdAt;
+            const reviewerName = fb.reviewedBy?.name || fb.reviewedBy || fb.mentorName || "Advisor";
+
+            return (
+              <div
+                key={fb._id || idx}
+                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
+              >
+                <div className="flex justify-between items-center mb-1 gap-2">
+                  <span className="text-sm font-semibold text-blue-600 truncate flex-1">
+                    {taskTitle}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium shrink-0">
+                    {dateStr ? new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ""}
+                  </span>
+                </div>
+                <p className="m-0 text-sm text-slate-700 leading-relaxed italic">
+                  "{feedbackText}"
+                </p>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider self-end mt-1">
+                  — {reviewerName}
                 </span>
               </div>
-              <p className="m-0 text-sm text-slate-700 leading-relaxed italic">
-                "{fb.text}"
-              </p>
-              <span className="text-xs text-slate-500 font-medium self-end mt-1">
-                — {fb.mentor}
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
@@ -130,6 +127,58 @@ export function NotificationsCard() {
                   {n.createdAt}
                 </div>
               </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function UpcomingMilestonesCard() {
+  const { menteeStats } = useDashboardStore();
+  const milestones = menteeStats?.upcomingMilestones || [];
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
+      <h2 className="m-0 text-base font-bold text-slate-900">
+        Upcoming Milestones
+      </h2>
+
+      <div className="flex flex-col gap-3">
+        {milestones.length === 0 ? (
+          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
+            No upcoming milestones.
+          </div>
+        ) : (
+          milestones.map((ms, idx) => (
+            <div
+              key={ms._id || idx}
+              className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-sm font-semibold text-slate-900 leading-snug">
+                  {ms.title}
+                </span>
+                <span className="text-xs font-semibold uppercase shrink-0">
+                  <span className={`px-2 py-0.5 rounded text-[10px] ${
+                    ms.status === "COMPLETED" ? "bg-emerald-100 text-emerald-800" :
+                    ms.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-800" :
+                    ms.status === "OVERDUE" ? "bg-red-100 text-red-800" :
+                    "bg-slate-100 text-slate-800"
+                  }`}>
+                    {ms.status?.replace("_", " ")}
+                  </span>
+                </span>
+              </div>
+              {ms.dueDate && (
+                <div className="flex items-center gap-1 text-xs text-slate-500">
+                  <span>📅 Due:</span>
+                  <span className="font-semibold">
+                    {new Date(ms.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
             </div>
           ))
         )}
