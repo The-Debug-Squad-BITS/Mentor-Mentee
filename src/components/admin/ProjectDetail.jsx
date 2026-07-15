@@ -4,12 +4,16 @@ import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
+import MilestonesSection from "./MilestonesSection";
 
 export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Tab state for project detail sections
+  const [activeTab, setActiveTab] = useState("Overview");
 
   // Inline actions states
   const [showAssignForm, setShowAssignForm] = useState(false);
@@ -252,7 +256,31 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
         </div>
       )}
 
-      {/* Main Grid */}
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+          {["Overview", "Milestones"].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2.5 rounded-lg text-sm font-semibold transition-all border-0 cursor-pointer ${
+                activeTab === tab
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "bg-transparent text-slate-600 hover:text-slate-900"
+              }`}
+              style={{ fontFamily: "inherit" }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === "Milestones" ? (
+        <MilestonesSection projectId={projectId} />
+      ) : (
+      /* Main Grid — Overview tab */
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left 2 Columns */}
         <div className="lg:col-span-2 flex flex-col gap-6">
@@ -377,6 +405,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
