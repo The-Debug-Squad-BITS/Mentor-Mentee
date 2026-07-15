@@ -15,6 +15,7 @@ import NewUserModal from "../components/mentor/NewUserModal";
 import { useAuthStore } from "../store/authStore";
 import { useDashboardStore } from "../store/dashboardStore";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
+import TemplatesSection from "../components/admin/TemplatesSection";
 import api from "../lib/api";
 
 export default function MentorDashboard() {
@@ -81,6 +82,8 @@ export default function MentorDashboard() {
         return <MentorReviews />;
       case "Activity":
         return <MentorActivity />;
+      case "Templates":
+        return <TemplatesSection />;
       case "Profile":
         return <MentorProfile />;
       default:
