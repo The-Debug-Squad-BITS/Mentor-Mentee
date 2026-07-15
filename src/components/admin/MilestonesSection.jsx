@@ -6,6 +6,7 @@ import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useMilestoneStore } from "../../store/milestoneStore";
 import { toast } from "react-toastify";
+import CommentSection from "../ui/CommentSection";
 
 const MILESTONE_STATUSES = ["UPCOMING", "IN_PROGRESS", "COMPLETED", "OVERDUE"];
 
@@ -326,6 +327,9 @@ export default function MilestonesSection({ projectId }) {
             </div>
           )}
         </div>
+
+        {/* Comments on this milestone */}
+        <CommentSection entityType="MILESTONE" entityId={currentMilestone._id} />
       </div>
     );
   }

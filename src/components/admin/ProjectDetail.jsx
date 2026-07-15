@@ -5,6 +5,7 @@ import Button from "../ui/Button";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import MilestonesSection from "./MilestonesSection";
+import CommentSection from "../ui/CommentSection";
 
 export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [project, setProject] = useState(null);
@@ -259,7 +260,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       {/* Tab Navigation */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
-          {["Overview", "Milestones"].map(tab => (
+          {["Overview", "Milestones", "Comments"].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -279,6 +280,8 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       {/* Tab Content */}
       {activeTab === "Milestones" ? (
         <MilestonesSection projectId={projectId} />
+      ) : activeTab === "Comments" ? (
+        <CommentSection entityType="PROJECT" entityId={projectId} />
       ) : (
       /* Main Grid — Overview tab */
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

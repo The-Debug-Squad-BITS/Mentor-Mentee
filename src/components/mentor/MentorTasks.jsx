@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
+import CommentSection from "../ui/CommentSection";
 
 export default function MentorTasks() {
   const [projects, setProjects] = useState([]);
@@ -379,6 +380,9 @@ export default function MentorTasks() {
             >
               Delete This Task
             </Button>
+
+            {/* Task comments */}
+            <CommentSection entityType="TASK" entityId={selectedTask._id} />
           </div>
         )}
       </div>

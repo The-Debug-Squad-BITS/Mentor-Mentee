@@ -4,6 +4,7 @@ import api from "../../lib/api";
 import TaskSubmitModal from "./TaskSubmitModal";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import CommentSection from "../ui/CommentSection";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -267,6 +268,9 @@ export default function MenteeTasks() {
                       ✅ Approved
                     </div>
                   )}
+
+                  {/* Task comments */}
+                  <CommentSection entityType="TASK" entityId={task._id} />
                 </div>
               </div>
             );
