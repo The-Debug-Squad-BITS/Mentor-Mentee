@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useChatStore } from "../../store/chatStore";
+import { getSocket, connectSocket } from "../../lib/socket";
 import { toast } from "react-toastify";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -274,7 +275,7 @@ function MessageBubble({ message, mine, canDelete, onEdit, onDelete }) {
 export default function ChatSection() {
   const { user } = useAuthStore();
   const {
-    rooms, activeRoomId, messagesByRoom, paginationByRoom,
+    rooms, activeRoomId, messagesByRoom, paginationByRoom, typingByRoom,
     setRooms, setActiveRoom, setMessages, prependMessages, addMessage, updateMessage, removeMessage,
   } = useChatStore();
 
@@ -285,6 +286,7 @@ export default function ChatSection() {
   const [composer, setComposer] = useState("");
   const [newChatOpen, setNewChatOpen] = useState(false);
   const endRef = useRef(null);
+  const typingTimeout = useRef(null);
 
   const canStartChat = user?.role === "ADMIN" || user?.role === "MENTOR";
   const messages = messagesByRoom[activeRoomId] || [];
@@ -308,6 +310,72 @@ export default function ChatSection() {
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
+
+  // ── Real-time: register socket listeners once ─────────────────────────────
+  useEffect(() => {
+    const socket = connectSocket() || getSocket();
+    if (!socket) return;
+
+    const onNew = ({ message }) => {
+      const store = useChatStore.getState();
+      store.addMessage(message.roomId, message);
+      // Live-update the conversation list preview + ordering (no refetch).
+      const preview = message.content || (message.messageType !== "TEXT" ? "📎 Attachment" : "");
+      const next = store.rooms.map((r) =>
+        r._id === message.roomId ? { ...r, lastMessage: preview, lastMessageAt: message.createdAt } : r
+      );
+      next.sort((a, b) => new Date(b.lastMessageAt || 0) - new Date(a.lastMessageAt || 0));
+      store.setRooms(next);
+    };
+    const onEdited = ({ message }) => useChatStore.getState().updateMessage(message.roomId, message);
+    const onDeleted = ({ messageId, roomId }) => useChatStore.getState().removeMessage(roomId, messageId);
+    const onTyping = ({ roomId, userId, userName }) =>
+      useChatStore.setState((s) => ({
+        typingByRoom: {
+          ...s.typingByRoom,
+          [roomId]: [...(s.typingByRoom[roomId] || []).filter((u) => u.userId !== userId), { userId, userName }],
+        },
+      }));
+    const onStopTyping = ({ roomId, userId }) =>
+      useChatStore.setState((s) => ({
+        typingByRoom: {
+          ...s.typingByRoom,
+          [roomId]: (s.typingByRoom[roomId] || []).filter((u) => u.userId !== userId),
+        },
+      }));
+    const onChatError = ({ message }) => {
+      console.error("chat_error:", message);
+      toast.error(message || "Chat error.");
+    };
+
+    socket.on("new_message", onNew);
+    socket.on("message_edited", onEdited);
+    socket.on("message_deleted", onDeleted);
+    socket.on("user_typing", onTyping);
+    socket.on("user_stop_typing", onStopTyping);
+    socket.on("chat_error", onChatError);
+
+    return () => {
+      socket.off("new_message", onNew);
+      socket.off("message_edited", onEdited);
+      socket.off("message_deleted", onDeleted);
+      socket.off("user_typing", onTyping);
+      socket.off("user_stop_typing", onStopTyping);
+      socket.off("chat_error", onChatError);
+    };
+  }, []);
+
+  // ── Real-time: join the active room, leave on switch/unmount ──────────────
+  useEffect(() => {
+    if (!activeRoomId) return;
+    const socket = getSocket();
+    if (!socket) return;
+    socket.emit("join_room", activeRoomId); // NOTE: bare string, not an object
+    return () => {
+      socket.emit("leave_room", activeRoomId);
+      useChatStore.setState((s) => ({ typingByRoom: { ...s.typingByRoom, [activeRoomId]: [] } }));
+    };
+  }, [activeRoomId]);
 
   // ── Open a room: load history (newest→ store ascending) + mark read ───────
   const openRoom = async (room) => {
@@ -348,21 +416,41 @@ export default function ChatSection() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, activeRoomId]);
 
-  // ── Send (REST — Step 3 swaps to socket) ──────────────────────────────────
-  const handleSend = async (e) => {
+  // ── Send: prefer the socket; the new_message broadcast appends it (de-duped) ─
+  const handleSend = (e) => {
     e.preventDefault();
-    if (!composer.trim() || !activeRoomId) return;
-    setSending(true);
-    try {
-      const res = await api.post(`/chat/rooms/${activeRoomId}/messages`, { content: composer.trim() });
-      addMessage(activeRoomId, res.data.data.message);
+    const text = composer.trim();
+    if (!text || !activeRoomId) return;
+    const socket = getSocket();
+
+    if (socket && socket.connected) {
+      socket.emit("send_message", { roomId: activeRoomId, content: text, messageType: "TEXT" });
+      socket.emit("stop_typing", { roomId: activeRoomId });
+      if (typingTimeout.current) clearTimeout(typingTimeout.current);
       setComposer("");
-      loadRooms(); // refresh last-message preview + ordering
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send message.");
-    } finally {
-      setSending(false);
+      return;
     }
+
+    // Fallback: REST when the socket is unavailable (other room members still get
+    // the broadcast because the REST send also emits new_message server-side).
+    setSending(true);
+    api
+      .post(`/chat/rooms/${activeRoomId}/messages`, { content: text })
+      .then((res) => { addMessage(activeRoomId, res.data.data.message); setComposer(""); loadRooms(); })
+      .catch((err) => toast.error(err.response?.data?.message || "Failed to send message."))
+      .finally(() => setSending(false));
+  };
+
+  // ── Typing indicator: emit `typing`, debounce `stop_typing` after idle ────
+  const handleComposerChange = (e) => {
+    setComposer(e.target.value);
+    const socket = getSocket();
+    if (!socket || !socket.connected || !activeRoomId) return;
+    socket.emit("typing", { roomId: activeRoomId });
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("stop_typing", { roomId: activeRoomId });
+    }, 1500);
   };
 
   const handleEdit = async (id, content) => {
@@ -515,11 +603,19 @@ export default function ChatSection() {
                 )}
               </div>
 
+              {/* Typing indicator */}
+              {(typingByRoom[activeRoomId] || []).length > 0 && (
+                <div className="px-4 py-1.5 text-xs text-slate-500 italic bg-white border-t border-slate-100">
+                  {typingByRoom[activeRoomId].map((u) => u.userName).join(", ")}{" "}
+                  {typingByRoom[activeRoomId].length === 1 ? "is" : "are"} typing…
+                </div>
+              )}
+
               {/* Composer */}
-              <form onSubmit={handleSend} className="p-3 border-t border-slate-200 flex items-end gap-2 bg-white">
+              <form onSubmit={handleSend} className={`p-3 flex items-end gap-2 bg-white ${(typingByRoom[activeRoomId] || []).length > 0 ? "" : "border-t border-slate-200"}`}>
                 <textarea
                   value={composer}
-                  onChange={(e) => setComposer(e.target.value)}
+                  onChange={handleComposerChange}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
