@@ -12,6 +12,7 @@ import AdminSettings from "../components/admin/AdminSettings";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
 import CreateUserModal from "../components/admin/CreateUserModal";
 import TemplatesSection from "../components/admin/TemplatesSection";
+import ChatSection from "../components/chat/ChatSection";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
@@ -123,6 +124,8 @@ export default function AdminDashboard() {
         return <InvitationsList />;
       case "Activity":
         return <ActivityLogs />;
+      case "Messages":
+        return <ChatSection />;
       case "Templates":
         return <TemplatesSection />;
       case "Settings":
