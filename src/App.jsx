@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
+import { connectSocket } from "./lib/socket";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -92,6 +94,14 @@ function UnauthorizedPage() {
 // ALL    → /change-password
 
 export default function App() {
+  const token = useAuthStore((s) => s.token);
+
+  // Reconnect the real-time socket on app load when a session is already persisted
+  // (login/logout are handled inside the auth store). connectSocket() is idempotent.
+  useEffect(() => {
+    if (token) connectSocket();
+  }, [token]);
+
   return (
     <BrowserRouter>
       <Routes>
