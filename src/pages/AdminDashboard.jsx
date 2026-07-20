@@ -14,6 +14,7 @@ import CreateUserModal from "../components/admin/CreateUserModal";
 import TemplatesSection from "../components/admin/TemplatesSection";
 import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
+import CalendarSection from "../components/calendar/CalendarSection";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
@@ -129,6 +130,8 @@ export default function AdminDashboard() {
         return <ChatSection />;
       case "Meetings":
         return <MeetingsSection />;
+      case "Calendar":
+        return <CalendarSection />;
       case "Templates":
         return <TemplatesSection />;
       case "Settings":
