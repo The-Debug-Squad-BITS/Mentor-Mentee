@@ -4,6 +4,7 @@ import api from "../../lib/api";
 import TaskSubmitModal from "./TaskSubmitModal";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import CommentSection from "../ui/CommentSection";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -178,6 +179,20 @@ export default function MenteeTasks() {
                     </span>
                   </div>
 
+                  {/* Milestone badge — shown when task is linked to a milestone */}
+                  {task.milestoneId && (
+                    <div className="flex items-center gap-1.5">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                      </svg>
+                      <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">
+                        {task.milestoneId?.title || "Milestone"}
+                      </span>
+                    </div>
+                  )}
+
                   <h3 className="m-0 text-base md:text-lg font-bold text-slate-900 tracking-tight leading-snug">
                     {task.title}
                   </h3>
@@ -267,6 +282,9 @@ export default function MenteeTasks() {
                       ✅ Approved
                     </div>
                   )}
+
+                  {/* Task comments */}
+                  <CommentSection entityType="TASK" entityId={task._id} />
                 </div>
               </div>
             );

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import CommentSection from "../ui/CommentSection";
 
 export default function MentorReviews() {
   const [submissions, setSubmissions] = useState([]);
@@ -301,6 +302,9 @@ export default function MentorReviews() {
                         </Button>
                       </div>
                     </div>
+
+                    {/* Comments on this submission */}
+                    <CommentSection entityType="SUBMISSION" entityId={sub._id} />
                   </div>
                 );
               })}

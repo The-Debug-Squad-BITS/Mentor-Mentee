@@ -10,6 +10,11 @@ const statusColorsMap = {
   "In Progress": { bg: "bg-blue-50 border-blue-200 text-blue-700" },
   "Under Review": { bg: "bg-amber-50 border-amber-200 text-amber-700" },
   Completed: { bg: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+  // Milestone statuses
+  UPCOMING: { bg: "bg-slate-100 border-slate-200 text-slate-700" },
+  IN_PROGRESS: { bg: "bg-blue-50 border-blue-200 text-blue-700" },
+  COMPLETED: { bg: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+  OVERDUE: { bg: "bg-red-50 border-red-200 text-red-700" },
 };
 
 export default function StatusBadge({ status }) {

@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
+import CommentSection from "../ui/CommentSection";
 
 export default function MentorTasks() {
   const [projects, setProjects] = useState([]);
@@ -26,6 +27,8 @@ export default function MentorTasks() {
   const [taskMenteeId, setTaskMenteeId] = useState("");
   const [taskPriority, setTaskPriority] = useState("MEDIUM");
   const [taskDeadline, setTaskDeadline] = useState("");
+  const [taskMilestoneId, setTaskMilestoneId] = useState("");
+  const [projectMilestones, setProjectMilestones] = useState([]);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState(null);
 
@@ -73,6 +76,25 @@ export default function MentorTasks() {
     loadMentees();
   }, [loadTasks, loadProjects, loadMentees]);
 
+  // ── Load milestones when project changes ────────────────────────────
+  useEffect(() => {
+    const loadMilestones = async () => {
+      if (!taskProjectId) {
+        setProjectMilestones([]);
+        setTaskMilestoneId("");
+        return;
+      }
+      try {
+        const response = await api.get(`/milestones/project/${taskProjectId}`);
+        setProjectMilestones(response.data.data.milestones || []);
+      } catch (err) {
+        console.error("Error loading milestones for project:", err);
+        setProjectMilestones([]);
+      }
+    };
+    loadMilestones();
+  }, [taskProjectId]);
+
   // ── Create task ─────────────────────────────────────────────────────
   const handleLaunchTask = async (e) => {
     e.preventDefault();
@@ -89,6 +111,7 @@ export default function MentorTasks() {
         assignedTo: taskMenteeId,
         priority: taskPriority,
         dueDate: taskDeadline,
+        milestoneId: taskMilestoneId || null,
       });
       // Reset form and close modal
       setTaskTitle("");
@@ -96,6 +119,8 @@ export default function MentorTasks() {
       setTaskMenteeId("");
       setTaskPriority("MEDIUM");
       setTaskDeadline("");
+      setTaskMilestoneId("");
+      setProjectMilestones([]);
       setShowCreateModal(false);
       loadTasks(); // Refresh list
       toast.success("Task assigned successfully!");
@@ -355,6 +380,9 @@ export default function MentorTasks() {
             >
               Delete This Task
             </Button>
+
+            {/* Task comments */}
+            <CommentSection entityType="TASK" entityId={selectedTask._id} />
           </div>
         )}
       </div>
@@ -460,6 +488,24 @@ export default function MentorTasks() {
                   />
                 </div>
               </div>
+
+              {/* Milestone Dropdown (Phase 2) */}
+              {taskProjectId && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">Milestone (optional)</label>
+                  <select
+                    value={taskMilestoneId}
+                    onChange={(e) => setTaskMilestoneId(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    disabled={createLoading}
+                  >
+                    <option value="">No Milestone</option>
+                    {projectMilestones.map(m => (
+                      <option key={m._id} value={m._id}>{m.title}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 justify-end mt-2">
