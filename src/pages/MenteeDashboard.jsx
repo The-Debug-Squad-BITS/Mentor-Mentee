@@ -12,6 +12,7 @@ import MenteeActivity from "../components/mentee/MenteeActivity";
 import MenteeProfile from "../components/mentee/MenteeProfile";
 import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
+import CalendarSection from "../components/calendar/CalendarSection";
 import { useAuthStore } from "../store/authStore";
 
 export default function MenteeDashboard() {
@@ -70,6 +71,8 @@ export default function MenteeDashboard() {
         return <ChatSection />;
       case "Meetings":
         return <MeetingsSection />;
+      case "Calendar":
+        return <CalendarSection />;
       case "Profile":
         return <MenteeProfile />;
       default:
