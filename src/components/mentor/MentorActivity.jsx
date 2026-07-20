@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
-import { ACTION_LABELS, formatActivityLine } from "../admin/ActivityLogs";
+import { ACTION_LABELS } from "../admin/ActivityLogs";
 
 // ── Entity-type → icon / color chip (reuses same logic) ──────────────────────
 function getEntityMeta(entityType, action) {
@@ -37,32 +37,63 @@ export default function MentorActivity() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
+  const [hasProjects, setHasProjects] = useState(true);
 
-  // ── Load mentor's own activity ────────────────────────────────────────────
-  const loadMyActivity = useCallback(async () => {
+  // ── Load activity across the mentor's assigned projects ────────────────────
+  //
+  // Mentors are NOT authorized for the admin-only /activities/user/:id endpoint,
+  // but they ARE authorized for /activities/project/:projectId on projects they
+  // are assigned to. So we fetch the mentor's projects, then aggregate each
+  // project's timeline into one combined, chronologically-sorted feed.
+  const loadActivity = useCallback(async () => {
     if (!user?._id) return;
     setLoading(true);
     setError(null);
     try {
-      // Mentor can see their own activities via /activities/user/:userId
-      const response = await api.get(`/activities/user/${user._id}`);
-      setActivities(response.data.data.activities || []);
+      const projectsRes = await api.get("/projects", { params: { limit: 50 } });
+      const projects = projectsRes.data.data.projects || [];
+      setHasProjects(projects.length > 0);
+
+      if (projects.length === 0) {
+        setActivities([]);
+        return;
+      }
+
+      // Fetch every assigned project's timeline in parallel; ignore any that fail.
+      const timelines = await Promise.all(
+        projects.map((p) =>
+          api
+            .get(`/activities/project/${p._id}`, { params: { limit: 50 } })
+            .then((res) => res.data.data.activities || [])
+            .catch(() => [])
+        )
+      );
+
+      // Merge, de-duplicate by _id (an entity can belong to more than one query),
+      // and sort newest-first.
+      const merged = [];
+      const seen = new Set();
+      for (const list of timelines) {
+        for (const act of list) {
+          const id = act._id || `${act.action}-${act.createdAt}-${act.entityId}`;
+          if (seen.has(id)) continue;
+          seen.add(id);
+          merged.push(act);
+        }
+      }
+      merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setActivities(merged);
     } catch (err) {
       console.error("Error loading activity:", err);
-      if (err.response?.status === 403) {
-        // Mentor may not have access to /activities/user/:id — fallback gracefully
-        setError("Your activity history is not yet available. Please contact your admin.");
-      } else {
-        setError("Failed to load activity. Please try again.");
-      }
+      setError("Failed to load activity. Please try again.");
     } finally {
       setLoading(false);
     }
   }, [user?._id]);
 
   useEffect(() => {
-    loadMyActivity();
-  }, [loadMyActivity]);
+    loadActivity();
+  }, [loadActivity]);
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
@@ -70,10 +101,10 @@ export default function MentorActivity() {
       {/* Header */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-          My Activity
+          Project Activity
         </h1>
         <p className="m-0 mt-1 text-slate-500 text-sm">
-          Your personal audit trail — tasks assigned, comments posted, reviews completed, and milestones managed.
+          A combined timeline across the projects assigned to you — tasks, submissions, comments, and milestones.
         </p>
       </div>
 
@@ -100,12 +131,14 @@ export default function MentorActivity() {
         <div className="p-6">
           {loading ? (
             <div className="py-16 text-center text-slate-400 text-sm">
-              Loading your activity...
+              Loading activity...
             </div>
           ) : !error && activities.length === 0 ? (
             <div className="py-16 text-center text-slate-400 text-sm">
               <div className="text-4xl mb-3">📭</div>
-              No activities recorded yet. Start by assigning tasks or reviewing submissions!
+              {hasProjects
+                ? "No activity recorded on your projects yet. It will appear here as your mentees work on tasks and submissions."
+                : "No projects are assigned to you yet. Once an admin assigns you a project, its activity will show up here."}
             </div>
           ) : !error && (
             <div className="relative border-l-2 border-slate-100 ml-4 pl-6 flex flex-col gap-0">
@@ -133,7 +166,9 @@ export default function MentorActivity() {
                       </div>
 
                       <p className="m-0 text-slate-700 text-sm leading-relaxed">
-                        <span className="font-semibold text-slate-900">You</span>
+                        <span className="font-semibold text-slate-900">
+                          {activity.userId?.name || "Someone"}
+                        </span>
                         {" "}
                         <span className="text-slate-600">
                           {ACTION_LABELS[activity.action] || activity.action?.replace(/_/g, " ").toLowerCase()}
