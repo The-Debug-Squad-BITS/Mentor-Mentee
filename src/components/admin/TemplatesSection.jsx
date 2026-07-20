@@ -369,14 +369,14 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !startDate || !endDate) return;
+    if (!title.trim() || !description.trim() || !startDate || !endDate) return;
     setLoading(true);
     setError(null);
 
     try {
       const response = await api.post(`/templates/${template._id}/create-project`, {
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description.trim(),
         startDate,
         endDate,
         mentorId: mentorId || undefined,
@@ -458,11 +458,12 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-2">Description *</label>
               <textarea
+                required
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="Optional description..."
+                placeholder="Describe this project..."
                 className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
                 style={{ minHeight: 72 }}
                 disabled={loading}
