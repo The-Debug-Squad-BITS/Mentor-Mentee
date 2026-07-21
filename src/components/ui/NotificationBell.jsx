@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "../../lib/api";
 import { useNotificationStore } from "../../store/notificationStore";
 import { useAuthStore } from "../../store/authStore";
-import { getSocket } from "../../lib/socket";
+import { getSocket, connectSocket } from "../../lib/socket";
 import { toast } from "react-toastify";
 
 // Icon per notification type
@@ -37,7 +37,12 @@ export default function NotificationBell() {
     const fetchNotifications = async () => {
       try {
         const response = await api.get("/notifications");
-        setNotifications(response.data.data.notifications || []);
+        const list = response.data.data.notifications || [];
+        setNotifications(list);
+        // Backstop: seed the badge from REST so the unread count is correct even
+        // if the socket's initial `notification_count` was missed (e.g. right
+        // after a page refresh). Live socket events still override this.
+        setUnreadCount(list.filter((n) => !n.isRead).length);
       } catch {
         /* silent fail — don't disrupt the user */
       }
@@ -46,12 +51,16 @@ export default function NotificationBell() {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // 30 sec
     return () => clearInterval(interval);
-  }, [token, setNotifications]);
+  }, [token, setNotifications, setUnreadCount]);
 
   // ── Socket Listeners ───────────────────────────────────────────────────
   useEffect(() => {
     if (!token) return;
-    const socket = getSocket();
+    // On a fresh login the auth store has already opened the socket. On a page
+    // refresh it may not exist yet (App's connect effect runs AFTER this child
+    // effect), so ensure it here — connectSocket() is idempotent and reuses any
+    // existing socket. Without this the listeners never register after a reload.
+    const socket = getSocket() || connectSocket();
     if (!socket) return;
 
     const handleCount = ({ unreadCount }) => setUnreadCount(unreadCount);
