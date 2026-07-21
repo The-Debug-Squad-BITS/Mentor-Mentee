@@ -97,6 +97,7 @@ export default function AdminDashboard() {
             logs={logs}
             onAddProject={handleAddProject}
             apiStats={adminStats}
+            onNavigate={handleActiveNavChange}
           />
         );
       case "Projects":

@@ -186,3 +186,139 @@ export function UpcomingMilestonesCard() {
     </div>
   );
 }
+
+export function UpcomingMeetingsCard({ onNavigate }) {
+  const { menteeStats } = useDashboardStore();
+  const meetings = menteeStats?.upcomingMeetings || [];
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>📅</span> Upcoming Meetings
+        </h2>
+        {onNavigate && (
+          <Button
+            variant="ghost"
+            onClick={() => onNavigate("Meetings")}
+            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2 py-1 rounded"
+          >
+            View All
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {meetings.length === 0 ? (
+          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
+            No upcoming meetings.
+          </div>
+        ) : (
+          meetings.map((meeting, idx) => {
+            const date = new Date(meeting.scheduledAt);
+            const formatted = date.toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            return (
+              <div
+                key={meeting._id || idx}
+                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-sm font-semibold text-slate-900 leading-snug">
+                    {meeting.title}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold shrink-0 ${
+                    meeting.type === "AUDIO" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
+                  }`}>
+                    {meeting.type || "VIDEO"}
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap justify-between items-center text-xs text-slate-550 gap-1 mt-1">
+                  <span>👤 Host: {meeting.hostId?.name || "Advisor"}</span>
+                  <span className="font-semibold text-slate-700">{formatted}</span>
+                </div>
+
+                {meeting.meetingLink && (
+                  <a
+                    href={meeting.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 text-center w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all no-underline inline-block"
+                  >
+                    Join Call ↗
+                  </a>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function UpcomingDeadlinesCard({ onNavigate }) {
+  const { menteeStats } = useDashboardStore();
+  const deadlines = menteeStats?.upcomingDeadlines || [];
+
+  return (
+    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>⏰</span> Upcoming Deadlines
+        </h2>
+        {onNavigate && (
+          <Button
+            variant="ghost"
+            onClick={() => onNavigate("Calendar")}
+            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2 py-1 rounded"
+          >
+            Calendar
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {deadlines.length === 0 ? (
+          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
+            No upcoming deadlines.
+          </div>
+        ) : (
+          deadlines.map((dl, idx) => {
+            const date = new Date(dl.startDate);
+            const formatted = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            const isMilestone = dl.eventType === "MILESTONE_DEADLINE";
+            const badgeCls = isMilestone ? "bg-purple-100 text-purple-800" : "bg-orange-100 text-orange-800";
+            
+            return (
+              <div
+                key={dl._id || idx}
+                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-sm font-semibold text-slate-900 leading-snug">
+                    {dl.title}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold shrink-0 ${badgeCls}`}>
+                    {isMilestone ? "Milestone" : "Task"}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center text-xs text-slate-550 mt-1">
+                  <span>📅 Due Date:</span>
+                  <span className="font-semibold text-slate-700">{formatted}</span>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}

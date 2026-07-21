@@ -6,7 +6,7 @@ import Button from "../ui/Button";
 import api from "../../lib/api";
 import { formatActivityLine } from "./ActivityLogs";
 
-export default function DashboardOverview({ projects, logs, onAddProject, apiStats }) {
+export default function DashboardOverview({ projects, logs, onAddProject, apiStats, onNavigate }) {
   const [newProjectName, setNewProjectName] = useState("");
   
   // Quick invite states
@@ -106,6 +106,14 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           badge="Progress"
           badgeColor="emerald"
         />
+        <StatCard
+          icon="💬"
+          label="Active Chat Rooms"
+          value={(apiStats?.activeChatRooms ?? 0).toString()}
+          badge="Chats"
+          badgeColor="indigo"
+          onClick={onNavigate ? () => onNavigate("Messages") : undefined}
+        />
       </div>
 
       {/* Main split grid */}
@@ -171,6 +179,8 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
               </table>
             </div>
           </div>
+          
+          <UpcomingMeetingsWidget meetings={apiStats?.upcomingMeetings} onNavigate={onNavigate} />
         </div>
 
         {/* Right Column: Side Actions & Feeds */}
@@ -284,6 +294,93 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function UpcomingMeetingsWidget({ meetings = [], onNavigate }) {
+  const formatWhen = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+    const isTomorrow = d.toDateString() === tomorrow.toDateString();
+    const time = d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    if (sameDay) return `Today, ${time}`;
+    if (isTomorrow) return `Tomorrow, ${time}`;
+    return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}, ${time}`;
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col gap-5 mt-6">
+      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div>
+          <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>📅</span> Upcoming Meetings
+          </h2>
+          <p className="m-0 text-slate-500 text-xs mt-1">Scheduled video and audio syncs.</p>
+        </div>
+        {onNavigate && (
+          <Button
+            variant="ghost"
+            onClick={() => onNavigate("Meetings")}
+            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-transparent font-semibold transition-all"
+          >
+            View All
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {!meetings || meetings.length === 0 ? (
+          <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-lg border border-slate-200">
+            No upcoming meetings scheduled.
+          </div>
+        ) : (
+          meetings.map((meeting) => (
+            <div
+              key={meeting._id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 hover:bg-slate-50 border border-slate-200/60 rounded-xl gap-3 transition-colors"
+            >
+              <div className="flex gap-3 items-start min-w-0">
+                <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-blue-50 text-blue-600 font-semibold text-sm border border-blue-100 shadow-sm">
+                  {meeting.type === "AUDIO" ? "🎙️" : "🎥"}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="m-0 text-sm font-bold text-slate-900 truncate">
+                    {meeting.title}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
+                    <span className="font-semibold text-slate-700">{formatWhen(meeting.scheduledAt)}</span>
+                    <span className="text-slate-300">•</span>
+                    <span>{meeting.duration || 30} mins</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="truncate">Host: {meeting.hostId?.name || "Unknown"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                {meeting.meetingLink ? (
+                  <a
+                    href={meeting.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all no-underline inline-flex items-center gap-1"
+                  >
+                    <span>Join</span> ↗
+                  </a>
+                ) : (
+                  <span className="px-2.5 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-lg">
+                    No Link
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

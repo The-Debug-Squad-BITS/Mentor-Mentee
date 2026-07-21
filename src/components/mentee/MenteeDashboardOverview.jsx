@@ -1,7 +1,13 @@
 import MenteeQuickStats from "./MenteeQuickStats";
 import AssignedProjectsCard from "./AssignedProjectsCard";
 import MyTasksCard from "./MyTasksCard";
-import { RecentFeedbackCard, NotificationsCard, UpcomingMilestonesCard } from "./MenteeSideCards";
+import {
+  RecentFeedbackCard,
+  NotificationsCard,
+  UpcomingMilestonesCard,
+  UpcomingMeetingsCard,
+  UpcomingDeadlinesCard
+} from "./MenteeSideCards";
 
 export default function MenteeDashboardOverview({
   tasks,
@@ -27,6 +33,8 @@ export default function MenteeDashboardOverview({
 
         {/* Right column */}
         <div className="flex flex-col gap-5 w-full lg:flex-1 shrink-0">
+          <UpcomingMeetingsCard onNavigate={onNavigate} />
+          <UpcomingDeadlinesCard onNavigate={onNavigate} />
           <UpcomingMilestonesCard />
           <RecentFeedbackCard />
           <NotificationsCard />
