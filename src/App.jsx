@@ -24,6 +24,12 @@ function ProtectedRoute({ element, allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
+  // Force temp-password users to /change-password before accessing any dashboard.
+  // Skip this check when we're already rendering the ChangePasswordPage itself.
+  if (user.mustChangePassword && element?.type?.name !== 'ChangePasswordPage') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
@@ -38,6 +44,11 @@ function PublicOnlyRoute({ element }) {
   const { user, token } = useAuthStore();
 
   if (token && user) {
+    // Temp-password users must change their password first — don't let
+    // them land on a dashboard if they revisit /login or /signup.
+    if (user.mustChangePassword) {
+      return <Navigate to="/change-password" replace />;
+    }
     if (user.role === "ADMIN")  return <Navigate to="/admin/dashboard"  replace />;
     if (user.role === "MENTOR") return <Navigate to="/mentor/dashboard" replace />;
     if (user.role === "MENTEE") return <Navigate to="/mentee/dashboard" replace />;
