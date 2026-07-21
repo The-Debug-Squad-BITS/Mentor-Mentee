@@ -1,15 +1,21 @@
 const badgeStyles = {
   green: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
   blue: "bg-blue-50 text-blue-600 border-blue-200/60",
+  purple: "bg-purple-50 text-purple-600 border-purple-200/60",
+  amber: "bg-amber-50 text-amber-600 border-amber-200/60",
+  red: "bg-red-50 text-red-600 border-red-200/60",
+  indigo: "bg-indigo-50 text-indigo-600 border-indigo-200/60",
 };
 
-export default function StatCard({ icon, label, value, badge, badgeColor }) {
+export default function StatCard({ icon, label, value, badge, badgeColor, onClick }) {
   return (
     <div
-      className="bg-white rounded-xl md:rounded-2xl
+      onClick={onClick}
+      className={`bg-white rounded-xl md:rounded-2xl
         p-4 md:p-5 lg:p-6
         flex-1 min-w-35 md:min-w-40 lg:min-w-45
-        border border-slate-200/75 relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-slate-300"
+        border border-slate-200/75 relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-slate-300
+        ${onClick ? "cursor-pointer select-none" : ""}`}
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.01)" }}
     >
       <div className="flex justify-between items-start">
@@ -19,11 +25,13 @@ export default function StatCard({ icon, label, value, badge, badgeColor }) {
         </div>
 
         {/* Badge */}
-        <span
-          className={`px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-bold border ${badgeStyles[badgeColor] || badgeStyles.blue}`}
-        >
-          {badge}
-        </span>
+        {badge && (
+          <span
+            className={`px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-bold border ${badgeStyles[badgeColor] || badgeStyles.blue}`}
+          >
+            {badge}
+          </span>
+        )}
       </div>
 
       <div className="mt-4 lg:mt-5">
