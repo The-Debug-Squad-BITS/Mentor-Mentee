@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import api from "../../lib/api";
 import { useNotificationStore } from "../../store/notificationStore";
 import { useAuthStore } from "../../store/authStore";
+import { getSocket } from "../../lib/socket";
+import { toast } from "react-toastify";
 
 // Icon per notification type
 const typeIcons = {
@@ -26,10 +28,7 @@ export default function NotificationBell() {
   const dropdownRef = useRef(null);
 
   const { token } = useAuthStore();
-  const { notifications, setNotifications, markRead } = useNotificationStore();
-
-  // Unread count for badge
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const { notifications, setNotifications, markRead, unreadCount, setUnreadCount, prependNotification } = useNotificationStore();
 
   // ── Fetch on mount + poll every 30 seconds ─────────────────────────────
   useEffect(() => {
@@ -49,6 +48,27 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, [token, setNotifications]);
 
+  // ── Socket Listeners ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!token) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleCount = ({ unreadCount }) => setUnreadCount(unreadCount);
+    const handleNew = ({ notification }) => {
+      prependNotification(notification);
+      toast.info(notification.title);
+    };
+
+    socket.on('notification_count', handleCount);
+    socket.on('new_notification', handleNew);
+
+    return () => {
+      socket.off('notification_count', handleCount);
+      socket.off('new_notification', handleNew);
+    };
+  }, [token, setUnreadCount, prependNotification]);
+
   // ── Close dropdown on outside click ───────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
@@ -64,10 +84,26 @@ export default function NotificationBell() {
   const handleNotificationClick = async (notification) => {
     if (notification.isRead) return; // already read
     try {
-      await api.patch(`/notifications/${notification._id}/read`);
-      markRead(notification._id); // optimistic update — no re-fetch needed
+      const socket = getSocket();
+      if (socket) {
+        socket.emit('mark_notification_read', { notificationId: notification._id });
+      } else {
+        await api.patch(`/notifications/${notification._id}/read`);
+      }
+      markRead(notification._id); // optimistic update
     } catch {
       /* silent fail */
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('mark_all_read');
+      // Optimistic update
+      const updated = notifications.map(n => ({ ...n, isRead: true }));
+      setNotifications(updated);
+      setUnreadCount(0);
     }
   };
 
@@ -111,9 +147,17 @@ export default function NotificationBell() {
           <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <span className="text-sm font-bold text-slate-800">Notifications</span>
             {unreadCount > 0 && (
-              <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
-                {unreadCount} unread
-              </span>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handleMarkAllRead}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                >
+                  Mark all read
+                </button>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
+                  {unreadCount} unread
+                </span>
+              </div>
             )}
           </div>
 
