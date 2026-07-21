@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useChatStore } from "../../store/chatStore";
@@ -207,7 +207,9 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
 }
 
 // ── Single Message Bubble ─────────────────────────────────────────────────────
-function MessageBubble({ message, mine, canDelete, onEdit, onDelete }) {
+// memo: with stable onEdit/onDelete (useCallback below) a bubble skips re-render
+// on unrelated store changes like other users' typing ticks.
+const MessageBubble = memo(function MessageBubble({ message, mine, canDelete, onEdit, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
   const senderName = message.senderId?.name || (mine ? "You" : "Unknown");
@@ -269,7 +271,7 @@ function MessageBubble({ message, mine, canDelete, onEdit, onDelete }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Main Chat Section ─────────────────────────────────────────────────────────
 export default function ChatSection() {
@@ -287,6 +289,11 @@ export default function ChatSection() {
   const [newChatOpen, setNewChatOpen] = useState(false);
   const endRef = useRef(null);
   const typingTimeout = useRef(null);
+
+  // Clear the pending "stop_typing" debounce if the user leaves chat mid-typing.
+  useEffect(() => () => {
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+  }, []);
 
   const canStartChat = user?.role === "ADMIN" || user?.role === "MENTOR";
   const messages = messagesByRoom[activeRoomId] || [];
@@ -453,16 +460,16 @@ export default function ChatSection() {
     }, 1500);
   };
 
-  const handleEdit = async (id, content) => {
+  const handleEdit = useCallback(async (id, content) => {
     try {
       const res = await api.patch(`/chat/messages/${id}`, { content });
       updateMessage(activeRoomId, res.data.data.message);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to edit message.");
     }
-  };
+  }, [activeRoomId, updateMessage]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm("Delete this message?")) return;
     try {
       await api.delete(`/chat/messages/${id}`);
@@ -470,7 +477,7 @@ export default function ChatSection() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete message.");
     }
-  };
+  }, [activeRoomId, removeMessage]);
 
   const onRoomCreated = (room) => {
     setNewChatOpen(false);

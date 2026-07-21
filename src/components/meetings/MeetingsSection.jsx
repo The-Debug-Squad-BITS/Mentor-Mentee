@@ -436,6 +436,9 @@ export default function MeetingsSection() {
       if (detailIdRef.current) {
         const fresh = list.find((m) => m._id === detailIdRef.current);
         if (fresh) setDetailMeeting(fresh);
+        // Meeting dropped out of the current list (e.g. completed/cancelled while on
+        // the Upcoming tab) — close the stale detail modal instead of leaving it open.
+        else { detailIdRef.current = null; setDetailMeeting(null); }
       }
     } catch (err) {
       console.error("Error loading meetings:", err);

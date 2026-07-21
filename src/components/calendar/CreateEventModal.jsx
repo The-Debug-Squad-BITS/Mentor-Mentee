@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
 import { toast } from "react-toastify";
+import { toLocalInput } from "../../lib/datetime";
 
 const COLOR_PRESETS = [
   { name: "EduFlow Blue", hex: "#4A90D9" },
@@ -16,10 +17,11 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
   const { addEvent } = useCalendarStore();
   const [loading, setLoading] = useState(false);
 
-  // Default start date formatted for datetime-local input
+  // Default to the clicked day at local midnight, or "now" in local time — both
+  // formatted for a datetime-local input so the value shown is the value saved.
   const initialDateStr = defaultDate
-    ? new Date(defaultDate).toISOString().slice(0, 16)
-    : new Date().toISOString().slice(0, 16);
+    ? toLocalInput(new Date(`${defaultDate}T00:00`))
+    : toLocalInput(new Date());
 
   const [formData, setFormData] = useState({
     title: "",
