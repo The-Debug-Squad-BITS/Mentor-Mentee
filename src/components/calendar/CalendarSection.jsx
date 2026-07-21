@@ -296,17 +296,22 @@ export default function CalendarSection() {
         </div>
       </div>
 
-      {/* Modals */}
-      <CreateEventModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        defaultDate={selectedDefaultDate}
-      />
+      {/* Modals — mounted only while open so their hooks run in a consistent
+          order (avoids the "rendered more hooks than previous render" crash) */}
+      {isCreateOpen && (
+        <CreateEventModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          defaultDate={selectedDefaultDate}
+        />
+      )}
 
-      <EventDetailModal
-        event={selectedEvent}
-        onClose={() => setSelectedEvent(null)}
-      />
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
     </div>
   );
 }
