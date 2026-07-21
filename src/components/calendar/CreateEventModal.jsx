@@ -13,8 +13,6 @@ const COLOR_PRESETS = [
 ];
 
 export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
-  if (!isOpen) return null;
-
   const { addEvent } = useCalendarStore();
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +29,9 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
     isAllDay: false,
     color: "#4A90D9",
   });
+
+  // All hooks are declared above, so bailing out here keeps hook order stable.
+  if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
