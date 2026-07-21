@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "../../lib/api";
+import { localDayKey } from "../../lib/datetime";
 import { useCalendarStore } from "../../store/calendarStore";
 import CreateEventModal from "./CreateEventModal";
 import EventDetailModal from "./EventDetailModal";
@@ -133,14 +134,21 @@ export default function CalendarSection() {
     return calendarGrid;
   };
 
-  // Helper to find events for a specific date cell
-  const getEventsForDate = (dateKey) => {
-    return events.filter((ev) => {
-      if (!ev.startDate) return false;
-      const eventStartStr = new Date(ev.startDate).toISOString().slice(0, 10);
-      return eventStartStr === dateKey;
-    });
-  };
+  // Bucket events by their LOCAL calendar day once per events change (not once per
+  // cell). Using the local day — not the UTC day from toISOString() — keeps events
+  // on the date the user actually sees (fixes wrong-day placement in IST etc.).
+  const eventsByDay = useMemo(() => {
+    const map = new Map();
+    for (const ev of events) {
+      if (!ev.startDate) continue;
+      const key = localDayKey(ev.startDate);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(ev);
+    }
+    return map;
+  }, [events]);
+
+  const getEventsForDate = (dateKey) => eventsByDay.get(dateKey) || [];
 
   const isToday = (dayObj) => {
     const today = new Date();

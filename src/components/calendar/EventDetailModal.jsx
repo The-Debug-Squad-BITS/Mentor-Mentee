@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
 import { toast } from "react-toastify";
+import { toLocalInput } from "../../lib/datetime";
 
 const EVENT_TYPE_BADGES = {
   TASK_DEADLINE: { label: "Task Deadline", bg: "bg-amber-100 text-amber-800 border-amber-200", defaultColor: "#E67E22" },
@@ -20,8 +21,8 @@ export default function EventDetailModal({ event, onClose }) {
   const [editForm, setEditForm] = useState({
     title: event?.title || "",
     description: event?.description || "",
-    startDate: event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
-    endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+    startDate: toLocalInput(event?.startDate),
+    endDate: toLocalInput(event?.endDate),
     isAllDay: !!event?.isAllDay,
     color: event?.color || "#4A90D9",
   });

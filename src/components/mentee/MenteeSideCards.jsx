@@ -23,7 +23,7 @@ export function RecentFeedbackCard() {
             const taskTitle = fb.taskId?.title || fb.taskTitle || "Task Review";
             const feedbackText = fb.feedback || fb.content || fb.text || "No feedback text provided.";
             const dateStr = fb.reviewedAt || fb.updatedAt || fb.createdAt;
-            const reviewerName = fb.reviewedBy?.name || fb.reviewedBy || fb.mentorName || "Advisor";
+            const reviewerName = fb.reviewedBy?.name || fb.mentorName || "Advisor";
 
             return (
               <div
