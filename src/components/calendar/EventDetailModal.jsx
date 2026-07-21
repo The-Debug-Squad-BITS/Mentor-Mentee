@@ -11,24 +11,24 @@ const EVENT_TYPE_BADGES = {
 };
 
 export default function EventDetailModal({ event, onClose }) {
-  if (!event) return null;
-
   const { updateEventInStore, removeEventFromStore } = useCalendarStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isCustom = event.eventType === "CUSTOM";
-
-  // Edit form state
+  // Edit form state. Optional-chained so every hook stays unconditional even
+  // before the null-event bail-out below (fixes the rules-of-hooks crash).
   const [editForm, setEditForm] = useState({
-    title: event.title || "",
-    description: event.description || "",
-    startDate: event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
-    endDate: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
-    isAllDay: !!event.isAllDay,
-    color: event.color || "#4A90D9",
+    title: event?.title || "",
+    description: event?.description || "",
+    startDate: event?.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
+    endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+    isAllDay: !!event?.isAllDay,
+    color: event?.color || "#4A90D9",
   });
 
+  if (!event) return null;
+
+  const isCustom = event.eventType === "CUSTOM";
   const badgeInfo = EVENT_TYPE_BADGES[event.eventType] || EVENT_TYPE_BADGES.CUSTOM;
 
   const formatDate = (isoString, isAllDay) => {
