@@ -20,6 +20,7 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   const [newProjectEndDate, setNewProjectEndDate] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState(null);
+  const [updatingProjectId, setUpdatingProjectId] = useState(null);
 
   const { projects, setProjects } = useProjectStore();
 
@@ -74,6 +75,22 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       console.error("Create project error:", err);
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  // ── Update project status ───────────────────────────────────────────
+  const handleStatusChange = async (projectId, newStatus) => {
+    setUpdatingProjectId(projectId);
+    try {
+      await api.patch(`/projects/${projectId}`, { status: newStatus });
+      loadProjects();
+      if (onRefresh) onRefresh();
+      toast.success(`Project status updated to ${newStatus.toLowerCase()}.`);
+    } catch (err) {
+      toast.error("Failed to update project status.");
+      console.error("Status update error:", err);
+    } finally {
+      setUpdatingProjectId(null);
     }
   };
 
@@ -219,7 +236,19 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                         <span className="text-slate-400 italic">Unassigned</span>
                       )}
                     </td>
-                    <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
+                    <td className="px-6 py-4">
+                      <select
+                        value={p.status}
+                        onChange={(e) => handleStatusChange(p._id, e.target.value)}
+                        disabled={updatingProjectId === p._id}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer transition-colors shadow-sm"
+                      >
+                        <option value="PLANNED">Planned</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="ON_HOLD">On Hold</option>
+                        <option value="COMPLETED">Completed</option>
+                      </select>
+                    </td>
                     <td className="px-6 py-4 text-xs text-slate-600">
                       {p.startDate ? new Date(p.startDate).toLocaleDateString() : "—"}
                       {" → "}
