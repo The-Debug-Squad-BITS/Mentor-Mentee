@@ -130,7 +130,8 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
   const [selectedMentor, setSelectedMentor] = useState("");
   const [selectedMentees, setSelectedMentees] = useState([]);
-  const [assignLoading, setAssignLoading] = useState(false);
+  const [mentorAssignLoading, setMentorAssignLoading] = useState(false);
+  const [menteeAssignLoading, setMenteeAssignLoading] = useState(false);
 
   // Helper to generate avatar initials from name
   const getInitials = (name) => {
@@ -204,7 +205,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   // ── Assign Mentor ───────────────────────────────────────────────────
   const handleAssignMentor = async () => {
     if (!selectedMentor) return;
-    setAssignLoading(true);
+    setMentorAssignLoading(true);
     try {
       await api.patch(`/projects/${projectId}/assign-mentor`, { mentorId: selectedMentor });
       refreshProjectData();
@@ -214,14 +215,14 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       toast.error("Failed to assign mentor.");
       console.error("Assign mentor error:", err);
     } finally {
-      setAssignLoading(false);
+      setMentorAssignLoading(false);
     }
   };
 
   // ── Assign Mentees ──────────────────────────────────────────────────
   const handleAssignMentees = async () => {
     if (selectedMentees.length === 0) return;
-    setAssignLoading(true);
+    setMenteeAssignLoading(true);
     try {
       await api.patch(`/projects/${projectId}/assign-mentees`, { mentees: selectedMentees });
       refreshProjectData();
@@ -231,7 +232,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       toast.error("Failed to assign mentees.");
       console.error("Assign mentees error:", err);
     } finally {
-      setAssignLoading(false);
+      setMenteeAssignLoading(false);
     }
   };
 
@@ -293,71 +294,80 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
       {/* Assignment overlay panel */}
       {showAssignForm && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-6 shadow-sm">
-          {/* Assign Mentor */}
-          <div className="flex gap-4 flex-wrap items-end">
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Assign Mentor</label>
-              <select
-                value={selectedMentor}
-                onChange={(e) => setSelectedMentor(e.target.value)}
-                className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-              >
-                <option value="">-- Choose Mentor --</option>
-                {mentors.map(m => (
-                  <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
-                ))}
-              </select>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            {/* Assign Mentor Column */}
+            <div className="flex flex-col justify-between bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                  Assign Mentor
+                </label>
+                <select
+                  value={selectedMentor}
+                  onChange={(e) => setSelectedMentor(e.target.value)}
+                  className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                >
+                  <option value="">-- Choose Mentor --</option>
+                  {mentors.map(m => (
+                    <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={handleAssignMentor}
+                  disabled={!selectedMentor || mentorAssignLoading}
+                  className="w-full sm:w-auto"
+                >
+                  {mentorAssignLoading ? "Saving..." : "Save Mentor"}
+                </Button>
+              </div>
             </div>
-            <Button
-              onClick={handleAssignMentor}
-              disabled={!selectedMentor || assignLoading}
-            >
-              {assignLoading ? "Saving..." : "Save Mentor"}
-            </Button>
-          </div>
 
-          <hr className="border-0 border-t border-blue-200 m-0" />
-
-          {/* Assign Mentees (multi-select with checkboxes) */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
-              Assign Mentees ({selectedMentees.length} selected)
-            </label>
-            <div className="border border-slate-300 rounded-lg p-3 max-h-48 overflow-y-auto flex flex-col gap-2 bg-white shadow-inner">
-              {mentees.length === 0 ? (
-                <div className="text-sm text-slate-500 italic py-2">No mentees available.</div>
-              ) : (
-                mentees.map(st => {
-                  const isChecked = selectedMentees.includes(st._id);
-                  return (
-                    <label key={st._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => {
-                          if (isChecked) {
-                            setSelectedMentees(selectedMentees.filter(id => id !== st._id));
-                          } else {
-                            setSelectedMentees([...selectedMentees, st._id]);
-                          }
-                        }}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-                      />
-                      <span className="text-sm font-medium text-slate-800">{st.name}</span>
-                      <span className="text-xs text-slate-500 ml-auto">{st.email}</span>
-                    </label>
-                  );
-                })
-              )}
+            {/* Assign Mentees Column */}
+            <div className="flex flex-col justify-between bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                  Assign Mentees ({selectedMentees.length} selected)
+                </label>
+                <div className="border border-slate-300 rounded-lg p-3 max-h-48 overflow-y-auto flex flex-col gap-2 bg-white shadow-inner">
+                  {mentees.length === 0 ? (
+                    <div className="text-sm text-slate-500 italic py-2">No mentees available.</div>
+                  ) : (
+                    mentees.map(st => {
+                      const isChecked = selectedMentees.includes(st._id);
+                      return (
+                        <label key={st._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (isChecked) {
+                                setSelectedMentees(selectedMentees.filter(id => id !== st._id));
+                              } else {
+                                setSelectedMentees([...selectedMentees, st._id]);
+                              }
+                            }}
+                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                          />
+                          <span className="text-sm font-medium text-slate-800">{st.name}</span>
+                          <span className="text-xs text-slate-500 ml-auto">{st.email}</span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button
+                  onClick={handleAssignMentees}
+                  disabled={selectedMentees.length === 0 || menteeAssignLoading}
+                  className="mt-4 w-full sm:w-auto"
+                >
+                  {menteeAssignLoading ? "Saving..." : "Save Mentees"}
+                </Button>
+              </div>
             </div>
-            <Button
-              onClick={handleAssignMentees}
-              disabled={selectedMentees.length === 0 || assignLoading}
-              className="mt-4"
-            >
-              {assignLoading ? "Saving..." : "Save Mentees"}
-            </Button>
           </div>
         </div>
       )}
@@ -440,7 +450,10 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                     {project.mentees.map(m => (
                       <div key={m._id} className="flex items-center gap-3">
                         <Avatar initials={getInitials(m.name)} color={getColor(m.name)} size={28} />
-                        <span className="font-medium text-slate-800 text-sm truncate">{m.name}</span>
+                        <div className="min-w-0">
+                          <span className="block font-medium text-slate-800 text-sm truncate">{m.name}</span>
+                          <span className="block text-xs text-slate-500 mt-0.5">{m.email || ""}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
