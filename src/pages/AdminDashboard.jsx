@@ -76,16 +76,8 @@ export default function AdminDashboard() {
     }
   }, [token]);
 
-  const handleAddProject = async (name) => {
-    try {
-      await api.post("/projects", {
-        title: name,
-        description: "Active Project",
-      });
-      refreshData();
-    } catch (err) {
-      console.error("Failed to add project:", err);
-    }
+  const handleAddProject = () => {
+    refreshData();
   };
 
   const handleUserCreated = () => {
