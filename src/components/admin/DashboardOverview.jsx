@@ -156,22 +156,22 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {projects.filter(p => p.status !== "Archived").map((p) => (
+                  {projects.filter(p => p.status?.toUpperCase() !== "ARCHIVED").map((p) => (
                     <tr
-                       key={p.id}
+                       key={p._id}
                        className="hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-6 py-4 font-semibold text-slate-900">
-                        {p.name}
+                        {p.title}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {p.mentorName || "Unassigned"}
+                        {p.mentorId?.name || "Unassigned"}
                       </td>
                       <td className="px-6 py-4">
                         <StatusBadge status={p.status} />
                       </td>
                       <td className="px-6 py-4 w-48">
-                        <ProgressBar value={p.progress} />
+                        <ProgressBar value={p.progress || 0} />
                       </td>
                     </tr>
                   ))}

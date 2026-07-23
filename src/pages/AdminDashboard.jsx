@@ -59,18 +59,33 @@ export default function AdminDashboard() {
     if (token) fetchStats();
   }, [token, setAdminStats, navigate]);
 
-  // ── Local db refresh (stubbed out since mock DB is removed) ──────────
-  const refreshData = () => {
-    setProjects([]);
+  // ── Fetch real projects from backend ────────────────────────────
+  const refreshData = async () => {
+    try {
+      const response = await api.get("/projects", { params: { limit: 50 } });
+      setProjects(response.data.data.projects || []);
+    } catch (err) {
+      console.error("Failed to load projects:", err);
+    }
     setLogs([]);
   };
 
   useEffect(() => {
-    refreshData();
-  }, []);
+    if (token) {
+      refreshData();
+    }
+  }, [token]);
 
-  const handleAddProject = (name) => {
-    // Stubbed until integrated with backend api
+  const handleAddProject = async (name) => {
+    try {
+      await api.post("/projects", {
+        title: name,
+        description: "Active Project",
+      });
+      refreshData();
+    } catch (err) {
+      console.error("Failed to add project:", err);
+    }
   };
 
   const handleUserCreated = () => {
