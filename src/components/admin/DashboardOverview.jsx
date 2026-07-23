@@ -159,9 +159,9 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
             <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-slate-50/50">
               <div>
                 <h2 className="m-0 text-base font-bold text-slate-900">
-                  Active Projects Overview
+                  Projects Overview
                 </h2>
-                <p className="m-0 text-slate-500 text-sm mt-1">Projects currently in development.</p>
+                <p className="m-0 text-slate-500 text-sm mt-1">Overview of organizational project tracks.</p>
               </div>
               <div className="flex gap-2">
                 <Button onClick={() => setShowCreateModal(true)}>+ Create Project</Button>

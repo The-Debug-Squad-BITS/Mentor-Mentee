@@ -132,6 +132,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [selectedMentees, setSelectedMentees] = useState([]);
   const [mentorAssignLoading, setMentorAssignLoading] = useState(false);
   const [menteeAssignLoading, setMenteeAssignLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   // Helper to generate avatar initials from name
   const getInitials = (name) => {
@@ -233,6 +234,22 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       console.error("Assign mentees error:", err);
     } finally {
       setMenteeAssignLoading(false);
+    }
+  };
+
+  // ── Change project status ───────────────────────────────────────────
+  const handleStatusChange = async (newStatus) => {
+    setStatusLoading(true);
+    try {
+      await api.patch(`/projects/${projectId}`, { status: newStatus });
+      refreshProjectData();
+      if (onRefresh) onRefresh();
+      toast.success(`Project status updated to ${newStatus.toLowerCase()}.`);
+    } catch (err) {
+      toast.error("Failed to update project status.");
+      console.error("Status update error:", err);
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -501,9 +518,19 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
         <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-6 shadow-sm">
           <h2 className="m-0 text-base font-bold text-slate-900">Project Info</h2>
           <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center text-sm gap-4">
               <span className="font-semibold text-slate-500">Status</span>
-              <StatusBadge status={project.status} />
+              <select
+                value={project.status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                disabled={statusLoading}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer transition-colors shadow-sm"
+              >
+                <option value="PLANNED">Planned</option>
+                <option value="ACTIVE">Active</option>
+                <option value="ON_HOLD">On Hold</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Mentor</span>
