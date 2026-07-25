@@ -64,38 +64,10 @@ export default function MentorOverview({ mentorStats, onNavigate }) {
         />
       </div>
 
-      {/* Main Grid Section */}
+          {/* Main Grid Section */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         {/* Left 2 Columns */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col gap-5 shadow-sm">
-            <div>
-              <h2 className="m-0 text-base font-bold text-slate-900">
-                Dashboard Summary
-              </h2>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Your mentorship activity at a glance.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50 flex flex-col items-center justify-center">
-                <span className="block text-3xl font-bold text-slate-900">{assignedProjects}</span>
-                <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Projects</span>
-              </div>
-              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50 flex flex-col items-center justify-center">
-                <span className="block text-3xl font-bold text-slate-900">{pendingReviews}</span>
-                <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Pending Reviews</span>
-              </div>
-              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50 flex flex-col items-center justify-center">
-                <span className="block text-3xl font-bold text-slate-900">{assignedMentees}</span>
-                <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Mentees</span>
-              </div>
-              <div className="border border-slate-200 rounded-lg p-5 bg-slate-50 flex flex-col items-center justify-center">
-                <span className="block text-3xl font-bold text-slate-900">{pendingMilestones}</span>
-                <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Pending Milestones</span>
-              </div>
-            </div>
-          </div>
-          
           <UpcomingMeetingsWidget meetings={mentorStats?.upcomingMeetings} onNavigate={onNavigate} />
         </div>
 
