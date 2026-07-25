@@ -4,14 +4,18 @@ import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../lib/api";
 
 export default function MentorProjects() {
   const [projects, setProjects] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
+  const [allSubmissions, setAllSubmissions] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [projectTab, setProjectTab] = useState("Overview"); // Overview | Tasks | Team | Reviews
   
   // Grading actions inside nested Reviews
   const [gradeComment, setGradeComment] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { user } = useAuthStore();
   const currentUser = user || {
@@ -20,23 +24,110 @@ export default function MentorProjects() {
     role: "MENTOR"
   };
 
-  const refreshProjectsList = () => {
-    // Stubbed until integrated with backend API
-    setProjects([]);
+  const formatStatus = (s) => {
+    if (s === "APPROVED") return "Completed";
+    if (s === "TODO") return "To Do";
+    if (s === "IN_PROGRESS") return "In Progress";
+    if (s === "SUBMITTED" || s === "UNDER_REVIEW") return "Under Review";
+    if (s === "REVISION_NEEDED") return "Revision Needed";
+    return s;
+  };
+
+  const refreshProjectsList = async () => {
+    try {
+      const [projRes, tasksRes, subsRes] = await Promise.all([
+        api.get("/projects"),
+        api.get("/tasks"),
+        api.get("/submissions")
+      ]);
+      
+      const tasks = tasksRes.data.data.tasks || [];
+      const submissions = subsRes.data.data.submissions || [];
+      
+      setAllTasks(tasks);
+      setAllSubmissions(submissions);
+
+      const tasksByProject = {};
+      tasks.forEach(t => {
+        const pId = t.projectId._id || t.projectId;
+        if (!tasksByProject[pId]) tasksByProject[pId] = { total: 0, completed: 0 };
+        tasksByProject[pId].total += 1;
+        if (t.status === 'APPROVED') tasksByProject[pId].completed += 1;
+      });
+
+      const mappedProjects = projRes.data.data.projects.map(p => {
+        const pStats = tasksByProject[p._id] || { total: 0, completed: 0 };
+        const progress = pStats.total > 0 ? Math.round((pStats.completed / pStats.total) * 100) : 0;
+        return {
+          ...p,
+          id: p._id,
+          name: p.title,
+          progress: progress,
+          mentees: (p.mentees || []).map(m => ({
+            ...m,
+            id: m._id,
+            avatar: m.name ? m.name.substring(0, 2).toUpperCase() : "U",
+            color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+          }))
+        };
+      });
+      setProjects(mappedProjects);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setProjects([]);
+    }
   };
 
   useEffect(() => {
     refreshProjectsList();
-  }, [currentUser.id]);
+  }, [currentUser.id, refreshKey]);
 
   const selectedProj = projects.find(p => p.id === selectedProjectId);
-  const projTasks = [];
-  const projSubmissions = [];
+  
+  let projTasks = [];
+  let projSubmissions = [];
 
-  const handleGrade = (taskId, action) => {
-    // Stubbed until integrated with backend API
-    setGradeComment("");
-    refreshProjectsList();
+  if (selectedProj) {
+    const rawProjTasks = allTasks.filter(t => (t.projectId._id || t.projectId) === selectedProj.id);
+    projTasks = rawProjTasks.map(t => ({
+      id: t._id,
+      title: t.title,
+      assigneeName: t.assignedTo?.name || 'Unassigned',
+      priority: t.priority,
+      status: formatStatus(t.status)
+    }));
+
+    const subsByTask = {};
+    allSubmissions.forEach(sub => {
+      const tId = sub.taskId._id || sub.taskId;
+      if (!subsByTask[tId]) subsByTask[tId] = [];
+      subsByTask[tId].push({
+        id: sub._id,
+        content: sub.submissionUrl || sub.notes || sub.fileUrl || "No content provided",
+        status: sub.status === "PENDING_REVIEW" ? "PENDING" : sub.status,
+      });
+    });
+
+    projSubmissions = projTasks.filter(t => subsByTask[t.id] && subsByTask[t.id].some(s => s.status === 'PENDING')).map(t => ({
+      ...t,
+      submissions: subsByTask[t.id]
+    }));
+  }
+
+  const handleGrade = async (taskId, action) => {
+    try {
+      const task = projSubmissions.find(t => t.id === taskId);
+      const activeSub = task?.submissions?.find(s => s.status === "PENDING");
+      if (!activeSub) return;
+      
+      const endpoint = `/submissions/${activeSub.id}/${action === 'approve' ? 'approve' : 'revision'}`;
+      await api.patch(endpoint, { feedback: gradeComment || 'Feedback provided' });
+      
+      setGradeComment("");
+      setRefreshKey(k => k + 1);
+    } catch (error) {
+      console.error("Error grading submission:", error);
+    }
   };
 
   if (selectedProj) {
@@ -243,19 +334,19 @@ export default function MentorProjects() {
                 <div>
                   <span className="block text-xs font-semibold text-slate-500 mb-2">Project Team</span>
                   {p.mentees && p.mentees.length > 0 ? (
-                    <div className="flex -space-x-2 overflow-hidden">
+                    <div className="flex gap-1 overflow-hidden">
                       {p.mentees.slice(0, 3).map(m => (
                         <div
                           key={m.id}
                           title={m.name}
-                          className="inline-block h-8 w-8 rounded-full ring-2 ring-white flex items-center justify-center text-[10px] font-bold text-white cursor-help"
+                          className="inline-block h-8 w-8 rounded-md ring-2 ring-white flex items-center justify-center text-[12px] font-bold text-white cursor-help"
                           style={{ backgroundColor: m.color }}
                         >
                           {m.avatar}
                         </div>
                       ))}
                       {p.mentees.length > 3 && (
-                        <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-600 ring-2 ring-white flex items-center justify-center text-[10px] font-semibold">
+                        <div className="h-8 w-8 rounded-md bg-slate-100 text-slate-600 ring-2 ring-white flex items-center justify-center text-[12px] font-semibold">
                           +{p.mentees.length - 3}
                         </div>
                       )}
