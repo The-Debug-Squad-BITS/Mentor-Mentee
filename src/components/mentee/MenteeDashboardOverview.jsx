@@ -29,6 +29,7 @@ export default function MenteeDashboardOverview({
             onManageTasks={() => onNavigate("My Tasks")}
             onTaskClick={onTaskClick}
           />
+          <NotificationsCard />
         </div>
 
         {/* Right column */}
@@ -37,7 +38,6 @@ export default function MenteeDashboardOverview({
           <UpcomingDeadlinesCard onNavigate={onNavigate} />
           <UpcomingMilestonesCard />
           <RecentFeedbackCard />
-          <NotificationsCard />
         </div>
       </div>
     </div>

@@ -3,9 +3,11 @@ import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../lib/api";
 
 export default function MenteeProjects() {
   const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
 
   const { user } = useAuthStore();
   const currentUser = user || {
@@ -15,12 +17,49 @@ export default function MenteeProjects() {
   };
 
   useEffect(() => {
-    // Stubbed until integrated with backend API
-    setProjects([]);
+    const fetchProjectsAndTasks = async () => {
+      try {
+        const [projRes, tasksRes] = await Promise.all([
+          api.get("/projects"),
+          api.get("/tasks")
+        ]);
+        
+        const allProjects = projRes.data.data.projects || [];
+        const allTasks = tasksRes.data.data.tasks || [];
+        
+        setTasks(allTasks);
+
+        const mappedProjects = allProjects.map(p => {
+          const pTasks = allTasks.filter(t => (t.projectId._id || t.projectId) === p._id);
+          const totalTasks = pTasks.length;
+          const completedTasks = pTasks.filter(t => t.status === 'APPROVED').length;
+          const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+          
+          return {
+            id: p._id,
+            name: p.title,
+            description: p.description,
+            status: p.status,
+            progress: progress,
+            mentor: p.mentorId ? {
+              name: p.mentorId.name || "Mentor",
+              avatar: p.mentorId.name ? p.mentorId.name.substring(0, 2).toUpperCase() : "M",
+              color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+            } : null
+          };
+        });
+        
+        setProjects(mappedProjects);
+      } catch (error) {
+        console.error("Error fetching mentee projects:", error);
+      }
+    };
+
+    fetchProjectsAndTasks();
   }, [currentUser.id]);
 
   const getProjTaskCount = (projectId) => {
-    return 0;
+    return tasks.filter(t => (t.projectId._id || t.projectId) === projectId).length;
   };
 
   return (

@@ -1,8 +1,24 @@
+import { useState, useEffect } from "react";
+import api from "../../lib/api";
+
 export default function MenteeActivity() {
-  // Note: the backend does not expose a mentee-accessible activity-log endpoint.
-  // (GET /api/activities is ADMIN-only and /activities/project/:id is ADMIN/MENTOR.)
-  // Rather than show a fake or permanently-empty timeline, this page honestly
-  // points mentees to the sections where their activity IS surfaced today.
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const response = await api.get("/activities/me", { params: { limit: 20 } });
+        setActivities(response.data.data.activities || []);
+      } catch (err) {
+        console.error("Failed to fetch activities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchActivities();
+  }, []);
+
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
@@ -11,33 +27,40 @@ export default function MenteeActivity() {
         <p className="m-0 mt-1 text-slate-500 text-sm">Timeline of your task submissions, review notifications, and progress milestones.</p>
       </div>
 
-      {/* Honest empty / info state */}
-      <div className="bg-white rounded-xl p-8 md:p-12 border border-slate-200 shadow-sm">
-        <div className="max-w-md mx-auto text-center flex flex-col items-center gap-4">
-          <div className="text-4xl">🧭</div>
-          <h2 className="m-0 text-base font-bold text-slate-900">Your activity lives across your dashboard</h2>
-          <p className="m-0 text-slate-500 text-sm leading-relaxed">
-            A dedicated personal activity feed isn't available yet. In the meantime, you can track everything
-            you're working on from these sections:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mt-2">
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 flex flex-col items-center gap-1">
-              <span className="text-xl">✅</span>
-              <span className="text-sm font-semibold text-slate-800">My Tasks</span>
-              <span className="text-[11px] text-slate-500">assignments & status</span>
-            </div>
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 flex flex-col items-center gap-1">
-              <span className="text-xl">💬</span>
-              <span className="text-sm font-semibold text-slate-800">Feedback</span>
-              <span className="text-[11px] text-slate-500">advisor reviews</span>
-            </div>
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 flex flex-col items-center gap-1">
-              <span className="text-xl">🏁</span>
-              <span className="text-sm font-semibold text-slate-800">Dashboard</span>
-              <span className="text-[11px] text-slate-500">upcoming milestones</span>
-            </div>
+      {/* Activity Timeline */}
+      <div className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 shadow-sm">
+        {loading ? (
+          <div className="text-center py-12 text-slate-500 text-sm">Loading activity feed...</div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-12 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
+            No activities logged yet. Get started by completing your assigned tasks!
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {activities.map((act) => (
+              <div key={act._id} className="flex gap-4 p-4 border border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                <div className="mt-1">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
+                    {act.action === "CREATED" ? "✨" : act.action === "UPDATED" ? "🔄" : act.action === "COMPLETED" ? "✅" : "📌"}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="m-0 text-sm text-slate-900 leading-snug">
+                    <span className="font-semibold">{act.userId?.name || "You"}</span>{" "}
+                    {act.action.toLowerCase()}{" "}
+                    {act.entityType.toLowerCase()}{" "}
+                    {act.metadata?.title && <span className="font-medium text-slate-700">"{act.metadata.title}"</span>}
+                  </p>
+                  <p className="m-0 mt-1 text-xs text-slate-500 font-medium">
+                    {new Date(act.createdAt).toLocaleString(undefined, { 
+                      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
