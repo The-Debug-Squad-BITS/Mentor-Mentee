@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../lib/api";
 
 export default function MenteeFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -14,10 +15,40 @@ export default function MenteeFeedback() {
   };
 
   useEffect(() => {
-    // Stubbed until integrated with backend API
-    setFeedbacks([]);
-    setApprovedNotes([]);
-    setRejectedNotes([]);
+    const fetchFeedback = async () => {
+      try {
+        const res = await api.get("/submissions", { params: { limit: 50 } });
+        const allSubmissions = res.data.data.submissions || [];
+
+        // Filter submissions that actually have feedback provided by mentor
+        const feedbackSubmissions = allSubmissions.filter(s => s.feedback && s.feedback.trim() !== "");
+
+        // Map to uniform structure
+        const formattedFeedbacks = feedbackSubmissions.map(s => {
+          return {
+            id: s._id,
+            taskTitle: s.taskId?.title || "Unknown Task",
+            projectName: s.taskId?.projectId?.title || "Project Track", // Submissions populate taskId, but maybe not projectId. We can leave generic if missing.
+            comment: s.feedback,
+            status: s.status,
+            createdAt: new Date(s.reviewedAt || s.updatedAt).toLocaleDateString(undefined, {
+              month: 'short', day: 'numeric', year: 'numeric'
+            }),
+            reviewerName: "Advisor"
+          };
+        });
+
+        const approved = formattedFeedbacks.filter(f => f.status === "APPROVED");
+        const rejected = formattedFeedbacks.filter(f => f.status === "REVISION_NEEDED");
+
+        setFeedbacks(formattedFeedbacks);
+        setApprovedNotes(approved);
+        setRejectedNotes(rejected);
+      } catch (err) {
+        console.error("Failed to fetch feedback:", err);
+      }
+    };
+    fetchFeedback();
   }, [currentUser.id]);
 
   return (
@@ -105,7 +136,7 @@ export default function MenteeFeedback() {
                   <tr key={f.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{f.taskTitle}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{f.projectName}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">Sarah Connor</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{f.reviewerName}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{f.createdAt}</td>
                     <td className="px-6 py-4 text-sm text-slate-600 italic truncate max-w-xs">"{f.comment}"</td>
                   </tr>
