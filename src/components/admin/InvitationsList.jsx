@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Button from "../ui/Button";
+import api from "../../lib/api";
+import { toast } from "react-toastify";
 
 export default function InvitationsList() {
   const [invitations, setInvitations] = useState([]);
@@ -8,35 +10,79 @@ export default function InvitationsList() {
   const [inviteRole, setInviteRole] = useState("MENTEE");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [loading, setLoading] = useState(false);
 
-  const refreshInvites = () => {
-    // Stubbed until integrated with backend API
-    setInvitations([]);
+  const refreshInvites = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/users/invitations");
+      setInvitations(res.data.data.invitations || []);
+    } catch (err) {
+      console.error("Failed to load invitations:", err);
+      toast.error("Failed to load invitations.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     refreshInvites();
   }, []);
 
-  const handleSendInvite = (e) => {
+  const handleSendInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-    // Stubbed until integrated with backend API
-    setInviteEmail("");
-    setInviteRole("MENTEE");
-    setShowInviteModal(false);
-    refreshInvites();
-  };
 
-  const handleResend = (id) => {
-    // Stubbed until integrated with backend API
-    refreshInvites();
-  };
-
-  const handleCancel = (id) => {
-    if (confirm("Are you sure you want to cancel this invitation?")) {
-      // Stubbed until integrated with backend API
+    try {
+      setLoading(true);
+      const defaultName = inviteEmail.split("@")[0].replace(/[._-]/g, " ");
+      await api.post("/users/invite", {
+        name: defaultName,
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+      toast.success("Invitation sent successfully!");
+      setInviteEmail("");
+      setInviteRole("MENTEE");
+      setShowInviteModal(false);
       refreshInvites();
+    } catch (err) {
+      console.error("Failed to send invitation:", err);
+      const msg = err.response?.data?.message || "Failed to send invitation";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async (id) => {
+    try {
+      setLoading(true);
+      await api.post(`/users/invitations/${id}/resend`);
+      toast.success("Invitation resent successfully!");
+      refreshInvites();
+    } catch (err) {
+      console.error("Failed to resend invitation:", err);
+      const msg = err.response?.data?.message || "Failed to resend invitation";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = async (id) => {
+    if (!confirm("Are you sure you want to cancel this invitation?")) return;
+    try {
+      setLoading(true);
+      await api.delete(`/users/invitations/${id}`);
+      toast.success("Invitation cancelled successfully!");
+      refreshInvites();
+    } catch (err) {
+      console.error("Failed to cancel invitation:", err);
+      const msg = err.response?.data?.message || "Failed to cancel invitation";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,12 +153,14 @@ export default function InvitationsList() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={inv._id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{inv.email}</td>
                     <td className="px-6 py-4">
                       <span className="px-2.5 py-1 bg-slate-100 rounded-md text-slate-700 text-xs font-medium">{inv.role}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{inv.sentAt}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {new Date(inv.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${statusStyles[inv.status]}`}>
                         {inv.status}
@@ -121,16 +169,16 @@ export default function InvitationsList() {
                     <td className="px-6 py-4 flex gap-2">
                       <Button
                         variant="secondary"
-                        onClick={() => handleResend(inv.id)}
-                        disabled={inv.status === "ACCEPTED"}
+                        onClick={() => handleResend(inv._id)}
+                        disabled={inv.status === "ACCEPTED" || loading}
                         className="text-xs px-3 py-1.5"
                       >
                         Resend
                       </Button>
                       <Button
                         variant="danger"
-                        onClick={() => handleCancel(inv.id)}
-                        disabled={inv.status === "ACCEPTED" || inv.status === "CANCELLED"}
+                        onClick={() => handleCancel(inv._id)}
+                        disabled={inv.status === "ACCEPTED" || inv.status === "CANCELLED" || loading}
                         className="text-xs px-3 py-1.5"
                       >
                         Cancel
@@ -182,11 +230,12 @@ export default function InvitationsList() {
                 type="button"
                 variant="secondary"
                 onClick={() => setShowInviteModal(false)}
+                disabled={loading}
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                Send Invite
+              <Button type="submit" disabled={loading}>
+                {loading ? "Sending..." : "Send Invite"}
               </Button>
             </div>
           </form>
