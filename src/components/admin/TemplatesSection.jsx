@@ -363,6 +363,7 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
   const [endDate, setEndDate] = useState("");
   const [mentorId, setMentorId] = useState("");
   const [selectedMentees, setSelectedMentees] = useState([]);
+  const [bulkCount, setBulkCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -381,10 +382,15 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
         endDate,
         mentorId: mentorId || undefined,
         mentees: selectedMentees.length > 0 ? selectedMentees : undefined,
+        bulkCount,
       });
       const { project, milestonesCreated, tasksCreated } = response.data.data;
       setResult({ project, milestonesCreated, tasksCreated });
-      toast.success(`Project "${project.title}" created from template!`);
+      if (bulkCount > 1) {
+        toast.success(`${bulkCount} projects created from template!`);
+      } else {
+        toast.success(`Project "${project.title}" created from template!`);
+      }
       if (onSuccess) onSuccess(project);
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to create project from template.";
@@ -418,9 +424,19 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
           <div className="p-8 flex flex-col gap-6">
             <div className="text-center">
               <div className="text-4xl mb-3">🎉</div>
-              <h3 className="m-0 text-lg font-bold text-slate-900">Project Created!</h3>
+              <h3 className="m-0 text-lg font-bold text-slate-900">
+                {bulkCount > 1 ? `${bulkCount} Projects Created!` : "Project Created!"}
+              </h3>
               <p className="m-0 mt-2 text-slate-500 text-sm">
-                <strong className="text-slate-700">"{result.project.title}"</strong> has been set up with:
+                {bulkCount > 1 ? (
+                  <span>
+                    Projects starting with <strong className="text-slate-700">"{result.project.title}"</strong> have been set up with:
+                  </span>
+                ) : (
+                  <span>
+                    <strong className="text-slate-700">"{result.project.title}"</strong> has been set up with:
+                  </span>
+                )}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -533,6 +549,22 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                   ))
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-2">
+                Number of Projects to Create (Bulk Creation)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                required
+                value={bulkCount}
+                onChange={e => setBulkCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
+                disabled={loading}
+              />
             </div>
 
             <div className="flex gap-3 justify-end pt-2">
