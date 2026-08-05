@@ -83,7 +83,7 @@ export default function MentorTeam() {
   }, [currentUser.id]);
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Mentees Directory</h1>

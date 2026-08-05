@@ -13,7 +13,7 @@ export default function MentorOverview({ mentorStats, onNavigate }) {
   const pendingMilestones = mentorStats?.pendingMilestones ?? 0;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Welcome Banner */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <h2 className="m-0 text-lg md:text-xl font-bold text-slate-900 tracking-tight">
