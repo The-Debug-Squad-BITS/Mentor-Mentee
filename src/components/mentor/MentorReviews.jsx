@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 
 export default function MentorReviews() {
@@ -380,7 +381,7 @@ export default function MentorReviews() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500 font-medium">
                         {sub.submittedAt
-                          ? new Date(sub.submittedAt).toLocaleDateString()
+                          ? formatUIDate(new Date(sub.submittedAt))
                           : "—"}
                       </td>
                     </tr>

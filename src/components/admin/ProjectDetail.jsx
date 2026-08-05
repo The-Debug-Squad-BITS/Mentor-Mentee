@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import MilestonesSection from "./MilestonesSection";
 import CommentSection from "../ui/CommentSection";
 import { formatActivityLine } from "./ActivityLogs";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Helpers shared with ActivityLogs ─────────────────────────────────────────
 function getProjectEntityMeta(entityType, action) {
@@ -31,7 +32,7 @@ function fmtRelative(dateStr) {
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
   if (d < 7)  return `${d}d ago`;
-  return new Date(dateStr).toLocaleDateString();
+  return formatUIDate(new Date(dateStr));
 }
 
 /** Per-project activity feed — usable by ADMIN and MENTOR */
@@ -430,11 +431,11 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
             <div className="flex gap-8 text-sm text-slate-700">
               <div>
                 <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">Start Date</span>
-                {project.startDate ? new Date(project.startDate).toLocaleDateString() : "Not set"}
+                {project.startDate ? formatUIDate(new Date(project.startDate)) : "Not set"}
               </div>
               <div>
                 <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">End Date</span>
-                {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Not set"}
+                {project.endDate ? formatUIDate(new Date(project.endDate)) : "Not set"}
               </div>
             </div>
           </div>
@@ -546,11 +547,11 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">Start</span>
-              <span className="font-medium text-slate-900">{project.startDate ? new Date(project.startDate).toLocaleDateString() : "—"}</span>
+              <span className="font-medium text-slate-900">{project.startDate ? formatUIDate(new Date(project.startDate)) : "—"}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="font-semibold text-slate-500">End</span>
-              <span className="font-medium text-slate-900">{project.endDate ? new Date(project.endDate).toLocaleDateString() : "—"}</span>
+              <span className="font-medium text-slate-900">{project.endDate ? formatUIDate(new Date(project.endDate)) : "—"}</span>
             </div>
           </div>
         </div>

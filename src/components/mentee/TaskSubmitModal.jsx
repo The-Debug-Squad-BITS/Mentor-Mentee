@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -201,7 +202,7 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
               <>
                 {" "}•{" "}
                 <span className="text-red-500">
-                  Due {new Date(task.dueDate).toLocaleDateString()}
+                  Due {formatUIDate(new Date(task.dueDate))}
                 </span>
               </>
             )}

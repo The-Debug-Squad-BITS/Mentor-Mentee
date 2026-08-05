@@ -5,6 +5,7 @@ import Button from "../ui/Button";
 import api from "../../lib/api";
 import { useProjectStore } from "../../store/projectStore";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 
 export default function ProjectsList({ onViewProject, onRefresh }) {
   const [statusFilter, setStatusFilter] = useState("All");
@@ -254,9 +255,9 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                       </select>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-600">
-                      {p.startDate ? new Date(p.startDate).toLocaleDateString() : "—"}
+                      {p.startDate ? formatUIDate(new Date(p.startDate)) : "—"}
                       {" → "}
-                      {p.endDate ? new Date(p.endDate).toLocaleDateString() : "—"}
+                      {p.endDate ? formatUIDate(new Date(p.endDate)) : "—"}
                     </td>
                     <td className="px-6 py-4 flex gap-2">
                       <Button

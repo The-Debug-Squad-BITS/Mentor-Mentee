@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { useActivityStore } from "../../store/activityStore";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Action → human-readable label map ────────────────────────────────────────
 export const ACTION_LABELS = {
@@ -69,7 +70,7 @@ function formatDate(dateStr) {
   if (diffMins < 60)  return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7)   return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return formatUIDate(date);
 }
 
 const ACTION_OPTIONS = [
