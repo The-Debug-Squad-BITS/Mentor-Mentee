@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { ACTION_LABELS } from "../admin/ActivityLogs";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Entity-type → icon / color chip (reuses same logic) ──────────────────────
 function getEntityMeta(entityType, action) {
@@ -28,7 +29,7 @@ function formatDate(dateStr) {
   if (diffMins < 60)  return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7)   return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return formatUIDate(date);
 }
 
 export default function MentorActivity() {

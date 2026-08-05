@@ -6,6 +6,7 @@ import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useMilestoneStore } from "../../store/milestoneStore";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 
 const MILESTONE_STATUSES = ["UPCOMING", "IN_PROGRESS", "COMPLETED", "OVERDUE"];
@@ -282,7 +283,7 @@ export default function MilestonesSection({ projectId }) {
             <div className="flex gap-6 text-sm text-slate-700">
               <div>
                 <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">Due Date</span>
-                {new Date(currentMilestone.dueDate).toLocaleDateString()}
+                {formatUIDate(new Date(currentMilestone.dueDate))}
               </div>
               <div>
                 <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">Order</span>
@@ -443,7 +444,7 @@ export default function MilestonesSection({ projectId }) {
                     <h3 className="m-0 text-sm font-bold text-slate-900 truncate">{m.title}</h3>
                     {m.dueDate && (
                       <span className="text-xs text-slate-500 mt-0.5 block">
-                        Due: {new Date(m.dueDate).toLocaleDateString()}
+                        Due: {formatUIDate(new Date(m.dueDate))}
                       </span>
                     )}
                   </div>

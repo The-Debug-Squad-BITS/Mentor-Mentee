@@ -26,3 +26,11 @@ export function localDayKey(dateLike) {
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+// "DD-MM-YYYY" for displaying raw date fields in UI uniformly across browser locales
+export function formatUIDate(dateLike) {
+  if (!dateLike) return "";
+  const d = new Date(dateLike);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()}`;
+}
