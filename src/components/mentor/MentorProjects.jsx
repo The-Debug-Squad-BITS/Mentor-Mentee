@@ -132,7 +132,7 @@ export default function MentorProjects() {
 
   if (selectedProj) {
     return (
-      <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+      <div className="flex flex-col gap-6 animate-fade-in">
         {/* Workspace Detail Header */}
         <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
           <div className="flex items-center gap-4">
@@ -300,7 +300,7 @@ export default function MentorProjects() {
   }
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Page Header */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
         <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">My Projects Directory</h1>

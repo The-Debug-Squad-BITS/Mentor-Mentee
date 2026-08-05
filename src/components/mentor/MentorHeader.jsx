@@ -3,7 +3,7 @@ import Button from "../ui/Button";
 
 export default function MentorHeader({ userName, onNewUser, onLogout }) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 lg:mb-8 pl-0 md:pl-4 lg:pl-8 gap-4">
+    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 lg:mb-8 gap-4">
       {/* Title + Mentor Name */}
       <div>
         <h1 className="text-xl md:text-2xl font-bold text-slate-900 m-0 tracking-tight">
