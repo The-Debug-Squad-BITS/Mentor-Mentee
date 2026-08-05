@@ -48,6 +48,10 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   // ── Create project ──────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!newProjectTitle.trim()) return;
+    if (newProjectStartDate && newProjectEndDate && new Date(newProjectEndDate) < new Date(newProjectStartDate)) {
+      setCreateError("End date cannot be before start date");
+      return;
+    }
     setCreateLoading(true);
     setCreateError(null);
 
@@ -332,6 +336,7 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                     type="date"
                     value={newProjectEndDate}
                     onChange={(e) => setNewProjectEndDate(e.target.value)}
+                    min={newProjectStartDate}
                     className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                     disabled={createLoading}
                   />
