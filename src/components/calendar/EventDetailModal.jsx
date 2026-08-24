@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Close, AlertTriangle, AlertCircle, Inbox } from "../ui/Icons";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
 import { toast } from "react-toastify";
@@ -8,7 +9,7 @@ const EVENT_TYPE_BADGES = {
   TASK_DEADLINE: { label: "Task Deadline", bg: "bg-amber-100 text-amber-800 border-amber-200", defaultColor: "#E67E22" },
   MILESTONE_DEADLINE: { label: "Milestone Deadline", bg: "bg-purple-100 text-purple-800 border-purple-200", defaultColor: "#8E44AD" },
   MEETING: { label: "Meeting", bg: "bg-emerald-100 text-emerald-800 border-emerald-200", defaultColor: "#27AE60" },
-  CUSTOM: { label: "Custom Event", bg: "bg-blue-100 text-blue-800 border-blue-200", defaultColor: "#4A90D9" },
+  CUSTOM: { label: "Custom Event", bg: "bg-brand-100 text-brand-800 border-brand-200", defaultColor: "#4A90D9" },
 };
 
 export default function EventDetailModal({ event, onClose }) {
@@ -102,7 +103,7 @@ export default function EventDetailModal({ event, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/45 backdrop-blur-[2px] p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex justify-between items-start pb-3 mb-4 border-b border-slate-100">
@@ -119,7 +120,7 @@ export default function EventDetailModal({ event, onClose }) {
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 text-xl font-bold bg-transparent border-0 cursor-pointer p-1"
           >
-            ✕
+            <Close size={16} />
           </button>
         </div>
 

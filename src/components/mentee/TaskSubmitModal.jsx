@@ -2,6 +2,18 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import Button from "../ui/Button";
+import {
+  Close,
+  FileText,
+  ExternalLink,
+  Upload,
+  Check,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Refresh,
+} from "../ui/Icons";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -182,117 +194,113 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
-      className="fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
-      style={{ background: "rgba(15,23,42,0.55)" }}
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-ink-950/45 p-0 backdrop-blur-[2px] animate-fade-in sm:items-center sm:p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div
-        className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl flex flex-col"
-        style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.18)", maxHeight: "90vh" }}
-      >
+      <div className="flex w-full max-h-[92vh] flex-col rounded-t-3xl border border-slate-200/60 bg-white shadow-xl animate-slide-up sm:max-w-lg sm:rounded-2xl">
+
         {/* ── Modal Header ─────────────────────────────────────────────── */}
-        <div className="p-6 sm:p-8 pb-0">
-          <h2 className="m-0 mb-0.5 text-lg font-black text-slate-800">
-            {isRevision ? "Resubmit Work" : "Submit Work"}
-          </h2>
-          <p className="m-0 text-slate-500 text-xs font-semibold">
-            {task.title}
-            {task.dueDate && (
-              <>
-                {" "}•{" "}
-                <span className="text-red-500">
-                  Due {new Date(task.dueDate).toLocaleDateString()}
-                </span>
-              </>
-            )}
-          </p>
+        <div className="px-6 pt-6 sm:px-7">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="m-0 font-display text-[17px] font-bold tracking-tight text-slate-900">
+                {isRevision ? "Resubmit Work" : "Submit Work"}
+              </h2>
+              <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                <span className="font-medium text-slate-700">{task.title}</span>
+                {task.dueDate && (
+                  <span className="inline-flex items-center gap-1 text-danger-600">
+                    <Clock size={13} />
+                    Due {new Date(task.dueDate).toLocaleDateString()}
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="-mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            >
+              <Close size={17} />
+            </button>
+          </div>
 
           {/* Mentor feedback banner (revision mode) */}
           {isRevision && task.feedback && (
-            <div className="mt-4 bg-red-50 border border-red-200 p-3.5 rounded-xl">
-              <div className="text-[10px] font-black text-red-500 uppercase mb-1">
-                Mentor Feedback:
+            <div className="mt-4 rounded-xl border border-warning-200 bg-warning-50/70 p-3.5">
+              <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-warning-700">
+                <Refresh size={13} /> Mentor Feedback
               </div>
-              <div className="text-xs text-red-900 leading-relaxed">
-                "{task.feedback}"
+              <div className="text-[13px] leading-relaxed text-warning-800">
+                &ldquo;{task.feedback}&rdquo;
               </div>
             </div>
           )}
 
           {/* ── Submission Mode Tabs ─────────────────────────────────── */}
-          <div className="mt-5 flex gap-1 bg-slate-100 p-1 rounded-xl">
+          <div className="tab-strip mt-5 grid w-full grid-cols-2">
             <button
               type="button"
               onClick={() => handleModeSwitch("file")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-none cursor-pointer ${
-                submissionMode === "file"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "bg-transparent text-slate-500 hover:text-slate-700"
+              aria-pressed={submissionMode === "file"}
+              className={`tab-item flex items-center justify-center gap-1.5 ${
+                submissionMode === "file" ? "tab-item-active" : ""
               }`}
-              style={{ fontFamily: "inherit" }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
+              <FileText size={14} />
               Upload File
-              <span className="text-[9px] font-semibold opacity-60">(Image / PDF)</span>
             </button>
             <button
               type="button"
               onClick={() => handleModeSwitch("url")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all border-none cursor-pointer ${
-                submissionMode === "url"
-                  ? "bg-white text-indigo-600 shadow-sm"
-                  : "bg-transparent text-slate-500 hover:text-slate-700"
+              aria-pressed={submissionMode === "url"}
+              className={`tab-item flex items-center justify-center gap-1.5 ${
+                submissionMode === "url" ? "tab-item-active" : ""
               }`}
-              style={{ fontFamily: "inherit" }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
+              <ExternalLink size={14} />
               Submit URL
-              <span className="text-[9px] font-semibold opacity-60">(GitHub / Link)</span>
             </button>
           </div>
         </div>
 
         {/* ── Scrollable body ───────────────────────────────────────────── */}
-        <form onSubmit={handleSubmitWork} className="flex flex-col gap-4 p-6 sm:p-8 pt-5 overflow-y-auto flex-1">
+        <form
+          onSubmit={handleSubmitWork}
+          className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6 pt-5 scrollbar-slim sm:px-7"
+        >
 
           {/* ══ FILE UPLOAD MODE ══════════════════════════════════════════ */}
           {submissionMode === "file" && (
             <div className="flex flex-col gap-3">
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                Upload Image or PDF <span className="text-red-400">*</span>
+              <label className="field-label m-0">
+                Upload Image or PDF <span className="text-danger-600">*</span>
               </label>
 
               {/* Drop zone */}
               <div
-                className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
+                className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
                   uploadedUrl
-                    ? "border-emerald-300 bg-emerald-50/30"
-                    : "border-slate-300 bg-slate-50 hover:border-indigo-400"
+                    ? "border-success-300 bg-success-50/40"
+                    : "border-slate-300 bg-slate-50 hover:border-brand-400 hover:bg-brand-50/40"
                 }`}
                 onClick={() => !uploading && fileInputRef.current?.click()}
               >
                 {selectedFile ? (
-                  <div className="text-xs font-semibold text-slate-700">
-                    📎 {selectedFile.name}{" "}
-                    <span className="text-slate-400 font-normal">
+                  <div className="flex items-center justify-center gap-2 text-[13px] font-semibold text-slate-700">
+                    <FileText size={15} className="text-slate-400" />
+                    <span className="truncate">{selectedFile.name}</span>
+                    <span className="font-normal text-slate-400">
                       ({(selectedFile.size / 1024).toFixed(1)} KB)
                     </span>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-1.5">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="17 8 12 3 7 8"/>
-                      <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <span className="text-xs text-slate-400 font-semibold">
-                      Click to browse — Image or PDF only
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload size={22} className="text-slate-400" />
+                    <span className="text-[13px] font-medium text-slate-500">
+                      Click to browse — image or PDF only
                     </span>
                   </div>
                 )}
@@ -309,74 +317,71 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
               {selectedFile && !uploadedUrl && (
                 <div className="flex flex-col gap-2">
                   {uploadProgress > 0 && uploadProgress < 100 && (
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                       <div
-                        className="bg-indigo-600 h-full rounded-full transition-all duration-300"
+                        className="h-full rounded-full bg-brand-500 transition-[width] duration-300"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
                   )}
-                  <button
+                  <Button
                     type="button"
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs border-none cursor-pointer transition-colors disabled:opacity-60"
-                    style={{ fontFamily: "inherit" }}
+                    className="w-full"
                   >
-                    {uploading
-                      ? `Uploading... ${uploadProgress}%`
-                      : "☁️ Upload to Cloudinary"}
-                  </button>
+                    {uploading ? (
+                      `Uploading… ${uploadProgress}%`
+                    ) : (
+                      <>
+                        <Upload size={16} /> Upload file
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
 
               {/* Upload success + inline preview */}
               {uploadedUrl && (
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-                    ✅ Uploaded successfully!
+                  <div className="notice notice-success items-center">
+                    <CheckCircle size={16} className="shrink-0" />
+                    <span className="font-semibold">Uploaded successfully</span>
                     <a
                       href={uploadedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-indigo-600 hover:underline ml-auto font-semibold"
+                      className="ml-auto inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline"
                     >
-                      Open ↗
+                      Open <ExternalLink size={13} />
                     </a>
                   </div>
 
                   {/* Image inline preview */}
                   {isImage && (
-                    <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                       <img
                         src={uploadedUrl}
                         alt="Uploaded preview"
-                        className="w-full max-h-48 object-contain"
-                        style={{ display: "block" }}
+                        className="block max-h-48 w-full object-contain"
                       />
                     </div>
                   )}
 
                   {/* PDF preview chip */}
                   {isPDF && (
-                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                      </svg>
-                      <span className="text-xs font-bold text-red-600 flex-1 truncate">
+                    <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <FileText size={15} className="shrink-0 text-danger-500" />
+                      <span className="flex-1 truncate text-[13px] font-semibold text-slate-700">
                         {selectedFile?.name || "Document.pdf"}
                       </span>
                       <a
                         href={uploadedUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-indigo-600 font-bold hover:underline shrink-0"
+                        className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-semibold text-brand-600 hover:underline"
                       >
-                        Preview PDF ↗
+                        Preview <ExternalLink size={13} />
                       </a>
                     </div>
                   )}
@@ -384,8 +389,9 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
               )}
 
               {uploadError && (
-                <p className="text-xs text-red-600 font-semibold">
-                  ⚠️ {uploadError}
+                <p className="field-error m-0 flex items-start gap-1.5">
+                  <AlertCircle size={14} className="mt-px shrink-0" />
+                  {uploadError}
                 </p>
               )}
             </div>
@@ -394,17 +400,14 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
           {/* ══ URL SUBMISSION MODE ═══════════════════════════════════════ */}
           {submissionMode === "url" && (
             <div className="flex flex-col gap-3">
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-                Submission URL <span className="text-red-400">*</span>
+              <label className="field-label m-0">
+                Submission URL <span className="text-danger-600">*</span>
               </label>
               <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>
-                </div>
+                <ExternalLink
+                  size={15}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
                 <input
                   type="url"
                   value={submissionUrl}
@@ -413,99 +416,87 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
                     setUrlError(null);
                   }}
                   placeholder="https://github.com/username/repo"
-                  className="w-full pl-9 pr-3.5 py-3 rounded-xl border border-slate-200 text-xs outline-none focus:border-indigo-400 transition-colors font-sans bg-slate-50"
+                  className={`input-field pl-10 ${urlError ? "input-field-error" : ""}`}
                   disabled={submitting}
                 />
               </div>
 
               {urlError && (
-                <p className="text-xs text-red-600 font-semibold">⚠️ {urlError}</p>
+                <p className="field-error m-0 flex items-start gap-1.5">
+                  <AlertCircle size={14} className="mt-px shrink-0" />
+                  {urlError}
+                </p>
               )}
 
               {/* URL preview chip */}
               {submissionUrl && validateUrl(submissionUrl) && (
-                <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                  </svg>
-                  <span className="text-xs font-semibold text-indigo-700 flex-1 truncate">
+                <div className="flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-3 py-2.5">
+                  <Check size={15} className="shrink-0 text-brand-600" />
+                  <span className="flex-1 truncate text-[13px] font-medium text-brand-700">
                     {submissionUrl}
                   </span>
                   <a
                     href={submissionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-indigo-600 font-bold hover:underline shrink-0"
+                    className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-semibold text-brand-600 hover:underline"
                   >
-                    Open ↗
+                    Open <ExternalLink size={13} />
                   </a>
                 </div>
               )}
 
-              <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
-                Paste your GitHub repository URL, deployed project link, Figma design, Google Drive, or any public URL.
+              <p className="field-hint m-0">
+                Paste your GitHub repository URL, deployed project link, Figma design, Google
+                Drive, or any public URL.
               </p>
             </div>
           )}
 
           {/* ── Notes (common to both modes) ──────────────────────────── */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
-              Notes <span className="text-slate-300 font-normal">(Optional)</span>
+            <label className="field-label">
+              Notes <span className="font-normal text-slate-400">(optional)</span>
             </label>
             <textarea
-              placeholder="Describe what you've done, list key changes, or add any caveats..."
+              placeholder="Describe what you've done, list key changes, or add any caveats…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-3 rounded-xl border border-slate-200 text-xs outline-none resize-none focus:border-indigo-400 transition-colors font-sans bg-slate-50"
-              style={{ minHeight: 70, boxSizing: "border-box" }}
+              className="textarea-field min-h-20"
             />
           </div>
 
           {/* Submit error */}
           {submitError && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 font-semibold">
-              ⚠️ {submitError}
+            <div className="notice notice-danger">
+              <AlertCircle size={16} className="mt-px shrink-0" />
+              <span>{submitError}</span>
             </div>
           )}
 
           {/* ── Action buttons ────────────────────────────────────────── */}
-          <div className="flex gap-3 mt-1">
-            <button
+          <div className="mt-1 flex gap-3">
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 py-3 border border-slate-200 bg-white rounded-xl font-bold text-xs text-slate-500 cursor-pointer hover:border-slate-300 transition-colors"
-              style={{ fontFamily: "inherit" }}
+              className="flex-1"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="text-white border-0 rounded-xl font-bold text-xs cursor-pointer py-3 transition-all disabled:cursor-not-allowed"
-              style={{
-                flex: 2,
-                background: canSubmit
-                  ? "linear-gradient(135deg, #6366f1, #818cf8)"
-                  : "#94a3b8",
-                boxShadow: canSubmit ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
-                opacity: canSubmit ? 1 : 0.6,
-                fontFamily: "inherit",
-              }}
-            >
+            </Button>
+            <Button type="submit" disabled={!canSubmit} className="flex-[2]">
               {submitting
-                ? "Submitting..."
+                ? "Submitting…"
                 : isRevision
                 ? "Resubmit for Review"
                 : "Submit for Review"}
-            </button>
+            </Button>
           </div>
 
           {/* Helper hint */}
           {!canSubmit && !submitting && (
-            <p className="text-[10px] text-slate-400 text-center font-semibold -mt-2">
+            <p className="-mt-1 text-center text-[12px] text-slate-500">
               {submissionMode === "file"
                 ? "Upload a file first to enable submit"
                 : "Enter a valid URL to enable submit"}

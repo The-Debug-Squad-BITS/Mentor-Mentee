@@ -2,7 +2,7 @@ import { Icon } from "../ui/Icons";
 import { howItWorksSection as s, howItWorks } from "../../data/landingData";
 
 /* ==========================================================================
-   HowItWorksSection — the real lifecycle of a project in Mentora, ordered.
+   HowItWorksSection — the real lifecycle of a project in Trellis, ordered.
    The connecting rail is drawn only from `sm` up, where the grid is stable.
    ========================================================================== */
 

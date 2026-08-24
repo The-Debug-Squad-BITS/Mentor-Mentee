@@ -113,7 +113,7 @@ export default function MentorDashboard() {
       <main
         className="flex-1 min-h-screen min-w-0
         ml-0 md:ml-56 lg:ml-64
-        py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:pr-8 lg:pl-0
+        p-4 sm:p-6 lg:p-8
         pt-16 md:pt-8"
       >
         <MentorSidebarToggle

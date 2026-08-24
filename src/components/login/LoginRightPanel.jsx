@@ -1,17 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Logo, ArrowLeft, GoogleIcon } from "../ui/Icons";
-import Button from "../ui/Button";
+import { Logo, ArrowLeft } from "../ui/Icons";
 import LoginForm from "./LoginForm";
-
-function Divider({ label }) {
-  return (
-    <div className="my-6 flex items-center gap-3 text-[12px] font-medium text-slate-500">
-      <div className="h-px flex-1 bg-slate-200" />
-      {label}
-      <div className="h-px flex-1 bg-slate-200" />
-    </div>
-  );
-}
 
 export default function LoginRightPanel({
   email,
@@ -21,7 +10,6 @@ export default function LoginRightPanel({
   loading,
   error,
   onSubmit,
-  onGoogleLogin,
   onNavigate,
   onBack,
   onForgotPassword,
@@ -35,7 +23,7 @@ export default function LoginRightPanel({
   };
 
   return (
-    <div className="flex w-full flex-col bg-white px-5 py-8 sm:px-10 lg:px-14 lg:py-12">
+    <div className="scrollbar-slim flex w-full flex-col bg-white px-5 py-8 sm:px-10 lg:h-full lg:overflow-y-auto lg:px-14 lg:py-10">
       {/* Compact brand header — replaces the dark panel below lg */}
       <div className="mx-auto flex w-full max-w-sm items-center gap-2.5 lg:hidden">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
@@ -55,9 +43,9 @@ export default function LoginRightPanel({
 
       <div className="mx-auto my-auto w-full max-w-sm pt-10 lg:pt-0">
         {/* Header */}
-        <div className="mb-7">
+        <div className="mb-6">
           <p className="eyebrow">Welcome back</p>
-          <h1 className="mt-2 font-display text-[28px] font-bold leading-tight tracking-tight text-slate-900">
+          <h1 className="mt-2 font-display text-[26px] font-bold leading-tight tracking-tight text-slate-900 xl:text-[28px]">
             Sign in to Mentora
           </h1>
           <p className="page-subtitle mt-2">
@@ -75,19 +63,6 @@ export default function LoginRightPanel({
           onSubmit={onSubmit}
           onForgotPassword={onForgotPassword}
         />
-
-        <Divider label="or" />
-
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          onClick={onGoogleLogin}
-          className="w-full font-medium"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </Button>
 
         <p className="mt-6 text-center text-[13px] text-slate-600">
           New here?{" "}

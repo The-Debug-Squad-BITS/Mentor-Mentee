@@ -2,7 +2,7 @@ import { Icon } from "../ui/Icons";
 import { problemSection as s } from "../../data/landingData";
 
 /* ==========================================================================
-   ProblemSection — the situation Mentora is answering, stated plainly.
+   ProblemSection — the situation Trellis is answering, stated plainly.
    ========================================================================== */
 
 export default function ProblemSection() {

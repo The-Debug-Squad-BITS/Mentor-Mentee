@@ -1,3 +1,4 @@
+import { Inbox, Bell, FileText, Download, CheckCircle, Refresh, Mail } from "./Icons";
 import { useState, useEffect, useRef } from "react";
 import api from "../../lib/api";
 import { useNotificationStore } from "../../store/notificationStore";
@@ -7,11 +8,11 @@ import { toast } from "react-toastify";
 
 // Icon per notification type
 const typeIcons = {
-  TASK_ASSIGNED:       "📋",
-  SUBMISSION_RECEIVED: "📥",
-  SUBMISSION_APPROVED: "✅",
-  REVISION_REQUESTED:  "🔄",
-  INVITATION_SENT:     "✉️",
+  TASK_ASSIGNED:       FileText,
+  SUBMISSION_RECEIVED: Download,
+  SUBMISSION_APPROVED: CheckCircle,
+  REVISION_REQUESTED:  Refresh,
+  INVITATION_SENT:     Mail,
 };
 
 function timeAgo(dateStr) {
@@ -159,11 +160,11 @@ export default function NotificationBell() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={handleMarkAllRead}
-                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                  className="text-[11px] font-bold text-brand-600 hover:text-brand-800 hover:underline cursor-pointer"
                 >
                   Mark all read
                 </button>
-                <span className="text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
+                <span className="text-[11px] font-bold text-brand-600 bg-brand-50 border border-brand-100 px-2.5 py-1 rounded-full">
                   {unreadCount} unread
                 </span>
               </div>
@@ -173,9 +174,12 @@ export default function NotificationBell() {
           {/* List */}
           <div className="max-h-[350px] overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-slate-500 font-medium flex flex-col items-center gap-2">
-                <span className="text-2xl">📭</span>
-                No notifications yet
+              <div className="flex flex-col items-center gap-1.5 px-5 py-10 text-center">
+                <span className="empty-state-icon">
+                  <Inbox size={20} />
+                </span>
+                <p className="empty-state-title">You are all caught up</p>
+                <p className="empty-state-text">New activity on your work will show up here.</p>
               </div>
             ) : (
               notifications.map((n) => (
@@ -183,12 +187,23 @@ export default function NotificationBell() {
                   key={n._id}
                   onClick={() => handleNotificationClick(n)}
                   className={`flex items-start gap-3.5 px-5 py-4 border-b border-slate-100 cursor-pointer transition-colors hover:bg-slate-50 ${
-                    !n.isRead ? "bg-blue-50/30" : ""
+                    !n.isRead ? "bg-brand-50/40" : ""
                   }`}
                 >
-                  <span className="text-xl shrink-0 mt-0.5 opacity-80">
-                    {typeIcons[n.type] || "🔔"}
-                  </span>
+                  {(() => {
+                    const Glyph = typeIcons[n.type] || Bell;
+                    return (
+                      <span
+                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                          !n.isRead
+                            ? "border-brand-100 bg-brand-50 text-brand-600"
+                            : "border-slate-200 bg-slate-50 text-slate-400"
+                        }`}
+                      >
+                        <Glyph size={15} />
+                      </span>
+                    );
+                  })()}
 
                   <div className="flex flex-col gap-1 flex-1 min-w-0">
                     <span
@@ -210,7 +225,7 @@ export default function NotificationBell() {
 
                   {/* Unread dot */}
                   {!n.isRead && (
-                    <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5 shadow-sm" />
+                    <div className="w-2 h-2 rounded-full bg-brand-500 shrink-0 mt-1.5 shadow-sm" />
                   )}
                 </div>
               ))

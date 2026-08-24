@@ -2,19 +2,32 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { ACTION_LABELS } from "../admin/ActivityLogs";
+import {
+  Folder,
+  CheckCircle,
+  Upload,
+  Flag,
+  MessageSquare,
+  FileText,
+  User,
+  Activity as ActivityIcon,
+  Clock,
+  Inbox,
+  Info,
+} from "../ui/Icons";
 
 // ── Entity-type → icon / color chip (reuses same logic) ──────────────────────
 function getEntityMeta(entityType, action) {
   const key = entityType || "";
   const act = action || "";
-  if (key === "PROJECT"    || act.includes("PROJECT"))    return { icon: "🗂️",  color: "bg-blue-50 text-blue-700 border-blue-200",       label: "Project" };
-  if (key === "TASK"       || act.includes("TASK"))       return { icon: "✅",   color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Task" };
-  if (key === "SUBMISSION" || act.includes("SUBMISSION")) return { icon: "📤",  color: "bg-amber-50 text-amber-700 border-amber-200",    label: "Submission" };
-  if (key === "MILESTONE"  || act.includes("MILESTONE"))  return { icon: "🏁",  color: "bg-indigo-50 text-indigo-700 border-indigo-200",  label: "Milestone" };
-  if (key === "COMMENT"    || act.includes("COMMENT"))    return { icon: "💬",  color: "bg-purple-50 text-purple-700 border-purple-200",  label: "Comment" };
-  if (key === "TEMPLATE"   || act.includes("TEMPLATE"))   return { icon: "📋",  color: "bg-pink-50 text-pink-700 border-pink-200",        label: "Template" };
-  if (act.includes("USER"))                               return { icon: "👤",  color: "bg-cyan-50 text-cyan-700 border-cyan-200",        label: "User" };
-  return                                                         { icon: "⚡",   color: "bg-slate-100 text-slate-700 border-slate-200",   label: "System" };
+  if (key === "PROJECT"    || act.includes("PROJECT"))    return { icon: Folder,        color: "bg-info-50 text-info-700 border-info-200",          label: "Project" };
+  if (key === "TASK"       || act.includes("TASK"))       return { icon: CheckCircle,   color: "bg-success-50 text-success-700 border-success-200", label: "Task" };
+  if (key === "SUBMISSION" || act.includes("SUBMISSION")) return { icon: Upload,        color: "bg-warning-50 text-warning-700 border-warning-200", label: "Submission" };
+  if (key === "MILESTONE"  || act.includes("MILESTONE"))  return { icon: Flag,          color: "bg-brand-50 text-brand-700 border-brand-200",       label: "Milestone" };
+  if (key === "COMMENT"    || act.includes("COMMENT"))    return { icon: MessageSquare, color: "bg-violet-50 text-violet-700 border-violet-200",    label: "Comment" };
+  if (key === "TEMPLATE"   || act.includes("TEMPLATE"))   return { icon: FileText,      color: "bg-pink-50 text-pink-700 border-pink-200",          label: "Template" };
+  if (act.includes("USER"))                               return { icon: User,          color: "bg-cyan-50 text-cyan-700 border-cyan-200",          label: "User" };
+  return                                                         { icon: ActivityIcon,  color: "bg-slate-50 text-slate-700 border-slate-200",       label: "System" };
 }
 
 function formatDate(dateStr) {
@@ -96,76 +109,87 @@ export default function MentorActivity() {
   }, [loadActivity]);
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-5 animate-fade-in">
 
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-          Project Activity
-        </h1>
-        <p className="m-0 mt-1 text-slate-500 text-sm">
+      <div>
+        <h1 className="page-title m-0">Project Activity</h1>
+        <p className="page-subtitle mt-1">
           A combined timeline across the projects assigned to you — tasks, submissions, comments, and milestones.
         </p>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 shadow-sm">
-          ℹ️ {error}
+        <div className="notice notice-warning">
+          <Info size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Timeline */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <h2 className="m-0 text-sm font-bold text-slate-900">Activity Timeline</h2>
-          {!loading && activities.length > 0 && (
-            <span className="ml-1 text-xs text-slate-500">({activities.length} events)</span>
-          )}
+      <div className="card overflow-hidden">
+        <div className="card-header">
+          <h2 className="section-title m-0 flex items-center gap-2">
+            <Clock size={16} className="text-slate-400" />
+            Activity Timeline
+            {!loading && activities.length > 0 && (
+              <span className="badge badge-neutral">{activities.length} events</span>
+            )}
+          </h2>
         </div>
 
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           {loading ? (
-            <div className="py-16 text-center text-slate-400 text-sm">
-              Loading activity...
+            <div className="ml-4 flex flex-col gap-6 border-l-2 border-slate-100 pl-6">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="relative">
+                  <span className="skeleton absolute -left-[41px] top-0 h-8 w-8 rounded-full" />
+                  <span className="skeleton mb-2 block h-4 w-40" />
+                  <span className="skeleton block h-4 w-3/4" />
+                </div>
+              ))}
             </div>
           ) : !error && activities.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-sm">
-              <div className="text-4xl mb-3">📭</div>
-              {hasProjects
-                ? "No activity recorded on your projects yet. It will appear here as your mentees work on tasks and submissions."
-                : "No projects are assigned to you yet. Once an admin assigns you a project, its activity will show up here."}
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <Inbox size={22} />
+              </span>
+              <p className="empty-state-title">No activity yet</p>
+              <p className="empty-state-text">
+                {hasProjects
+                  ? "Nothing has been recorded on your projects yet. Activity will appear here as your mentees work on tasks and submissions."
+                  : "No projects are assigned to you yet. Once an admin assigns you a project, its activity will show up here."}
+              </p>
             </div>
           ) : !error && (
-            <div className="relative border-l-2 border-slate-100 ml-4 pl-6 flex flex-col gap-0">
+            <div className="relative ml-4 flex flex-col gap-0 border-l-2 border-slate-100 pl-6">
               {activities.map((activity, idx) => {
                 const meta = getEntityMeta(activity.entityType, activity.action);
+                const Glyph = meta.icon;
                 return (
-                  <div key={activity._id || idx} className="relative pb-6 last:pb-0 group">
+                  <div key={activity._id || idx} className="group relative pb-6 last:pb-0">
                     {/* Dot on the timeline line */}
-                    <div className={`w-8 h-8 rounded-full border-2 border-white absolute -left-[41px] top-0 flex items-center justify-center text-sm shadow-sm transition-transform group-hover:scale-110 z-10 ${meta.color.split(" ")[0]} ${meta.color.split(" ")[1]}`}>
-                      {meta.icon}
+                    <div
+                      className={`absolute -left-[41px] top-0 z-10 flex h-8 w-8 items-center justify-center
+                        rounded-full border-2 border-white shadow-xs ${meta.color.split(" ")[0]} ${meta.color.split(" ")[1]}`}
+                    >
+                      <Glyph size={15} />
                     </div>
 
                     {/* Content */}
                     <div className="pl-2">
-                      <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider border ${meta.color}`}>
-                          {meta.label}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                        <span className={`badge ${meta.color}`}>{meta.label}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400">
                           {activity.action?.replace(/_/g, " ")}
                         </span>
-                        <span className="ml-auto text-xs text-slate-400 font-medium shrink-0">
+                        <span className="ml-auto shrink-0 text-[12px] font-medium text-slate-500">
                           {formatDate(activity.createdAt)}
                         </span>
                       </div>
 
-                      <p className="m-0 text-slate-700 text-sm leading-relaxed">
+                      <p className="m-0 text-[13.5px] leading-relaxed text-slate-700">
                         <span className="font-semibold text-slate-900">
                           {activity.userId?.name || "Someone"}
                         </span>
@@ -174,7 +198,7 @@ export default function MentorActivity() {
                           {ACTION_LABELS[activity.action] || activity.action?.replace(/_/g, " ").toLowerCase()}
                         </span>
                         {activity.metadata?.title && (
-                          <> — <span className="font-semibold text-slate-800">"{activity.metadata.title}"</span></>
+                          <> — <span className="font-semibold text-slate-800">&ldquo;{activity.metadata.title}&rdquo;</span></>
                         )}
                       </p>
                     </div>

@@ -160,7 +160,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
+                className="textarea-field resize-none"
                 style={{ minHeight: 72 }}
                 disabled={editLoading}
                 autoFocus
@@ -169,7 +169,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
                 <button
                   type="submit"
                   disabled={editLoading || !editContent.trim()}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer border-0"
+                  className="px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors cursor-pointer border-0"
                 >
                   {editLoading ? "Saving..." : "Save"}
                 </button>
@@ -196,7 +196,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
             {!isReply && (
               <button
                 onClick={() => setShowReplyBox(!showReplyBox)}
-                className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="text-xs text-slate-500 hover:text-brand-600 font-medium transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 {showReplyBox ? "Cancel" : "Reply"}
               </button>
@@ -204,7 +204,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
             {canEdit && (
               <button
                 onClick={() => setEditing(true)}
-                className="text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors cursor-pointer bg-transparent border-0 p-0"
+                className="text-xs text-slate-500 hover:text-brand-600 font-medium transition-colors cursor-pointer bg-transparent border-0 p-0"
               >
                 Edit
               </button>
@@ -229,7 +229,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 placeholder="Write a reply..."
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors bg-white"
+                className="textarea-field resize-none bg-white"
                 style={{ minHeight: 60 }}
                 disabled={replyLoading}
                 autoFocus
@@ -238,7 +238,7 @@ function CommentItem({ comment, entityType, entityId, currentUser, onRefresh, de
                 <button
                   type="submit"
                   disabled={replyLoading || !replyContent.trim()}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer border-0"
+                  className="px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors cursor-pointer border-0"
                 >
                   {replyLoading ? "Posting..." : "Post Reply"}
                 </button>
@@ -335,7 +335,7 @@ export default function CommentSection({ entityType, entityId }) {
   );
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="card overflow-hidden">
       {/* Section header */}
       <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
         <svg
@@ -368,7 +368,7 @@ export default function CommentSection({ entityType, entityId }) {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Write a comment..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors bg-slate-50 focus:bg-white"
+              className="input-field resize-none transition-colors bg-slate-50 focus:bg-white"
               style={{ minHeight: 80 }}
               disabled={postLoading}
             />
@@ -376,7 +376,7 @@ export default function CommentSection({ entityType, entityId }) {
               <button
                 type="submit"
                 disabled={postLoading || !newComment.trim()}
-                className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer border-0 shadow-sm"
+                className="px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors cursor-pointer border-0 shadow-sm"
               >
                 {postLoading ? "Posting..." : "Post Comment"}
               </button>

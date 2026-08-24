@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import StatCard from "../ui/StatCard";
 import Button from "../ui/Button";
+import { Folder, FileText, BarChart, Check } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 
 export default function MentorProfile() {
@@ -38,33 +39,33 @@ export default function MentorProfile() {
   const completedTasks = 0;
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex max-w-3xl flex-col gap-5 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex justify-between items-center">
-        <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Advisor Profile</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Manage your system profile settings and view academic advisory metrics.</p>
-        </div>
+      <div>
+        <h1 className="page-title m-0">Advisor Profile</h1>
+        <p className="page-subtitle mt-1">
+          Your account details and a snapshot of your advisory work.
+        </p>
       </div>
 
       {/* Metrics Row */}
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex flex-wrap gap-4">
         <StatCard
-          icon="📁"
+          icon={<Folder size={17} />}
           label="Supervised Projects"
           value={mentoredProjects.length.toString()}
           badge="Workspace Led"
           badgeColor="blue"
         />
         <StatCard
-          icon="📋"
+          icon={<FileText size={17} />}
           label="Milestones Created"
           value={totalTasks.toString()}
           badge="Tasks Dispatched"
-          badgeColor="emerald"
+          badgeColor="green"
         />
         <StatCard
-          icon="⭐"
+          icon={<BarChart size={17} />}
           label="Track Completion"
           value={`${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%`}
           badge="Efficiency rate"
@@ -73,52 +74,53 @@ export default function MentorProfile() {
       </div>
 
       {/* Settings Form */}
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+      <form onSubmit={handleSave} className="card flex flex-col gap-7 p-6 md:p-8">
         {saveSuccess && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold p-4 rounded-lg animate-fade-in">
-            ✅ Profile updated successfully! Changes will take effect on next reload.
+          <div className="notice notice-success animate-fade-in">
+            <Check size={16} className="mt-px shrink-0" />
+            <span>Profile updated successfully. Changes will take effect on next reload.</span>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-center gap-5">
+        <div className="flex flex-col items-center gap-5 sm:flex-row">
           <Avatar initials={currentUser.avatar} color={currentUser.color} size={80} />
           <div className="text-center sm:text-left">
-            <span className="block font-bold text-slate-900 text-lg md:text-xl">{currentUser.name}</span>
-            <span className="inline-block mt-1 px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200">{currentUser.role} ACCESS LEVEL</span>
+            <span className="block font-display text-xl font-bold text-slate-900">
+              {currentUser.name}
+            </span>
+            <span className="badge badge-brand mt-2">{currentUser.role} access</span>
           </div>
         </div>
 
-        <hr className="border-0 border-t border-slate-200 m-0" />
+        <hr className="m-0 border-0 border-t border-slate-200" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Advisor Name</label>
+            <label className="field-label">Advisor Name</label>
             <input
               required
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Advisor Email Address</label>
+            <label className="field-label">Advisor Email Address</label>
             <input
               required
               type="email"
               value={profileEmail}
               onChange={(e) => setProfileEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-slate-50"
+              className="input-field"
               disabled // usually emails aren't editable directly like this, or maybe they are, but giving it a disabled look for safety if not mapped to a backend yet
             />
+            <p className="field-hint">Contact an administrator to change your sign-in email.</p>
           </div>
         </div>
 
-        <Button
-          type="submit"
-          className="self-start mt-2 px-6 py-2.5"
-        >
-          Save Profile Updates
-        </Button>
+        <div className="border-t border-slate-200 pt-5">
+          <Button type="submit">Save Profile Updates</Button>
+        </div>
       </form>
     </div>
   );

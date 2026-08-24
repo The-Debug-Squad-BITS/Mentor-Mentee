@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Close, AlertTriangle, AlertCircle, Inbox, Users } from "../ui/Icons";
 import Avatar from "../ui/Avatar";
 import Button from "../ui/Button";
 import StatusBadge from "../ui/StatusBadge";
@@ -106,12 +107,12 @@ export default function ManageUsers({ onUserDeleted }) {
   return (
     <div className="flex flex-col gap-6 relative animate-fade-in">
       {/* Header & Search */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h2 className="m-0 text-lg md:text-xl font-bold text-slate-900 tracking-tight">
             User Workspace Directories
           </h2>
-          <p className="m-0 mt-1 text-slate-500 text-sm">
+          <p className="page-subtitle mt-1">
             Manage organization members, review their assigned projects, or change access credentials.
           </p>
         </div>
@@ -120,7 +121,7 @@ export default function ManageUsers({ onUserDeleted }) {
             placeholder="Search name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-300 outline-none text-sm flex-1 md:w-64 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="px-4 py-2 rounded-lg border border-slate-300 outline-none text-sm flex-1 md:w-64 bg-slate-50 focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 transition-colors"
           />
           <Button
             onClick={() => setShowCreateModal(true)}
@@ -153,46 +154,54 @@ export default function ManageUsers({ onUserDeleted }) {
 
       {/* Error Banner */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Main content grid split (List on left, Profile Drawer on right) */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Members Table */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex-1 w-full shadow-sm">
+        <div className="card w-full min-w-0 flex-1 overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-slate-500 text-sm">Loading users...</div>
+            <div className="flex flex-col gap-3 p-5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <span key={i} className="skeleton h-11 w-full" />
+            ))}
+          </div>
           ) : users.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-sm">No members match the query filters.</div>
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <Users size={22} />
+              </span>
+              <p className="empty-state-title">No members match your filters</p>
+              <p className="empty-state-text">
+                Try a different search or role filter, or invite a new member to the workspace.
+              </p>
+            </div>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[600px]">
+                <table className="data-table min-w-[600px]">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200">
+                    <tr>
                       {["User Name", "Role", "Email", "Status", "Actions"].map((h) => (
-                        <th
-                          key={h}
-                          className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
+                        <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {users.map((u) => (
                       <tr
                         key={u._id}
                         onClick={() => setSelectedUser(u)}
                         className={`hover:bg-slate-50 cursor-pointer transition-colors duration-150 ${
-                          selectedUser && selectedUser._id === u._id ? "bg-blue-50/50" : ""
+                          selectedUser && selectedUser._id === u._id ? "bg-brand-50/50" : ""
                         }`}
                       >
                         {/* Name + Avatar */}
-                        <td className="px-6 py-4">
+                        <td>
                           <div className="flex items-center gap-3">
                             <Avatar initials={getInitials(u.name)} color={getColor(u.name)} size={32} />
                             <div>
@@ -204,12 +213,12 @@ export default function ManageUsers({ onUserDeleted }) {
                         </td>
 
                         {/* Role */}
-                        <td className="px-6 py-4">
+                        <td>
                           <span className={`px-2.5 py-1 rounded-md font-medium text-xs ${
                             u.role === "MENTOR"
-                              ? "bg-indigo-50 text-indigo-700"
+                              ? "bg-brand-50 text-indigo-700"
                               : u.role === "MENTEE"
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-success-50 text-success-700"
                               : "bg-slate-100 text-slate-700"
                           }`}>
                             {u.role}
@@ -217,17 +226,17 @@ export default function ManageUsers({ onUserDeleted }) {
                         </td>
 
                         {/* Email */}
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td>
                           {u.email}
                         </td>
 
                         {/* Status */}
-                        <td className="px-6 py-4">
+                        <td>
                           <StatusBadge status={u.isActive ? "Active" : "Inactive"} />
                         </td>
 
                         {/* Actions */}
-                        <td className="px-6 py-4">
+                        <td>
                           {u.isActive && (
                             <Button
                               variant="danger"
@@ -276,13 +285,13 @@ export default function ManageUsers({ onUserDeleted }) {
 
         {/* Profile Sidebar Drawer */}
         {selectedUser && (
-          <div className="w-full lg:w-80 bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-6 shrink-0 relative shadow-md animate-fade-in">
+          <div className="card relative flex w-full shrink-0 flex-col gap-6 p-6 shadow-sm animate-fade-in lg:w-80">
             {/* Close button */}
             <button
               onClick={() => setSelectedUser(null)}
               className="absolute top-4 right-4 w-8 h-8 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-full flex items-center justify-center cursor-pointer transition-colors"
             >
-              ✕
+              <Close size={16} />
             </button>
 
             {/* Profile Large Card */}
@@ -302,9 +311,9 @@ export default function ManageUsers({ onUserDeleted }) {
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">System Role</label>
               <span className={`inline-block self-start px-3 py-1 rounded-md text-sm font-medium ${
                 selectedUser.role === "MENTOR"
-                  ? "bg-indigo-50 text-indigo-700"
+                  ? "bg-brand-50 text-indigo-700"
                   : selectedUser.role === "MENTEE"
-                  ? "bg-emerald-50 text-emerald-700"
+                  ? "bg-success-50 text-success-700"
                   : "bg-slate-100 text-slate-700"
               }`}>
                 {selectedUser.role}

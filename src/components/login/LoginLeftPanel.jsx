@@ -4,7 +4,7 @@ import { Logo, ArrowLeft, Layers, Target, CheckCircle } from "../ui/Icons";
 /* Presentational: one proof point row on the dark brand panel. */
 function ProofPoint({ icon, title, text }) {
   return (
-    <li className="flex gap-3.5">
+    <li className="flex gap-3">
       <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06] text-brand-300">
         {icon}
       </span>
@@ -26,7 +26,7 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
   };
 
   return (
-    <div className="surface-ink hidden lg:flex flex-col justify-between p-12 xl:p-14">
+    <div className="surface-ink scrollbar-slim hidden lg:flex lg:h-full lg:flex-col lg:justify-between lg:overflow-y-auto px-10 py-9 xl:px-14 xl:py-12">
       {/* Brand row */}
       <div className="flex items-center gap-2.5">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
@@ -45,21 +45,21 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
       </div>
 
       {/* Positioning */}
-      <div className="max-w-md py-12">
+      <div className="max-w-md py-8 xl:py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-300">
           Project management for institutions
         </p>
-        <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.12] tracking-tight text-white xl:text-[44px]">
+        <h1 className="mt-3.5 font-display text-[32px] font-bold leading-[1.14] tracking-tight text-white xl:text-[40px]">
           Run every mentor–mentee project in one place.
         </h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-slate-400">
+        <p className="mt-3.5 text-[14px] leading-relaxed text-slate-400 xl:text-[15px]">
           Mentora gives students, mentors and faculty a shared workspace for
           academic projects — from kickoff to final review.
         </p>
       </div>
 
       {/* Proof points */}
-      <ul className="flex max-w-md flex-col gap-6 border-t border-white/10 pt-8">
+      <ul className="flex max-w-md flex-col gap-5 border-t border-white/10 pt-6 xl:gap-6 xl:pt-8">
         <ProofPoint
           icon={<Layers size={18} />}
           title="Projects with clear ownership"

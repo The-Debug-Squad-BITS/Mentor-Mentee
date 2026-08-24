@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useMeetingStore } from "../../store/meetingStore";
 import Button from "../ui/Button";
 import { toast } from "react-toastify";
+import { Video, MessageSquare, Close, AlertTriangle, Plus, Inbox } from "../ui/Icons";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const JOIN_OPEN_BEFORE_MIN = 10;   // Join unlocks this many minutes before start
@@ -12,10 +13,10 @@ const PLACEHOLDER_HOST = "meet.eduflow.app"; // backend's placeholder link domai
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 
 const STATUS_META = {
-  SCHEDULED:   { label: "Scheduled",   cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  IN_PROGRESS: { label: "In Progress", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  COMPLETED:   { label: "Completed",   cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  CANCELLED:   { label: "Cancelled",   cls: "bg-red-50 text-red-700 border-red-200" },
+  SCHEDULED:   { label: "Scheduled",   cls: "bg-info-50 text-info-700 border-info-200" },
+  IN_PROGRESS: { label: "In Progress", cls: "bg-warning-50 text-warning-700 border-warning-200" },
+  COMPLETED:   { label: "Completed",   cls: "bg-success-50 text-success-700 border-success-200" },
+  CANCELLED:   { label: "Cancelled",   cls: "bg-danger-50 text-danger-700 border-danger-200" },
 };
 
 // ── Time helpers ─────────────────────────────────────────────────────────────
@@ -78,7 +79,7 @@ function JoinButton({ meeting, canJoinAnytime, size = "md" }) {
   const base = `${cls} font-semibold rounded-lg border-0 inline-flex items-center gap-1.5 shrink-0`;
 
   if (meeting.status === "CANCELLED")
-    return <span className={`${base} bg-red-50 text-red-600`}>Cancelled</span>;
+    return <span className={`${base} bg-danger-50 text-danger-600`}>Cancelled</span>;
   if (!realLink)
     return <span className={`${base} bg-slate-100 text-slate-500`}>{canJoinAnytime ? "Add a link" : "No link yet"}</span>;
   if (meeting.status === "COMPLETED")
@@ -92,16 +93,16 @@ function JoinButton({ meeting, canJoinAnytime, size = "md" }) {
         href={meeting.meetingLink}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${base} bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer no-underline`}
+        className={`${base} bg-success-600 hover:bg-success-700 text-white cursor-pointer no-underline`}
       >
-        🎥 Join Meeting
+        Join Meeting
       </a>
     );
   }
   if (now < openAt)
     return (
       <span className={`${base} bg-slate-100 text-slate-500`} title={`Opens ${JOIN_OPEN_BEFORE_MIN} min before start`}>
-        🔒 Opens {untilText(openAt - now) === "in 0 min" ? "soon" : untilText(openAt - now)}
+        Opens {untilText(openAt - now) === "in 0 min" ? "soon" : untilText(openAt - now)}
       </span>
     );
   return <span className={`${base} bg-slate-100 text-slate-500`}>Meeting ended</span>;
@@ -183,12 +184,12 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
           <h2 className="m-0 text-lg font-bold text-slate-900">{editing ? "Edit Meeting" : "Schedule Meeting"}</h2>
         </div>
         <form onSubmit={submit} className="p-6 flex flex-col gap-4">
-          {error && <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">⚠️ {error}</div>}
+          {error && <div className="notice notice-danger"><AlertTriangle size={16} className="mt-px shrink-0" /><span>{error}</span></div>}
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">Title *</label>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Weekly Progress Review"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+              className="input-field" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -196,22 +197,22 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">Date &amp; Time *</label>
               <input required type="datetime-local" value={scheduledAt} min={editing ? undefined : nowLocalInput()}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white" />
+                className="input-field bg-white" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Duration</label>
                 <select value={duration} onChange={(e) => setDuration(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 bg-white">
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 bg-white">
                   {DURATION_OPTIONS.map((d) => <option key={d} value={d}>{d} min</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Type</label>
                 <select value={type} onChange={(e) => setType(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 bg-white">
-                  <option value="VIDEO">🎥 Video</option>
-                  <option value="AUDIO">🎙️ Audio</option>
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 bg-white">
+                  <option value="VIDEO">Video</option>
+                  <option value="AUDIO">Audio</option>
                 </select>
               </div>
             </div>
@@ -221,11 +222,11 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-slate-700">Meeting Link</label>
               <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 no-underline">Get a Meet link ↗</a>
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700 no-underline">Get a Meet link ↗</a>
             </div>
             <input value={meetingLink} onChange={(e) => setMeetingLink(e.target.value)}
               placeholder="Paste a Google Meet / Zoom link"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+              className="input-field" />
             <p className="m-0 mt-1 text-[11px] text-slate-400">Attendees can join from 10 minutes before start. Leave blank only if you'll add it later.</p>
           </div>
 
@@ -233,7 +234,7 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">Project (optional)</label>
               <select value={projectId} onChange={(e) => setProjectId(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 bg-white">
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 bg-white">
                 <option value="">— None —</option>
                 {projects.map((p) => <option key={p._id} value={p._id}>{p.title}</option>)}
               </select>
@@ -245,7 +246,7 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
               Participants ({selected.length} selected)
             </label>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search people..."
-              className="w-full px-4 py-2.5 mb-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500" />
+              className="w-full px-4 py-2.5 mb-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500" />
             <div className="border border-slate-200 rounded-lg max-h-40 overflow-y-auto flex flex-col">
               {filtered.length === 0 ? (
                 <span className="text-xs text-slate-400 italic p-3">No people found.</span>
@@ -253,7 +254,7 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
                 filtered.map((p) => (
                   <label key={p._id} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-slate-50">
                     <input type="checkbox" checked={selected.includes(p._id)} onChange={() => toggle(p._id)}
-                      className="w-4 h-4 accent-blue-600" />
+                      className="w-4 h-4 accent-brand-600" />
                     <span className="text-sm font-medium text-slate-800">{p.name}</span>
                     <span className="text-xs text-slate-400 ml-auto">{p.email}</span>
                   </label>
@@ -266,7 +267,7 @@ function ScheduleMeetingModal({ role, currentUserId, existing, onClose, onSaved 
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">Description / Agenda</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2}
               placeholder="Optional agenda..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 resize-none" />
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 resize-none" />
           </div>
 
           <div className="flex justify-end gap-3 pt-1">
@@ -297,11 +298,11 @@ function MeetingDetailModal({ meeting, canManage, onClose, onEdit, onStatus, onD
               <h2 className="m-0 text-lg font-bold text-slate-900">{meeting.title}</h2>
               <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ${st.cls}`}>{st.label}</span>
             </div>
-            <p className="m-0 mt-1 text-slate-500 text-sm">
-              {meeting.type === "AUDIO" ? "🎙️ Audio" : "🎥 Video"} · {formatWhen(meeting.scheduledAt)} · {meeting.duration || 30} min
+            <p className="page-subtitle mt-1">
+              {meeting.type === "AUDIO" ? "Audio" : "Video"} · {formatWhen(meeting.scheduledAt)} · {meeting.duration || 30} min
             </p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 cursor-pointer border-0 bg-transparent shrink-0">✕</button>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 cursor-pointer border-0 bg-transparent shrink-0"><Close size={16} /></button>
         </div>
 
         <div className="p-6 flex flex-col gap-5">
@@ -309,7 +310,7 @@ function MeetingDetailModal({ meeting, canManage, onClose, onEdit, onStatus, onD
             <JoinButton meeting={meeting} canJoinAnytime={canManage} />
             {!hasRealLink(meeting.meetingLink) && canManage && (
               <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
-                ⚠️ No real link yet — click Edit to paste a Google Meet / Zoom link.
+                No meeting link yet — click Edit to paste a Google Meet / Zoom link.
               </span>
             )}
           </div>
@@ -377,9 +378,9 @@ function MeetingCard({ meeting, currentUser, onOpen }) {
   const canManage = isHost || currentUser?.role === "ADMIN";
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-      <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-lg shrink-0">
-        {meeting.type === "AUDIO" ? "🎙️" : "🎥"}
+    <div className="card flex items-center gap-4 p-4 transition-shadow duration-200 hover:shadow-md">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-brand-50 text-brand-600">
+        {meeting.type === "AUDIO" ? <MessageSquare size={18} /> : <Video size={18} />}
       </div>
       <button onClick={onOpen} className="min-w-0 flex-1 text-left bg-transparent border-0 cursor-pointer p-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -489,8 +490,8 @@ export default function MeetingsSection() {
       {/* Header */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Meetings</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Schedule and join video/audio meetings with a Google Meet or Zoom link.</p>
+          <h1 className="page-title m-0">Meetings</h1>
+          <p className="page-subtitle mt-1">Schedule and join video/audio meetings with a Google Meet or Zoom link.</p>
         </div>
         {canSchedule && (
           <Button onClick={() => { setEditingMeeting(null); setScheduleOpen(true); }}>+ Schedule Meeting</Button>
@@ -511,7 +512,7 @@ export default function MeetingsSection() {
         </div>
         {tab === "all" && (
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 bg-white">
+            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 bg-white">
             <option value="ALL">All statuses</option>
             <option value="SCHEDULED">Scheduled</option>
             <option value="IN_PROGRESS">In Progress</option>
@@ -523,15 +524,22 @@ export default function MeetingsSection() {
 
       {/* List */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400 text-sm">Loading meetings...</div>
+        <div className="flex flex-col gap-3">{[0, 1, 2].map((i) => (<span key={i} className="skeleton h-20 w-full" />))}</div>
       ) : meetings.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
-          <div className="text-4xl mb-3">📅</div>
-          <p className="text-slate-500 text-sm m-0">
-            {tab === "upcoming" ? "No upcoming meetings scheduled." : "No meetings found."}
+        <div className="card empty-state">
+          <span className="empty-state-icon">
+            <Video size={22} />
+          </span>
+          <p className="empty-state-title">
+            {tab === "upcoming" ? "No upcoming meetings" : "No meetings found"}
+          </p>
+          <p className="empty-state-text">
+            {tab === "upcoming"
+              ? "Meetings scheduled with you will appear here with a join link."
+              : "Nothing matches this view yet."}
           </p>
           {canSchedule && tab === "upcoming" && (
-            <button onClick={() => setScheduleOpen(true)} className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer bg-transparent border-0">
+            <button onClick={() => setScheduleOpen(true)} className="mt-3 text-sm font-semibold text-brand-600 hover:text-brand-700 cursor-pointer bg-transparent border-0">
               Schedule your first meeting →
             </button>
           )}

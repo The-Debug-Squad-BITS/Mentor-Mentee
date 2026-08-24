@@ -25,7 +25,7 @@ export default function Footer() {
                 <Logo size={18} />
               </span>
               <span className="font-display text-[17px] font-bold tracking-tight text-slate-900">
-                Mentora
+                Trellis
               </span>
             </div>
             <p className="mt-4 text-[13.5px] leading-relaxed text-slate-600">{footerTagline}</p>
@@ -80,7 +80,7 @@ export default function Footer() {
 
         <div className="mt-10 border-t border-slate-200 pt-6">
           <p className="text-[12.5px] text-slate-500">
-            &copy; {new Date().getFullYear()} Mentora. Project management for educational institutions.
+            &copy; {new Date().getFullYear()} Trellis. Academic project and capstone supervision.
           </p>
         </div>
       </div>

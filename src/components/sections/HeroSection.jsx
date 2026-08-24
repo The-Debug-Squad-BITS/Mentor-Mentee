@@ -4,7 +4,7 @@ import { Icon, ArrowRight } from "../ui/Icons";
 import { hero } from "../../data/landingData";
 
 /* ==========================================================================
-   HeroSection — the first screen. States what Mentora is, who it is for,
+   HeroSection — the first screen. States what Trellis is, who it is for,
    and gives one primary and one secondary way in.
    ========================================================================== */
 

@@ -69,11 +69,8 @@ export default function LoginPage({ onNavigate, onBack }) {
     doLogin(email, password);
   };
 
-  const handleGoogleLogin = () =>
-    setError("Google login is not available. Please use your email and password.");
-
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] bg-white text-slate-900 overflow-x-hidden">
+    <div className="grid min-h-screen grid-cols-1 overflow-x-hidden bg-white text-slate-900 lg:h-screen lg:grid-cols-[1.05fr_0.95fr] lg:overflow-hidden">
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
       <LoginRightPanel
         email={email}
@@ -83,7 +80,6 @@ export default function LoginPage({ onNavigate, onBack }) {
         loading={loading}
         error={error}
         onSubmit={handleSubmit}
-        onGoogleLogin={handleGoogleLogin}
         onNavigate={onNavigate}
         onBack={onBack}
         onForgotPassword={() => setShowResetModal(true)}

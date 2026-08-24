@@ -1,5 +1,5 @@
 import { Icon } from "../ui/Icons";
-import { whyMentora as s } from "../../data/landingData";
+import { whyTrellis as s } from "../../data/landingData";
 
 /* ==========================================================================
    ProductComparisonSection — why a general tracker is the wrong shape for
@@ -11,7 +11,7 @@ import { whyMentora as s } from "../../data/landingData";
 
 export default function ProductComparisonSection() {
   return (
-    <section id="why-mentora" className="scroll-mt-24">
+    <section id="why-trellis" className="scroll-mt-24">
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xs">
         <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
           {/* The argument */}

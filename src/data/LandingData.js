@@ -1,13 +1,23 @@
 /* ==========================================================================
-   Mentora — landing page content
+   Trellis — landing page content
    --------------------------------------------------------------------------
    Single source of truth for every word on the public marketing page.
 
+   Positioning: Trellis is an Academic Project & Capstone Supervision
+   Platform. It is NOT a generic mentorship product. The story the page tells
+   is the one the backend actually implements:
+
+     Projects -> Milestones -> Tasks -> Student Submissions
+              -> Supervisor Review -> Approval / Revision
+
    Ground rule: nothing here may describe a capability the product does not
-   have. Every feature listed maps to a real screen in the app (role-based
-   dashboards, projects, milestones, tasks, submissions, mentor review,
-   comments, chat, meetings, calendar, activity logs, templates, member
-   management, email invitations, notifications).
+   have. Every feature listed maps to a real route and a real screen —
+   projects, milestones, tasks, submissions, review decisions, templates,
+   calculated progress, comments, chat, meetings, calendar, notifications,
+   activity history, email invitations and role-scoped access.
+
+   Deliberately absent, because they are not built: exports and reports,
+   grading or marks, plagiarism checks, SSO, supervisor matching, pricing.
 
    `icon` values are names exported from `src/components/ui/Icons.jsx`; the
    consuming component resolves them through the `Icon` namespace.
@@ -26,21 +36,22 @@ export const navLinks = [
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 
 export const hero = {
-  eyebrow: "Project management for educational institutions",
-  titleLead: "Every academic project,",
-  titleAccent: "one shared workspace.",
+  eyebrow: "Academic project & capstone supervision",
+  titleLead: "Structure for",
+  titleAccent: "supervised work.",
   subtitle:
-    "Mentora gives schools, colleges and universities a single place to plan projects, " +
-    "assign mentors, review student submissions and keep a complete record of the work — " +
-    "instead of spreading it across chat groups, inboxes and spreadsheets.",
+    "Trellis gives a department one place to run final-year projects, capstones, " +
+    "dissertations and supervised internships — from the milestone plan, to the " +
+    "student's submission, to the supervisor's approval, with a record of every " +
+    "decision along the way.",
   primaryCta: "Open the platform",
   secondaryCta: "Create an account",
-  trustLabel: "Built for the people who run academic projects",
-  trustRoles: ["Students", "Mentors", "Faculty & administrators"],
+  trustLabel: "Built for the people who run supervised projects",
+  trustRoles: ["Project coordinators", "Faculty supervisors", "Students"],
   assurances: [
-    { icon: "Shield", label: "Role-scoped visibility" },
-    { icon: "CheckCircle", label: "Review and revision workflow" },
-    { icon: "Activity", label: "Complete activity trail" },
+    { icon: "CheckCircle", label: "Submission, review and approval" },
+    { icon: "Target", label: "Milestone-gated progress" },
+    { icon: "Activity", label: "Complete activity history" },
   ],
 };
 
@@ -48,16 +59,16 @@ export const hero = {
 
 export const productPreview = {
   eyebrow: "Product",
-  title: "The workspace your institution logs into",
+  title: "The workspace your department logs into",
   subtitle:
-    "One system, three views. Administrators oversee the whole organisation, mentors work " +
-    "through their review queue, students see exactly what is due next.",
-  caption: "Illustrative preview of the administrator workspace.",
+    "One system, three views. Coordinators oversee every project in the department, " +
+    "supervisors work through their review queue, students see exactly what is due next.",
+  caption: "Illustrative preview of the coordinator workspace.",
   cta: "Sign in to your dashboard",
-  workspaceLabel: "Mentora",
-  workspaceMeta: "Administrator",
+  workspaceLabel: "Trellis",
+  workspaceMeta: "Coordinator",
   screenTitle: "Dashboard",
-  screenSubtitle: "Organisation overview",
+  screenSubtitle: "Department overview",
   nav: [
     { label: "Dashboard", icon: "Dashboard", active: true },
     { label: "Projects", icon: "Folder" },
@@ -69,8 +80,8 @@ export const productPreview = {
     { label: "Templates", icon: "FileText" },
   ],
   stats: [
-    { label: "Total mentors", value: "12", icon: "Users" },
-    { label: "Total mentees", value: "148", icon: "GraduationCap" },
+    { label: "Faculty supervisors", value: "12", icon: "Users" },
+    { label: "Students", value: "148", icon: "GraduationCap" },
     { label: "Active projects", value: "26", icon: "Folder" },
     { label: "Milestone completion", value: "72%", icon: "Target" },
   ],
@@ -78,28 +89,28 @@ export const productPreview = {
   projects: [
     {
       name: "Capstone — Smart Campus Grid",
-      mentor: "R. Iyer",
+      supervisor: "Dr. R. Iyer",
       initials: "RI",
       status: "On Track",
       progress: 78,
     },
     {
-      name: "Minor Project — Vision Lab",
-      mentor: "S. Banerjee",
+      name: "Major Project — Vision Lab",
+      supervisor: "Dr. S. Banerjee",
       initials: "SB",
       status: "Awaiting Review",
       progress: 54,
     },
     {
-      name: "Thesis — Polymer Composites",
-      mentor: "A. Menon",
+      name: "Dissertation — Polymer Composites",
+      supervisor: "Dr. A. Menon",
       initials: "AM",
-      status: "Needs Help",
+      status: "On Hold",
       progress: 31,
     },
     {
-      name: "Design Studio — Civic Mapping",
-      mentor: "K. Rao",
+      name: "Internship — Civic Mapping",
+      supervisor: "Dr. K. Rao",
       initials: "KR",
       status: "On Track",
       progress: 66,
@@ -109,7 +120,7 @@ export const productPreview = {
   queue: [
     { task: "Milestone 3 — Prototype demo", who: "Aditi S.", when: "2h ago", state: "Under Review" },
     { task: "Literature review v2", who: "Rohan M.", when: "5h ago", state: "Revision Needed" },
-    { task: "Dataset and annotation notes", who: "Neha K.", when: "Yesterday", state: "Completed" },
+    { task: "Dataset and annotation notes", who: "Neha K.", when: "Yesterday", state: "Approved" },
   ],
 };
 
@@ -117,40 +128,41 @@ export const productPreview = {
 
 export const problemSection = {
   eyebrow: "The problem",
-  title: "Academic projects run on five tools that never agree",
+  title: "Supervised projects run on five tools that never agree",
   subtitle:
-    "Most institutions do not lack effort — they lack a shared system. The work happens, " +
-    "but the record of it is scattered, and nobody has the full picture at the same time.",
+    "Departments do not lack effort — they lack a shared system. The work happens and the " +
+    "reviews happen, but the record of both is scattered, and nobody has the full picture " +
+    "at the same time.",
   problems: [
     {
       icon: "MessageSquare",
-      title: "Communication is fragmented",
-      desc: "Briefs land in email, updates happen in a chat group, files sit on someone else's drive. The current version is whichever message you scrolled to last.",
+      title: "Briefs and feedback scatter",
+      desc: "The project brief lands in email, feedback happens in a chat group, and deliverables sit on someone else's drive. The current version is whichever message you scrolled to last.",
     },
     {
       icon: "Eye",
-      title: "Faculty have no visibility",
-      desc: "A department head cannot answer which projects are behind without messaging every mentor individually and waiting for replies.",
+      title: "Coordinators have no live view",
+      desc: "A capstone coordinator cannot say which projects are behind without messaging every supervisor individually and waiting for replies.",
     },
     {
-      icon: "Users",
-      title: "Mentoring stays ad hoc",
-      desc: "Feedback is given verbally in a corridor or on a call. Next steps are agreed, then forgotten before the following review.",
+      icon: "CheckCircle",
+      title: "Approval is verbal and unrecorded",
+      desc: "A supervisor says the work looks fine and to carry on. Nothing captures that the deliverable was accepted, when it was accepted, or what was asked for the time before.",
     },
     {
       icon: "Clock",
-      title: "Deadlines slip quietly",
+      title: "Review checkpoints slip quietly",
       desc: "Milestones have no owner, no status and no reminder, so a project only looks late once it already is.",
     },
     {
       icon: "FileText",
-      title: "There is no single record",
-      desc: "At evaluation time there is no reliable trail of who submitted what, when they submitted it, or what the mentor asked them to change.",
+      title: "No trail at evaluation time",
+      desc: "When the panel asks what was submitted, when it arrived and which changes were requested, there is no reliable place to answer from.",
     },
     {
       icon: "Refresh",
       title: "Every batch starts from zero",
-      desc: "The structure that worked last semester lives in one person's spreadsheet and gets rebuilt by hand for the next cohort.",
+      desc: "The project structure that worked last semester lives in one coordinator's spreadsheet and gets rebuilt by hand for the next cohort.",
     },
   ],
 };
@@ -159,57 +171,57 @@ export const problemSection = {
 
 export const featuresSection = {
   eyebrow: "Capabilities",
-  title: "Everything a project needs, from kickoff to final review",
+  title: "Everything a supervised project needs, from kickoff to final approval",
   subtitle:
-    "Mentora covers the full supervision cycle — planning the work, doing the work, " +
+    "Trellis covers the whole supervision cycle — planning the work, doing the work, " +
     "reviewing the work and keeping the record.",
 };
 
 export const features = [
   {
-    icon: "Shield",
-    title: "Role-based workspaces",
-    desc: "Administrators, mentors and mentees each sign in to a workspace scoped to what they are responsible for. Nobody browses work that is not theirs.",
+    icon: "Folder",
+    title: "Projects with a supervisor and a team",
+    desc: "Create a project, assign the faculty supervisor responsible for it and the students working on it. Scope, status and dates live in one place.",
   },
   {
     icon: "Target",
-    title: "Projects and milestones",
-    desc: "Structure a project into milestones with owners and due dates, and watch completion move as the work lands.",
+    title: "Milestones with calculated progress",
+    desc: "Break a project into ordered milestones with due dates. Completion is derived from the tasks underneath rather than typed in by hand.",
   },
   {
     icon: "Layers",
-    title: "Tasks and assignment",
-    desc: "Break milestones into tasks, assign them to specific mentees, and track each one from To Do through In Progress to Completed.",
+    title: "Tasks assigned to named students",
+    desc: "Every task has an owner, a priority and a due date, and moves from To Do through In Progress to Submitted as the work gets done.",
+  },
+  {
+    icon: "Upload",
+    title: "Student submissions",
+    desc: "Students submit a file or a link against the task they were given, with notes for the reviewer. Each attempt is recorded and timestamped.",
   },
   {
     icon: "CheckCircle",
-    title: "Submissions and mentor review",
-    desc: "Students submit deliverables against a task. Mentors approve them or request a revision, and the task status reflects that decision.",
+    title: "Supervisor review and approval",
+    desc: "Supervisors approve a submission or return it for revision with written feedback. The task status follows that decision, so the state is never ambiguous.",
   },
   {
     icon: "MessageSquare",
-    title: "Threaded comments",
-    desc: "Feedback stays attached to the work it refers to, so context never has to be reconstructed from an inbox.",
+    title: "Discussion where the work lives",
+    desc: "Threaded comments attach to the project, milestone, task or submission they refer to, and real-time chat covers everything in between.",
   },
   {
-    icon: "Send",
-    title: "Real-time chat",
-    desc: "Conversations happen inside the platform, next to the projects and tasks being discussed.",
+    icon: "FileText",
+    title: "Reusable project templates",
+    desc: "Save the department's standard milestone and task structure once, then create the next batch of projects from it instead of rebuilding it by hand.",
   },
   {
     icon: "Calendar",
-    title: "Meetings and shared calendar",
-    desc: "Schedule reviews and check-ins, and see milestones, meetings and deadlines together on one calendar.",
+    title: "Meetings and a shared calendar",
+    desc: "Schedule review meetings and check-ins, and see task deadlines, milestone dates and meetings together on one calendar.",
   },
   {
     icon: "Activity",
-    title: "Activity log and notifications",
-    desc: "Project, task and review actions are recorded as they happen, and the people affected are notified in the app.",
-  },
-  {
-    icon: "Users",
-    title: "Members, invitations and templates",
-    desc: "Invite mentors and students by email, manage roles centrally, and reuse a proven project structure with templates.",
+    title: "Activity history and notifications",
+    desc: "Project, task, submission and review actions are recorded as they happen, and the people affected are notified inside the app.",
   },
 ];
 
@@ -217,7 +229,7 @@ export const features = [
 
 export const howItWorksSection = {
   eyebrow: "How it works",
-  title: "One flow, from setup to completion",
+  title: "One flow, from setup to final approval",
   subtitle:
     "The same six steps for every project — visible to everyone who needs to see them.",
 };
@@ -225,33 +237,33 @@ export const howItWorksSection = {
 export const howItWorks = [
   {
     icon: "Settings",
-    title: "Set up the workspace",
-    desc: "An administrator creates the organisation and invites mentors and students by email.",
+    title: "Set up the department workspace",
+    desc: "A coordinator creates the workspace and invites faculty supervisors and students by email.",
   },
   {
     icon: "Folder",
-    title: "Create projects, assign mentors",
-    desc: "Projects are created from scratch or from a template, and a mentor is assigned to each one.",
+    title: "Create projects, assign supervisors",
+    desc: "Projects are created from scratch or from a saved template, then given a supervisor and a student team.",
   },
   {
     icon: "Target",
     title: "Plan milestones and tasks",
-    desc: "Mentors break the work into milestones, then into tasks with owners and due dates.",
+    desc: "The project is split into milestones with due dates, and each milestone into tasks owned by a named student.",
   },
   {
     icon: "Upload",
     title: "Students submit deliverables",
-    desc: "Mentees work through their tasks and submit against them, with notes for the reviewer.",
+    desc: "Students work through their tasks and submit a file or a link against them, with notes for the reviewer.",
   },
   {
     icon: "CheckCircle",
-    title: "Mentors review and decide",
-    desc: "Each submission is approved or sent back with a revision request and written feedback.",
+    title: "Supervisors review and decide",
+    desc: "Each submission is approved, or returned with a revision request and written feedback for the student to act on.",
   },
   {
     icon: "BarChart",
     title: "Track progress to completion",
-    desc: "Milestone completion, task status and the activity log show exactly where the project stands.",
+    desc: "Milestone completion, task status and the activity history show exactly where every project stands.",
   },
 ];
 
@@ -259,7 +271,7 @@ export const howItWorks = [
 
 export const rolesSection = {
   eyebrow: "Roles",
-  title: "Built for everyone in the project",
+  title: "Built for everyone in a supervised project",
   subtitle:
     "The same record of work, presented differently depending on who is looking at it.",
 };
@@ -270,80 +282,83 @@ export const roles = [
     name: "Students",
     tagline: "Know what is due, and what changed",
     points: [
-      "See only the tasks assigned to you, with their due dates and status",
-      "Submit deliverables with notes and get a timestamped confirmation",
-      "Read mentor feedback in the same thread as the work it refers to",
+      "See only the tasks assigned to you, with their due dates and current status",
+      "Submit a file or a link against a task, with notes for your supervisor",
+      "Read review feedback in the same place as the work it refers to",
       "Resubmit against the same task when a revision is requested",
     ],
   },
   {
     icon: "User",
-    name: "Mentors",
-    tagline: "One queue instead of ten inboxes",
+    name: "Faculty supervisors",
+    tagline: "One review queue instead of ten inboxes",
     points: [
-      "Work through the submissions awaiting your review in one place",
-      "Approve or request a revision with written feedback attached",
-      "Plan milestones and tasks for the mentees assigned to you",
-      "Schedule meetings and keep the conversation beside the work",
+      "Work through every submission awaiting your decision in one queue",
+      "Approve or return a submission with written feedback attached",
+      "Plan milestones and tasks for the projects you supervise",
+      "Schedule review meetings and keep the discussion beside the work",
     ],
   },
   {
     icon: "Shield",
-    name: "Faculty and admins",
-    tagline: "Visibility without chasing anyone",
+    name: "Project coordinators",
+    tagline: "Department-wide visibility without chasing anyone",
     points: [
-      "See every project, mentor and mentee across the organisation",
-      "Invite members by email and manage their roles centrally",
-      "Follow the activity log to see what moved and who moved it",
-      "Track milestone completion across the whole workspace",
+      "See every project, supervisor and student across the department",
+      "Invite supervisors and students by email and manage roles centrally",
+      "Follow the activity history to see what moved and who moved it",
+      "Track milestone completion across every project at once",
     ],
   },
   {
     icon: "Layers",
-    name: "Institutions",
+    name: "Departments",
     tagline: "A process that survives the batch",
     points: [
-      "One consistent supervision process across departments",
-      "Templates carry a proven project structure into the next cohort",
-      "An audit trail that outlives staff and student turnover",
+      "One consistent supervision process across every kind of project",
+      "Templates carry a proven structure into the next cohort",
+      "A record that outlives staff and student turnover",
       "A single system of record to evaluate project work against",
     ],
   },
 ];
 
-/* ── Why Mentora ────────────────────────────────────────────────────────── */
+/* ── Why Trellis ────────────────────────────────────────────────────────── */
 
-export const whyMentora = {
-  eyebrow: "Why Mentora",
-  title: "General project tools were not built for supervision",
+export const whyTrellis = {
+  eyebrow: "Why Trellis",
+  title: "Generic project tools stop at “Done”",
   subtitle:
-    "Jira and ClickUp are very good at what they were designed for: teams of peers shipping " +
-    "software in sprints. Academic projects are supervised rather than sprinted, and that " +
-    "changes the shape of the tool.",
+    "Jira, Trello and ClickUp are built for teams of peers who mark their own work " +
+    "complete. Supervised academic work has a gate in the middle: someone accountable " +
+    "has to accept the deliverable before it counts. That one difference changes the " +
+    "shape of the tool.",
   points: [
     {
-      icon: "Users",
-      title: "Mentor and mentee is a first-class relationship",
-      desc: "Generic trackers assume a flat team. Mentora models supervision directly, so assignment, review and reporting all follow the same structure.",
+      icon: "CheckCircle",
+      title: "Done is not a decision. Approval is.",
+      desc: "In a generic tracker a student moves their own task to Done. In Trellis the task goes Submitted, then Under Review, then Approved or Revision Needed — and only the supervisor can make that call.",
     },
     {
       icon: "Refresh",
-      title: "Review and revision is a workflow, not a convention",
-      desc: "Approve and request-revision are real states on the task with the feedback attached, rather than a comment thread everyone has to interpret.",
+      title: "Revision is a state, not a comment",
+      desc: "A returned submission carries the supervisor's written feedback and moves the task into a revision state. The earlier attempt and the reason it came back both stay on record.",
     },
     {
       icon: "Lock",
-      title: "Visibility is scoped by role",
-      desc: "Students see their own work, mentors see the mentees assigned to them, administrators see the organisation. Access follows the role, not a folder permission.",
+      title: "Visibility follows the role",
+      desc: "Students see their own tasks, supervisors see the projects they supervise, coordinators see the department. Access is enforced by role on the server, not by folder permissions.",
     },
     {
       icon: "FileText",
       title: "The record is built for evaluation",
-      desc: "Submission times, review decisions and revision history stay on record, so assessment rests on what actually happened.",
+      desc: "Submission times, review decisions and revision history stay on record, so an evaluation panel can see how a project actually progressed instead of reconstructing it afterwards.",
     },
   ],
   note:
-    "Mentora is not trying to replace an engineering tracker. It is built for the way coursework, capstones and research projects are actually supervised.",
+    "Trellis is not trying to replace an engineering tracker. It is built for the way " +
+    "final-year projects, capstones, dissertations and supervised internships are " +
+    "actually run.",
 };
 
 /* ── FAQ ────────────────────────────────────────────────────────────────── */
@@ -351,33 +366,33 @@ export const whyMentora = {
 export const faqSection = {
   eyebrow: "FAQ",
   title: "Questions worth answering first",
-  subtitle: "Short answers about how Mentora actually works.",
+  subtitle: "Short answers about how Trellis actually works.",
 };
 
 export const faqs = [
   {
-    q: "Who is Mentora for?",
-    a: "Educational institutions running supervised projects. There are three roles: administrators, who set up and oversee the workspace; mentors, who guide and review the work; and mentees, the students doing it.",
+    q: "Who is Trellis for?",
+    a: "Departments that run supervised student projects — final-year projects, capstones, major projects, dissertations and supervised internships. There are three roles: coordinators, who set up and oversee the workspace; faculty supervisors, who plan the work and review it; and students, who do it.",
+  },
+  {
+    q: "How is this different from Trello or Jira?",
+    a: "A general tracker ends a task at Done, marked by whoever was doing it. Trellis puts a review gate in the middle: the student submits, the task moves to Under Review, and the supervisor either approves it or sends it back for revision. Supervision is part of the workflow rather than a convention layered on top of it.",
   },
   {
     q: "How do people get access?",
-    a: "An administrator invites members by email from inside the workspace. Invitations stay visible until they are accepted, so it is always clear who has joined and who has not.",
+    a: "A coordinator invites supervisors and students by email from inside the workspace, and they receive credentials for a first sign-in. Roles are assigned at invitation time and managed centrally afterwards.",
   },
   {
     q: "How do students submit their work?",
-    a: "A mentee opens the task assigned to them and submits their deliverable along with notes for the reviewer. The submission is recorded against that task and becomes visible to their mentor.",
+    a: "A student opens the task assigned to them and submits either a file or a link, along with notes for the reviewer. The submission is recorded against that task with a timestamp and becomes visible to their supervisor.",
   },
   {
-    q: "What happens when a mentor requests a revision?",
-    a: "The task moves into a revision state with the mentor's feedback attached, and the mentee resubmits against the same task. The earlier attempt and the feedback stay in the history.",
-  },
-  {
-    q: "Can students see each other's projects?",
-    a: "No. Visibility follows the role. Mentees see their own work, mentors see the mentees assigned to them, and administrators see the whole workspace.",
+    q: "What happens when a supervisor requests a revision?",
+    a: "The task moves into a revision state with the supervisor's written feedback attached, and the student resubmits against the same task. The earlier attempt and the feedback stay in the history.",
   },
   {
     q: "Is there a record we can rely on at evaluation time?",
-    a: "Yes. Projects, tasks, submissions and review decisions are all recorded, and the activity log shows what changed and who changed it, so a supervisor can reconstruct how a project progressed.",
+    a: "Projects, milestones, tasks, submissions and review decisions are all recorded, and the activity history shows what changed and who changed it — so a supervisor or an evaluation panel can reconstruct how a project progressed.",
   },
 ];
 
@@ -385,9 +400,9 @@ export const faqs = [
 
 export const finalCta = {
   eyebrow: "Get started",
-  title: "Bring every academic project into one workspace",
+  title: "Bring every supervised project into one workspace",
   subtitle:
-    "Sign in to an existing workspace, or create one and invite your mentors and students.",
+    "Sign in to an existing workspace, or create one and invite your supervisors and students.",
   primaryCta: "Create an account",
   secondaryCta: "Sign in",
 };
@@ -395,7 +410,7 @@ export const finalCta = {
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 
 export const footerTagline =
-  "The project management platform for educational institutions.";
+  "The academic project and capstone supervision platform. Structure for supervised work.";
 
 export const footerNav = [
   {
@@ -411,7 +426,7 @@ export const footerNav = [
     links: [
       { label: "The problem", href: "#problem" },
       { label: "Roles", href: "#roles" },
-      { label: "Why Mentora", href: "#why-mentora" },
+      { label: "Why Trellis", href: "#why-trellis" },
       { label: "FAQ", href: "#faq" },
     ],
   },

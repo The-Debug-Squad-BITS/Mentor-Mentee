@@ -18,7 +18,9 @@ const statusTone = {
   "Needs Help": "bg-brand-50 text-brand-700 border-brand-200",
   "Under Review": "bg-warning-50 text-warning-700 border-warning-200",
   "Revision Needed": "bg-danger-50 text-danger-700 border-danger-200",
+  Approved: "bg-success-50 text-success-700 border-success-200",
   Completed: "bg-success-50 text-success-700 border-success-200",
+  "On Hold": "bg-slate-100 text-slate-600 border-slate-200",
 };
 
 function Pill({ children }) {
@@ -138,7 +140,7 @@ export default function DashboardPreview() {
                           <span className="block truncate text-[12.5px] font-semibold text-slate-800">
                             {proj.name}
                           </span>
-                          <span className="block truncate text-[11px] text-slate-500">{proj.mentor}</span>
+                          <span className="block truncate text-[11px] text-slate-500">{proj.supervisor}</span>
                         </span>
                         <span className="hidden w-20 shrink-0 sm:block">
                           <span className="block h-1.5 overflow-hidden rounded-full bg-slate-100">

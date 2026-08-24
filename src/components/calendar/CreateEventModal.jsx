@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Close, AlertTriangle, AlertCircle, Inbox, Calendar } from "../ui/Icons";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
 import { toast } from "react-toastify";
@@ -81,12 +82,12 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/45 backdrop-blur-[2px] p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative animate-scale-in">
         <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              📅
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-brand-100 bg-brand-50 text-brand-600">
+              <Calendar size={16} />
             </div>
             <h2 className="text-lg font-bold text-slate-800 m-0">Add Custom Event</h2>
           </div>
@@ -94,7 +95,7 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 text-xl font-bold bg-transparent border-0 cursor-pointer p-1 rounded-lg"
           >
-            ✕
+            <Close size={16} />
           </button>
         </div>
 
@@ -135,7 +136,7 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
               name="isAllDay"
               checked={formData.isAllDay}
               onChange={handleChange}
-              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              className="rounded border-slate-300 text-brand-600 focus:ring-indigo-500"
             />
             <label htmlFor="isAllDay" className="text-xs font-medium text-slate-700 cursor-pointer">
               All day event

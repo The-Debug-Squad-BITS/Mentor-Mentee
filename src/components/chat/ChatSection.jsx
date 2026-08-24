@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useChatStore } from "../../store/chatStore";
 import { getSocket, connectSocket } from "../../lib/socket";
 import { toast } from "react-toastify";
+import { MessageSquare } from "../ui/Icons";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getInitials(name) {
@@ -130,7 +131,7 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer border transition-colors ${
-                  tab === t ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  tab === t ? "bg-brand-600 text-white border-brand-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                 }`}
               >
                 {t === "direct" ? "Direct Message" : "Group"}
@@ -145,7 +146,7 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               placeholder="Group name *"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="input-field"
             />
           )}
 
@@ -153,12 +154,12 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search people..."
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className="input-field"
           />
 
           <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
             {loadingPeople ? (
-              <div className="py-8 text-center text-slate-400 text-sm">Loading people...</div>
+              <div className="flex flex-col gap-2 py-3">{[0, 1, 2, 3].map((i) => (<span key={i} className="skeleton h-12 w-full" />))}</div>
             ) : filtered.length === 0 ? (
               <div className="py-8 text-center text-slate-400 text-sm">No people found.</div>
             ) : (
@@ -167,7 +168,7 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
                   key={p._id}
                   onClick={() => (tab === "direct" ? startDirect(p._id) : toggle(p._id))}
                   className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors ${
-                    tab === "group" && selected.includes(p._id) ? "bg-blue-50 border border-blue-200" : "hover:bg-slate-50 border border-transparent"
+                    tab === "group" && selected.includes(p._id) ? "bg-brand-50 border border-brand-200" : "hover:bg-slate-50 border border-transparent"
                   } ${submitting ? "opacity-60 pointer-events-none" : ""}`}
                 >
                   <ChatAvatar name={p.name} size={34} />
@@ -176,7 +177,7 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
                     <div className="text-xs text-slate-500 truncate">{p.email}</div>
                   </div>
                   {tab === "group" && (
-                    <input type="checkbox" readOnly checked={selected.includes(p._id)} className="w-4 h-4 accent-blue-600" />
+                    <input type="checkbox" readOnly checked={selected.includes(p._id)} className="w-4 h-4 accent-brand-600" />
                   )}
                 </div>
               ))
@@ -195,7 +196,7 @@ function NewChatModal({ role, currentUserId, onClose, onCreated }) {
             <button
               onClick={createGroup}
               disabled={submitting || !groupName.trim() || selected.length === 0}
-              className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer border-0 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg cursor-pointer border-0 disabled:opacity-50"
             >
               Create Group ({selected.length})
             </button>
@@ -230,7 +231,7 @@ const MessageBubble = memo(function MessageBubble({ message, mine, canDelete, on
             message.isDeleted
               ? "bg-slate-100 text-slate-400 italic"
               : mine
-              ? "bg-blue-600 text-white"
+              ? "bg-brand-600 text-white"
               : "bg-white border border-slate-200 text-slate-800"
           }`}
         >
@@ -246,14 +247,14 @@ const MessageBubble = memo(function MessageBubble({ message, mine, canDelete, on
                 autoFocus
               />
               <div className="flex gap-2">
-                <button onClick={submitEdit} className="px-2 py-1 text-xs font-semibold bg-white text-blue-600 rounded-md cursor-pointer border-0">Save</button>
+                <button onClick={submitEdit} className="px-2 py-1 text-xs font-semibold bg-white text-brand-600 rounded-md cursor-pointer border-0">Save</button>
                 <button onClick={() => { setEditing(false); setDraft(message.content); }} className="px-2 py-1 text-xs font-semibold bg-white/20 text-white rounded-md cursor-pointer border-0">Cancel</button>
               </div>
             </div>
           ) : message.messageType === "IMAGE" && message.fileUrl ? (
             <img src={message.fileUrl} alt="attachment" className="max-w-[220px] rounded-lg" />
           ) : message.messageType === "FILE" && message.fileUrl ? (
-            <a href={message.fileUrl} target="_blank" rel="noreferrer" className={`underline ${mine ? "text-white" : "text-blue-600"}`}>📎 Attachment</a>
+            <a href={message.fileUrl} target="_blank" rel="noreferrer" className={`underline ${mine ? "text-white" : "text-brand-600"}`}>Attachment</a>
           ) : (
             message.content
           )}
@@ -262,7 +263,7 @@ const MessageBubble = memo(function MessageBubble({ message, mine, canDelete, on
           <span className="text-[10px] text-slate-400">{formatTime(message.createdAt)}</span>
           {message.isEdited && !message.isDeleted && <span className="text-[10px] text-slate-400 italic">edited</span>}
           {!message.isDeleted && mine && !editing && (
-            <button onClick={() => setEditing(true)} className="text-[10px] text-slate-400 hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0">Edit</button>
+            <button onClick={() => setEditing(true)} className="text-[10px] text-slate-400 hover:text-brand-600 cursor-pointer bg-transparent border-0 p-0">Edit</button>
           )}
           {!message.isDeleted && canDelete && !editing && (
             <button onClick={() => onDelete(message._id)} className="text-[10px] text-slate-400 hover:text-red-600 cursor-pointer bg-transparent border-0 p-0">Delete</button>
@@ -327,7 +328,7 @@ export default function ChatSection() {
       const store = useChatStore.getState();
       store.addMessage(message.roomId, message);
       // Live-update the conversation list preview + ordering (no refetch).
-      const preview = message.content || (message.messageType !== "TEXT" ? "📎 Attachment" : "");
+      const preview = message.content || (message.messageType !== "TEXT" ? "Attachment" : "");
       const next = store.rooms.map((r) =>
         r._id === message.roomId ? { ...r, lastMessage: preview, lastMessageAt: message.createdAt } : r
       );
@@ -491,8 +492,8 @@ export default function ChatSection() {
     <div className="flex flex-col gap-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Messages</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Direct and group conversations across your organization.</p>
+          <h1 className="page-title m-0">Messages</h1>
+          <p className="page-subtitle mt-1">Direct and group conversations across your organization.</p>
         </div>
       </div>
 
@@ -504,7 +505,7 @@ export default function ChatSection() {
             {canStartChat && (
               <button
                 onClick={() => setNewChatOpen(true)}
-                className="px-2.5 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer border-0"
+                className="px-2.5 py-1 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg cursor-pointer border-0"
               >
                 + New
               </button>
@@ -512,7 +513,7 @@ export default function ChatSection() {
           </div>
           <div className="flex-1 overflow-y-auto">
             {loadingRooms ? (
-              <div className="py-10 text-center text-slate-400 text-sm">Loading...</div>
+              <div className="flex flex-col gap-2 p-3">{[0, 1, 2, 3, 4].map((i) => (<span key={i} className="skeleton h-14 w-full" />))}</div>
             ) : rooms.length === 0 ? (
               <div className="py-10 px-4 text-center text-slate-400 text-sm">
                 No conversations yet.
@@ -527,7 +528,7 @@ export default function ChatSection() {
                     key={room._id}
                     onClick={() => openRoom(room)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer border-0 border-b border-slate-100 transition-colors ${
-                      active ? "bg-blue-50" : "bg-white hover:bg-slate-50"
+                      active ? "bg-brand-50" : "bg-white hover:bg-slate-50"
                     }`}
                   >
                     <ChatAvatar name={title} size={40} />
@@ -537,7 +538,7 @@ export default function ChatSection() {
                         <span className="text-[10px] text-slate-400 shrink-0">{formatRoomTime(room.lastMessageAt)}</span>
                       </div>
                       <div className="text-xs text-slate-500 truncate">
-                        {room.type !== "DIRECT" && <span className="text-slate-400">{room.type === "PROJECT" ? "📁 " : "👥 "}</span>}
+                        {room.type !== "DIRECT" && <span className="text-slate-400">{room.type === "PROJECT" ? "" : ""}</span>}
                         {room.lastMessage || "No messages yet"}
                       </div>
                     </div>
@@ -551,9 +552,14 @@ export default function ChatSection() {
         {/* ── Thread ── */}
         <div className={`${activeRoomId ? "flex" : "hidden md:flex"} flex-col flex-1 min-w-0`}>
           {!activeRoom ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
-              <div className="text-4xl">💬</div>
-              Select a conversation to start messaging
+            <div className="flex flex-1 flex-col items-center justify-center gap-1.5 px-6 text-center">
+              <span className="empty-state-icon">
+                <MessageSquare size={22} />
+              </span>
+              <p className="empty-state-title">Select a conversation</p>
+              <p className="empty-state-text">
+                Pick someone from the list to start messaging, or begin a new conversation.
+              </p>
             </div>
           ) : (
             <>
@@ -577,7 +583,7 @@ export default function ChatSection() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50/50">
                 {loadingMsgs ? (
-                  <div className="py-10 text-center text-slate-400 text-sm">Loading messages...</div>
+                  <div className="flex flex-col gap-3 p-4">{[0, 1, 2, 3].map((i) => (<span key={i} className={`skeleton h-12 ${i % 2 ? "w-1/2 self-end" : "w-2/3"}`} />))}</div>
                 ) : (
                   <>
                     {pagination?.hasMore && (
@@ -631,13 +637,13 @@ export default function ChatSection() {
                   }}
                   placeholder="Type a message..."
                   rows={1}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none max-h-28"
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 resize-none max-h-28"
                   disabled={sending}
                 />
                 <button
                   type="submit"
                   disabled={sending || !composer.trim()}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl cursor-pointer border-0 disabled:opacity-50 shrink-0"
+                  className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl cursor-pointer border-0 disabled:opacity-50 shrink-0"
                 >
                   {sending ? "..." : "Send"}
                 </button>

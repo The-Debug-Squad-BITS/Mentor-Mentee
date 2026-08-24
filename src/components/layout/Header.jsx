@@ -25,7 +25,7 @@ export default function Header({ onLogin, onSignup }) {
               <Logo size={18} />
             </span>
             <span className="font-display text-[17px] font-bold tracking-tight text-slate-900">
-              Mentora
+              Trellis
             </span>
           </a>
 

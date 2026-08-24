@@ -6,6 +6,7 @@ import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import CommentSection from "../ui/CommentSection";
+import { Plus, Search, Trash, Close, Inbox, AlertTriangle, AlertCircle } from "../ui/Icons";
 
 export default function MentorTasks() {
   const [projects, setProjects] = useState([]);
@@ -172,12 +173,12 @@ export default function MentorTasks() {
 
   // Status badge styles matching backend status values
   const statusStyles = {
-    TODO: "bg-slate-100 text-slate-600 border-slate-200",
-    IN_PROGRESS: "bg-blue-50 text-blue-700 border-blue-200",
-    SUBMITTED: "bg-amber-50 text-amber-700 border-amber-200",
-    UNDER_REVIEW: "bg-purple-50 text-purple-700 border-purple-200",
-    APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    REVISION_NEEDED: "bg-red-50 text-red-700 border-red-200",
+    TODO: "bg-slate-50 text-slate-700 border-slate-200",
+    IN_PROGRESS: "bg-info-50 text-info-700 border-info-200",
+    SUBMITTED: "bg-warning-50 text-warning-700 border-warning-200",
+    UNDER_REVIEW: "bg-violet-50 text-violet-700 border-violet-200",
+    APPROVED: "bg-success-50 text-success-700 border-success-200",
+    REVISION_NEEDED: "bg-danger-50 text-danger-700 border-danger-200",
   };
 
   const statusLabels = {
@@ -191,40 +192,47 @@ export default function MentorTasks() {
 
   // Priority badge styles
   const priorityStyles = {
-    LOW: "bg-slate-100 text-slate-600 border-slate-200",
-    MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
-    HIGH: "bg-red-50 text-red-700 border-red-200",
+    LOW: "bg-slate-50 text-slate-700 border-slate-200",
+    MEDIUM: "bg-warning-50 text-warning-700 border-warning-200",
+    HIGH: "bg-danger-50 text-danger-700 border-danger-200",
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-5 animate-fade-in">
       {/* Title & Toolbar */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Project Tasks Workspace</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Assign deliverables, review uploads, and comment on milestones.</p>
+          <h1 className="page-title m-0">Tasks</h1>
+          <p className="page-subtitle mt-1">
+            Assign deliverables, review uploads, and comment on milestones.
+          </p>
         </div>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 text-sm font-medium shrink-0"
-        >
-          + Assign Task
+        <Button onClick={() => setShowCreateModal(true)} className="shrink-0">
+          <Plus size={16} /> Assign Task
         </Button>
       </div>
 
       {/* Filter Options */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
-        <div className="flex flex-wrap md:flex-nowrap gap-4 w-full md:w-auto">
-          <input
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full md:w-64 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
-          />
+      <div className="card flex flex-col items-stretch justify-between gap-3 p-3 lg:flex-row lg:items-center">
+        <div className="flex w-full flex-wrap gap-3 md:flex-nowrap lg:w-auto">
+          <div className="relative w-full md:w-64">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search tasks"
+              className="input-field pl-9"
+            />
+          </div>
           <select
             value={projectFilter}
             onChange={(e) => setProjectFilter(e.target.value)}
-            className="w-full md:w-48 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+            aria-label="Filter by project"
+            className="select-field w-full md:w-48"
           >
             <option value="ALL">All Projects</option>
             {projects.map(p => (
@@ -233,16 +241,13 @@ export default function MentorTasks() {
           </select>
         </div>
 
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg overflow-x-auto w-full md:w-auto">
+        <div className="tab-strip w-full overflow-x-auto scrollbar-none lg:w-auto">
           {["ALL", "TODO", "IN_PROGRESS", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "REVISION_NEEDED"].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-                statusFilter === status
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "bg-transparent text-slate-600 hover:text-slate-900"
-              }`}
+              aria-pressed={statusFilter === status}
+              className={`tab-item ${statusFilter === status ? "tab-item-active" : ""}`}
             >
               {status === "ALL" ? "All" : statusLabels[status] || status}
             </button>
@@ -252,62 +257,79 @@ export default function MentorTasks() {
 
       {/* Error Banner */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Split catalog layout */}
       <div className="flex flex-col xl:flex-row gap-6 items-start">
         {/* Table of Tasks */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden flex-1 w-full shadow-sm">
+        <div className="card w-full min-w-0 flex-1 overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-slate-500 text-sm">Loading tasks...</div>
+            <div className="flex flex-col gap-3 p-5">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span key={i} className="skeleton h-11 w-full" />
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-sm">No tasks assigned matching filters.</div>
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <Inbox size={22} />
+              </span>
+              <p className="empty-state-title">No tasks match these filters</p>
+              <p className="empty-state-text">
+                Clear the search or pick a different status, or assign a new task to get
+                started.
+              </p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[800px]">
+              <table className="data-table min-w-[820px]">
                 <thead>
-                  <tr className="bg-slate-50">
+                  <tr>
                     {["Task Title", "Project", "Assignee", "Priority", "Due Date", "Status", ""].map(h => (
-                      <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {filtered.map(t => (
                     <tr
                       key={t._id}
                       onClick={() => setSelectedTask(t)}
-                      className={`hover:bg-slate-50 cursor-pointer transition-colors ${
-                        selectedTask && selectedTask._id === t._id ? "bg-blue-50/50" : ""
+                      className={`cursor-pointer ${
+                        selectedTask && selectedTask._id === t._id ? "bg-brand-50/60" : ""
                       }`}
                     >
-                      <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{t.title}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{t.projectId?.title || "—"}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600 font-medium">{t.assignedTo?.name || "Unassigned"}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${priorityStyles[t.priority] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                      <td className="font-semibold text-slate-900">{t.title}</td>
+                      <td>{t.projectId?.title || "—"}</td>
+                      <td className="font-medium">{t.assignedTo?.name || "Unassigned"}</td>
+                      <td>
+                        <span className={`badge ${priorityStyles[t.priority] || "badge-neutral"}`}>
                           {t.priority}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                      <td className="whitespace-nowrap text-slate-500">
                         {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusStyles[t.status] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                      <td>
+                        <span className={`badge ${statusStyles[t.status] || "badge-neutral"}`}>
+                          <span className="badge-dot" />
                           {statusLabels[t.status] || t.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <Button
-                          variant="danger"
+                      <td className="text-right">
+                        <button
                           onClick={(e) => handleDeleteTask(t._id, e)}
-                          className="px-3 py-1.5 text-xs"
+                          aria-label={`Delete task ${t.title}`}
+                          title="Delete task"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400
+                            transition-colors hover:bg-danger-50 hover:text-danger-600"
                         >
-                          Delete
-                        </Button>
+                          <Trash size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -319,66 +341,77 @@ export default function MentorTasks() {
 
         {/* Task Inspector Sidebar Drawer */}
         {selectedTask && (
-          <div className="w-full xl:w-96 bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-6 shrink-0 relative shadow-md">
+          <div className="card relative flex w-full shrink-0 flex-col gap-5 p-6 shadow-sm xl:w-96">
             {/* Close */}
             <button
               onClick={() => setSelectedTask(null)}
-              className="absolute top-4 right-4 w-8 h-8 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center cursor-pointer border-none text-sm transition-colors"
+              aria-label="Close task details"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg
+                text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
             >
-              ✕
+              <Close size={16} />
             </button>
 
             {/* Title / Description */}
-            <div>
-              <div className="flex gap-2 items-center mb-3 flex-wrap">
-                <span className="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-md text-slate-600 font-semibold text-[10px] uppercase tracking-wider">
+            <div className="pr-8">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="badge badge-neutral">
                   {selectedTask.projectId?.title || "Project"}
                 </span>
-                <span className={`px-2.5 py-1 border rounded-md text-[10px] font-bold uppercase tracking-wider ${statusStyles[selectedTask.status] || ""}`}>
+                <span className={`badge ${statusStyles[selectedTask.status] || "badge-neutral"}`}>
+                  <span className="badge-dot" />
                   {statusLabels[selectedTask.status] || selectedTask.status}
                 </span>
               </div>
-              <h3 className="m-0 text-lg font-bold text-slate-900 leading-snug">{selectedTask.title}</h3>
-              <p className="m-0 mt-2 text-slate-600 text-sm leading-relaxed">
+              <h3 className="m-0 font-display text-[17px] font-bold leading-snug text-slate-900">
+                {selectedTask.title}
+              </h3>
+              <p className="m-0 mt-2 text-[13.5px] leading-relaxed text-slate-600">
                 {selectedTask.description || "Task instructions and guidelines."}
               </p>
             </div>
 
-            <hr className="border-0 border-t border-slate-200 m-0" />
+            <hr className="m-0 border-0 border-t border-slate-200" />
 
             {/* Task variables */}
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-slate-500">Assignee</span>
-                <span className="font-bold text-slate-900">{selectedTask.assignedTo?.name || "Unassigned"}</span>
+            <dl className="m-0 flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3 text-[13px]">
+                <dt className="font-medium text-slate-500">Assignee</dt>
+                <dd className="m-0 font-semibold text-slate-900">
+                  {selectedTask.assignedTo?.name || "Unassigned"}
+                </dd>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-slate-500">Assigned By</span>
-                <span className="font-bold text-slate-900">{selectedTask.assignedBy?.name || "—"}</span>
+              <div className="flex items-center justify-between gap-3 text-[13px]">
+                <dt className="font-medium text-slate-500">Assigned By</dt>
+                <dd className="m-0 font-semibold text-slate-900">
+                  {selectedTask.assignedBy?.name || "—"}
+                </dd>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-slate-500">Priority</span>
-                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${priorityStyles[selectedTask.priority] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                  {selectedTask.priority}
-                </span>
+              <div className="flex items-center justify-between gap-3 text-[13px]">
+                <dt className="font-medium text-slate-500">Priority</dt>
+                <dd className="m-0">
+                  <span className={`badge ${priorityStyles[selectedTask.priority] || "badge-neutral"}`}>
+                    {selectedTask.priority}
+                  </span>
+                </dd>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-semibold text-slate-500">Due Date</span>
-                <span className="font-bold text-slate-900">
+              <div className="flex items-center justify-between gap-3 text-[13px]">
+                <dt className="font-medium text-slate-500">Due Date</dt>
+                <dd className="m-0 font-semibold text-slate-900">
                   {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : "Not set"}
-                </span>
+                </dd>
               </div>
-            </div>
+            </dl>
 
-            <hr className="border-0 border-t border-slate-200 m-0" />
+            <hr className="m-0 border-0 border-t border-slate-200" />
 
             {/* Delete task action */}
             <Button
               variant="danger"
               onClick={() => handleDeleteTask(selectedTask._id)}
-              className="w-full justify-center text-sm py-2.5"
+              className="w-full"
             >
-              Delete This Task
+              <Trash size={16} /> Delete This Task
             </Button>
 
             {/* Task comments */}
@@ -389,23 +422,39 @@ export default function MentorTasks() {
 
       {/* Assign Task Modal overlay */}
       {showCreateModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
-          <form onSubmit={handleLaunchTask} className="bg-white rounded-xl p-8 w-full max-w-lg flex flex-col gap-6 shadow-xl animate-fade-in">
-            <div>
-              <h3 className="m-0 text-xl font-bold text-slate-900">Assign New Task</h3>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Assign milestone deliverables under active projects.</p>
+        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <form onSubmit={handleLaunchTask} className="modal-panel max-w-lg flex flex-col gap-6 p-6 sm:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="m-0 font-display text-[17px] font-bold tracking-tight text-slate-900">
+                  Assign New Task
+                </h3>
+                <p className="m-0 mt-1 text-[13px] text-slate-500">
+                  Assign milestone deliverables under active projects.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowCreateModal(false); setCreateError(null); }}
+                aria-label="Close"
+                className="-mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg
+                  text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              >
+                <Close size={17} />
+              </button>
             </div>
 
             {createError && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-                ⚠️ {createError}
+              <div className="notice notice-danger">
+                <AlertCircle size={16} className="mt-px shrink-0" />
+                <span>{createError}</span>
               </div>
             )}
 
             <div className="flex flex-col gap-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Project</label>
+                  <label className="field-label">Project</label>
                   <select
                     required
                     value={taskProjectId}
@@ -413,7 +462,7 @@ export default function MentorTasks() {
                       setTaskProjectId(e.target.value);
                       setTaskMenteeId("");
                     }}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    className="select-field"
                     disabled={createLoading}
                   >
                     <option value="">-- Select Project --</option>
@@ -423,12 +472,12 @@ export default function MentorTasks() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Assign To (Mentee)</label>
+                  <label className="field-label">Assign To (Mentee)</label>
                   <select
                     required
                     value={taskMenteeId}
                     onChange={(e) => setTaskMenteeId(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    className="select-field"
                     disabled={createLoading}
                   >
                     <option value="">-- Select Mentee --</option>
@@ -440,36 +489,35 @@ export default function MentorTasks() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Task Title</label>
+                <label className="field-label">Task Title</label>
                 <input
                   required
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder="e.g. Implement Login Page"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="input-field"
                   disabled={createLoading}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+                <label className="field-label">Description</label>
                 <textarea
                   value={taskDesc}
                   onChange={(e) => setTaskDesc(e.target.value)}
                   placeholder="Describe guidelines..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
-                  style={{ minHeight: 80 }}
+                  className="textarea-field min-h-20 resize-none"
                   disabled={createLoading}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Priority</label>
+                  <label className="field-label">Priority</label>
                   <select
                     value={taskPriority}
                     onChange={(e) => setTaskPriority(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    className="select-field"
                     disabled={createLoading}
                   >
                     <option value="LOW">Low</option>
@@ -478,12 +526,12 @@ export default function MentorTasks() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Due Date</label>
+                  <label className="field-label">Due Date</label>
                   <input
                     type="date"
                     value={taskDeadline}
                     onChange={(e) => setTaskDeadline(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    className="select-field"
                     disabled={createLoading}
                   />
                 </div>
@@ -492,11 +540,11 @@ export default function MentorTasks() {
               {/* Milestone Dropdown (Phase 2) */}
               {taskProjectId && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Milestone (optional)</label>
+                  <label className="field-label">Milestone (optional)</label>
                   <select
                     value={taskMilestoneId}
                     onChange={(e) => setTaskMilestoneId(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                    className="select-field"
                     disabled={createLoading}
                   >
                     <option value="">No Milestone</option>
