@@ -1,92 +1,20 @@
-// import { useNavigate } from "react-router-dom";
-// import { StarIcon } from "../ui/Icons";
-// import { loginStats } from "../../data/demoAccounts";
-
-// export default function LoginLeftPanel() {
-//   const navigate = useNavigate();
-
-//   return (
-//     <div className="bg-ink relative overflow-hidden flex flex-col justify-between p-14">
-//       {/* Decorative circles */}
-//       <div
-//         className="absolute -top-28 -right-20 w-96 h-96 rounded-full pointer-events-none"
-//         style={{ border: "1px solid rgba(247,244,239,0.07)" }}
-//       />
-//       <div
-//         className="absolute bottom-16 -left-24 w-72 h-72 rounded-full pointer-events-none"
-//         style={{ border: "1px solid rgba(247,244,239,0.05)" }}
-//       />
-
-//       {/* Logo */}
-//       <div className="flex items-center gap-2.5 relative z-10">
-//         <div className="w-8 h-8 bg-amber rounded-lg flex items-center justify-center">
-//           <StarIcon size={14} />
-//         </div>
-//         <span className="text-cream text-sm font-medium tracking-wide">
-//           Mentora
-//         </span>
-//         <button
-//           onClick={() => navigate("/")}
-//           className="ml-auto text-xs cursor-pointer rounded-full px-3.5 py-1.5 transition-colors"
-//           style={{
-//             background: "rgba(247,244,239,0.08)",
-//             border: "1px solid rgba(247,244,239,0.12)",
-//             color: "rgba(247,244,239,0.6)",
-//             fontFamily: "inherit",
-//           }}
-//         >
-//           ← Home
-//         </button>
-//       </div>
-
-//       {/* Copy */}
-//       <div className="relative z-10 pt-10">
-//         <p className="text-xs font-medium tracking-widest text-amber uppercase mb-6">
-//           Mentoring platform
-//         </p>
-//         <h1 className="font-serif font-light text-5xl leading-[1.12] text-cream mb-5">
-//           Growth happens
-//           <br />
-//           through <em className="italic text-amber">real</em>
-//           <br />
-//           connection.
-//         </h1>
-//         <p
-//           className="text-sm max-w-xs leading-relaxed"
-//           style={{ color: "rgba(247,244,239,0.5)" }}
-//         >
-//           A structured space where mentors and mentees build meaningful, lasting
-//           working relationships.
-//         </p>
-//       </div>
-
-//       {/* Stats */}
-//       <div className="flex gap-8 relative z-10">
-//         {loginStats.map((s) => (
-//           <div
-//             key={s.label}
-//             className="pt-4"
-//             style={{ borderTop: "1px solid rgba(247,244,239,0.12)" }}
-//           >
-//             <div className="font-serif font-light text-3xl text-cream leading-none mb-1">
-//               {s.num}
-//             </div>
-//             <div
-//               className="text-xs tracking-wide"
-//               style={{ color: "rgba(247,244,239,0.4)" }}
-//             >
-//               {s.label}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useNavigate } from "react-router-dom";
-import { StarIcon } from "../ui/Icons";
-import { loginStats } from "../../data/demoAccounts";
+import { Logo, ArrowLeft, Layers, Target, CheckCircle } from "../ui/Icons";
+
+/* Presentational: one proof point row on the dark brand panel. */
+function ProofPoint({ icon, title, text }) {
+  return (
+    <li className="flex gap-3.5">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06] text-brand-300">
+        {icon}
+      </span>
+      <div>
+        <p className="text-[14px] font-semibold text-white">{title}</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-slate-400">{text}</p>
+      </div>
+    </li>
+  );
+}
 
 export default function LoginLeftPanel({ onNavigate, onBack }) {
   const navigate = useNavigate();
@@ -98,61 +26,56 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
   };
 
   return (
-    <div className="hidden lg:flex bg-[#1A1714] relative overflow-hidden flex-col justify-between p-14">
-      {/* Decorative circles */}
-      <div className="absolute -top-30 -right-20 w-95 h-95 rounded-full border border-[rgba(247,244,239,0.07)] pointer-events-none" />
-      <div className="absolute bottom-15 -left-25 w-75 h-75 rounded-full border border-[rgba(247,244,239,0.05)] pointer-events-none" />
-
-      {/* Logo */}
-      <div className="flex items-center gap-2.5 relative z-10">
-        <div className="w-8 h-8 bg-[#E8B86D] rounded-[9px] flex items-center justify-center">
-          <StarIcon size={14} />
-        </div>
-        <span className="text-[#F7F4EF] text-[15px] font-medium tracking-[0.01em]">
+    <div className="surface-ink hidden lg:flex flex-col justify-between p-12 xl:p-14">
+      {/* Brand row */}
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+          <Logo size={20} />
+        </span>
+        <span className="font-display text-[16px] font-bold tracking-tight text-white">
           Mentora
         </span>
         <button
           onClick={handleHome}
-          className="ml-auto bg-[rgba(247,244,239,0.08)] border border-[rgba(247,244,239,0.12)] text-[rgba(247,244,239,0.6)] rounded-full px-3.5 py-1.5 text-[12px] cursor-pointer font-['DM_Sans',sans-serif] hover:bg-[rgba(247,244,239,0.12)] transition-colors duration-150"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.06] px-3 py-1.5 text-[13px] font-medium text-slate-300 transition-colors duration-150 hover:bg-white/[0.12] hover:text-white"
         >
-          ← Home
+          <ArrowLeft size={14} />
+          Home
         </button>
       </div>
 
-      {/* Copy */}
-      <div className="relative z-10 pt-10">
-        <p className="text-[11px] font-medium tracking-[0.18em] text-[#E8B86D] uppercase mb-6">
-          Mentoring platform
+      {/* Positioning */}
+      <div className="max-w-md py-12">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-300">
+          Project management for institutions
         </p>
-        <h1 className="font-['Fraunces',serif] font-light text-[44px] leading-[1.12] text-[#F7F4EF] mb-5">
-          Growth happens
-          <br />
-          through <em className="italic text-[#E8B86D]">real</em>
-          <br />
-          connection.
+        <h1 className="mt-4 font-display text-[40px] font-bold leading-[1.12] tracking-tight text-white xl:text-[44px]">
+          Run every mentor–mentee project in one place.
         </h1>
-        <p className="text-[14px] text-[rgba(247,244,239,0.5)] leading-[1.7] max-w-[320px]">
-          A structured space where mentors and mentees build meaningful, lasting
-          working relationships.
+        <p className="mt-4 text-[15px] leading-relaxed text-slate-400">
+          Mentora gives students, mentors and faculty a shared workspace for
+          academic projects — from kickoff to final review.
         </p>
       </div>
 
-      {/* Stats */}
-      <div className="flex gap-8 relative z-10">
-        {loginStats.map((s) => (
-          <div
-            key={s.label}
-            className="border-t border-[rgba(247,244,239,0.12)] pt-4"
-          >
-            <div className="font-['Fraunces',serif] text-[28px] font-light text-[#F7F4EF] leading-none mb-1">
-              {s.num}
-            </div>
-            <div className="text-[11px] text-[rgba(247,244,239,0.4)] tracking-[0.08em]">
-              {s.label}
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Proof points */}
+      <ul className="flex max-w-md flex-col gap-6 border-t border-white/10 pt-8">
+        <ProofPoint
+          icon={<Layers size={18} />}
+          title="Projects with clear ownership"
+          text="Pair mentees with a mentor and keep scope, team and status together."
+        />
+        <ProofPoint
+          icon={<Target size={18} />}
+          title="Milestones that stay on track"
+          text="Break work into milestones with due dates and watch progress move."
+        />
+        <ProofPoint
+          icon={<CheckCircle size={18} />}
+          title="Submissions and reviews in one thread"
+          text="Mentees submit work, mentors review and leave feedback in context."
+        />
+      </ul>
     </div>
   );
 }

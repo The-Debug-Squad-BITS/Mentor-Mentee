@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 import Button from "../ui/Button";
+import { Close, Mail, Plus, Refresh, Search, Send } from "../ui/Icons";
+
+const STATUS_LABELS = {
+  ALL: "All",
+  PENDING: "Pending",
+  ACCEPTED: "Accepted",
+  CANCELLED: "Cancelled",
+};
 
 export default function InvitationsList() {
   const [invitations, setInvitations] = useState([]);
@@ -45,96 +53,120 @@ export default function InvitationsList() {
     .filter(inv => inv.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const statusStyles = {
-    PENDING: "bg-blue-50 text-blue-700 border-blue-200",
-    ACCEPTED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    CANCELLED: "bg-slate-100 text-slate-700 border-slate-200",
+    PENDING: "badge badge-info",
+    ACCEPTED: "badge badge-success",
+    CANCELLED: "badge badge-neutral",
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Title & Actions bar */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+    <div className="flex flex-col gap-5 animate-fade-in">
+      {/* Page header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Organization Invitations</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Invite new administrators, mentors, and students and manage active requests.</p>
+          <h1 className="page-title">Invitations</h1>
+          <p className="page-subtitle mt-1">
+            Invite administrators, mentors and students, and track the requests you have already sent.
+          </p>
         </div>
-        <Button
-          onClick={() => setShowInviteModal(true)}
-          className="px-4 py-2 text-sm font-medium shrink-0"
-        >
-          + Invite Member
+        <Button onClick={() => setShowInviteModal(true)} className="shrink-0">
+          <Plus size={16} />
+          Invite member
         </Button>
       </div>
 
-      {/* Filters Bar */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm">
-        <input
-          placeholder="Search by email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-64 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
-        />
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg">
-          {["ALL", "PENDING", "ACCEPTED", "CANCELLED"].map(status => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                statusFilter === status
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "bg-transparent text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
+      {/* Filters */}
+      <div className="card">
+        <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative w-full sm:max-w-xs">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+              <Search size={16} />
+            </span>
+            <input
+              placeholder="Search by email"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search invitations by email"
+              className="input-field pl-9"
+            />
+          </div>
+          <div className="tab-strip self-start sm:self-auto max-w-full overflow-x-auto scrollbar-none">
+            {["ALL", "PENDING", "ACCEPTED", "CANCELLED"].map(status => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                aria-pressed={statusFilter === status}
+                className={"tab-item " + (statusFilter === status ? "tab-item-active" : "")}
+              >
+                {STATUS_LABELS[status]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Invitations Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      {/* Invitations table */}
+      <div className="card overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm font-medium">No invitations found.</div>
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <Mail size={22} />
+            </div>
+            <h2 className="empty-state-title">No invitations to show</h2>
+            <p className="empty-state-text">
+              Invitations you send appear here with their current status, so you can resend or cancel them.
+            </p>
+            <div className="mt-4">
+              <Button onClick={() => setShowInviteModal(true)}>
+                <Plus size={16} />
+                Invite member
+              </Button>
+            </div>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[700px]">
+            <table className="data-table min-w-175">
               <thead>
-                <tr className="bg-slate-50">
-                  {["Email Address", "Target Role", "Sent Date", "Status", "Actions"].map(h => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
+                <tr>
+                  {["Email address", "Role", "Sent", "Status", "Actions"].map(h => (
+                    <th key={h} className={h === "Actions" ? "text-right" : undefined}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{inv.email}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 bg-slate-100 rounded-md text-slate-700 text-xs font-medium">{inv.role}</span>
+                  <tr key={inv.id}>
+                    <td className="font-medium text-slate-900">{inv.email}</td>
+                    <td>
+                      <span className="badge badge-neutral">{inv.role}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{inv.sentAt}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${statusStyles[inv.status]}`}>
+                    <td className="text-slate-600 whitespace-nowrap">{inv.sentAt}</td>
+                    <td>
+                      <span className={statusStyles[inv.status]}>
+                        <span className="badge-dot opacity-70" aria-hidden="true" />
                         {inv.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 flex gap-2">
-                      <Button
-                        variant="secondary"
-                        onClick={() => handleResend(inv.id)}
-                        disabled={inv.status === "ACCEPTED"}
-                        className="text-xs px-3 py-1.5"
-                      >
-                        Resend
-                      </Button>
-                      <Button
-                        variant="danger"
-                        onClick={() => handleCancel(inv.id)}
-                        disabled={inv.status === "ACCEPTED" || inv.status === "CANCELLED"}
-                        className="text-xs px-3 py-1.5"
-                      >
-                        Cancel
-                      </Button>
+                    <td>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleResend(inv.id)}
+                          disabled={inv.status === "ACCEPTED"}
+                        >
+                          <Refresh size={14} />
+                          Resend
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleCancel(inv.id)}
+                          disabled={inv.status === "ACCEPTED" || inv.status === "CANCELLED"}
+                        >
+                          <Close size={14} />
+                          Cancel
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -144,40 +176,56 @@ export default function InvitationsList() {
         )}
       </div>
 
-      {/* Invite Modal Overlay */}
+      {/* Invite modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowInviteModal(false)}>
-          <form onSubmit={handleSendInvite} className="bg-white rounded-xl p-8 w-full max-w-sm flex flex-col gap-6 shadow-xl">
-            <div>
-              <h3 className="m-0 text-xl font-bold text-slate-900">Invite New Member</h3>
-              <p className="m-0 mt-1 text-slate-500 text-sm">An invitation email will be issued to join the workspace.</p>
-            </div>
-            <div className="flex flex-col gap-5">
+        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowInviteModal(false)}>
+          <form onSubmit={handleSendInvite} className="modal-panel max-w-md">
+            <div className="modal-header">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Email Address</label>
+                <h2 className="font-display text-lg font-bold tracking-tight text-slate-900">Invite a member</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  They will receive an email with a link to join the workspace.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInviteModal(false)}
+                aria-label="Close dialog"
+                title="Close"
+                className="shrink-0 -mt-1 -mr-1 p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+              >
+                <Close size={18} />
+              </button>
+            </div>
+
+            <div className="px-6 pb-6 flex flex-col gap-4">
+              <div>
+                <label className="field-label">Email address</label>
                 <input
                   type="email"
                   required
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="e.g. user@organization.com"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  placeholder="user@organization.com"
+                  className="input-field"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Assigned Role</label>
+                <label className="field-label">Role</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                  className="select-field"
                 >
-                  <option value="MENTEE">Mentee (Student)</option>
-                  <option value="MENTOR">Mentor (Advisor)</option>
-                  <option value="ADMIN">System Administrator</option>
+                  <option value="MENTEE">Mentee (student)</option>
+                  <option value="MENTOR">Mentor (advisor)</option>
+                  <option value="ADMIN">Administrator</option>
                 </select>
+                <p className="field-hint">The role determines what the member can see and do once they join.</p>
               </div>
             </div>
-            <div className="flex gap-3 mt-2 justify-end">
+
+            <div className="modal-footer">
               <Button
                 type="button"
                 variant="secondary"
@@ -186,7 +234,8 @@ export default function InvitationsList() {
                 Cancel
               </Button>
               <Button type="submit">
-                Send Invite
+                <Send size={15} />
+                Send invite
               </Button>
             </div>
           </form>

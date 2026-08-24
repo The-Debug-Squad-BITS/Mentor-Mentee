@@ -1,7 +1,28 @@
 import { useState } from "react";
+import Button from "../ui/Button";
+import { AlertCircle, Eye, EyeOff } from "../ui/Icons";
 
-const inputClass =
-  "w-full px-4 py-3 bg-white border border-[#E2DDD8] rounded-xl text-[14px] text-[#1A1714] outline-none transition-colors duration-150 font-['DM_Sans',sans-serif] focus:border-[#1A1714]";
+/* Presentational: inline spinner shown inside the submit button. */
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 export default function SignupForm({
   organizationName,
@@ -20,102 +41,114 @@ export default function SignupForm({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form onSubmit={onSubmit} className="mt-1">
-      {/* Global error banner */}
+    <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      {/* Global error */}
       {error && (
-        <div className="text-[12px] text-[#B91C1C] px-3.5 py-2.5 bg-[#FEF2F2] border border-[#FECACA] rounded-xl mb-3.5 leading-normal">
-          {error}
+        <div className="notice notice-danger" role="alert">
+          <AlertCircle size={16} />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Organization Name */}
-      <div className="mb-3.5">
-        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Organization Name
+      <div>
+        <label htmlFor="signup-organization" className="field-label">
+          Organization name
         </label>
         <input
+          id="signup-organization"
           type="text"
           value={organizationName}
           onChange={(e) => setOrganizationName(e.target.value)}
-          placeholder="BITS Pilani, Acme Corp…"
+          placeholder="BITS Pilani"
           required
-          className={`${inputClass} ${fieldErrors?.organizationName ? "border-[#FECACA]" : ""}`}
+          className={`input-field ${fieldErrors?.organizationName ? "input-field-error" : ""}`}
         />
         {fieldErrors?.organizationName && (
-          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.organizationName}</p>
+          <p className="field-error">{fieldErrors.organizationName}</p>
         )}
       </div>
 
       {/* Admin Full Name */}
-      <div className="mb-3.5">
-        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Your Full Name
+      <div>
+        <label htmlFor="signup-admin-name" className="field-label">
+          Your full name
         </label>
         <input
+          id="signup-admin-name"
           type="text"
           value={adminName}
           onChange={(e) => setAdminName(e.target.value)}
           placeholder="Jane Smith"
           required
-          className={`${inputClass} ${fieldErrors?.adminName ? "border-[#FECACA]" : ""}`}
+          className={`input-field ${fieldErrors?.adminName ? "input-field-error" : ""}`}
         />
         {fieldErrors?.adminName && (
-          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.adminName}</p>
+          <p className="field-error">{fieldErrors.adminName}</p>
         )}
       </div>
 
       {/* Email */}
-      <div className="mb-3.5">
-        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Email address
+      <div>
+        <label htmlFor="signup-email" className="field-label">
+          Work email address
         </label>
         <input
+          id="signup-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
+          placeholder="you@institution.edu"
           required
-          className={`${inputClass} ${fieldErrors?.email ? "border-[#FECACA]" : ""}`}
+          className={`input-field ${fieldErrors?.email ? "input-field-error" : ""}`}
         />
         {fieldErrors?.email && (
-          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.email}</p>
+          <p className="field-error">{fieldErrors.email}</p>
         )}
       </div>
 
       {/* Password */}
-      <div className="mb-1.5">
-        <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-          Password <span className="text-[#C5BEB8] font-normal">(min. 8 characters)</span>
+      <div>
+        <label htmlFor="signup-password" className="field-label">
+          Password
         </label>
         <div className="relative">
           <input
+            id="signup-password"
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="At least 8 characters"
             required
-            className={`${inputClass} pr-12 ${fieldErrors?.password ? "border-[#FECACA]" : ""}`}
+            className={`input-field pr-11 ${fieldErrors?.password ? "input-field-error" : ""}`}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            title={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
           >
-            {showPassword ? "Hide" : "Show"}
+            {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
           </button>
         </div>
-        {fieldErrors?.password && (
-          <p className="text-[11px] text-[#B91C1C] mt-1">{fieldErrors.password}</p>
+        {fieldErrors?.password ? (
+          <p className="field-error">{fieldErrors.password}</p>
+        ) : (
+          <p className="field-hint">Use at least 8 characters.</p>
         )}
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        size="lg"
         disabled={loading}
-        className="w-full py-3.5 bg-[#1A1714] text-[#F7F4EF] border-none rounded-xl text-[14px] font-medium cursor-pointer font-['DM_Sans',sans-serif] tracking-[0.01em] mt-4 transition-colors duration-150 hover:bg-[#2E2A26] disabled:opacity-70 disabled:cursor-not-allowed"
+        className="mt-1 w-full"
       >
+        {loading && <Spinner />}
         {loading ? "Creating account…" : "Create account"}
-      </button>
+      </Button>
     </form>
   );
 }

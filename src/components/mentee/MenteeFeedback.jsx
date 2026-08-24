@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Refresh, CheckCircle, Inbox } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeFeedback() {
@@ -21,61 +22,101 @@ export default function MenteeFeedback() {
   }, [currentUser.id]);
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-5 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Academic Feedback Center</h1>
-        <p className="m-0 mt-1 text-slate-500 text-sm">Review advisor grading reports, positive remarks, and constructive revision summaries.</p>
+      <div>
+        <h1 className="page-title m-0">Feedback</h1>
+        <p className="page-subtitle mt-1">
+          Advisor review decisions, approvals, and the changes they have asked for.
+        </p>
       </div>
 
       {/* Grid split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revision Requests */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-5 shadow-sm">
-          <div>
-            <h2 className="m-0 text-sm md:text-base font-bold text-slate-900">
-              Revision Requests ({rejectedNotes.length})
-            </h2>
-            <p className="m-0 mt-0.5 text-slate-500 text-xs">Milestones needing updates based on advisor feedback.</p>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Revision Requests — actionable, so it leads */}
+        <div className="card flex flex-col">
+          <div className="card-header">
+            <div>
+              <h2 className="section-title m-0 flex items-center gap-2">
+                <Refresh size={16} className="text-warning-600" />
+                Revision Requests
+                <span className="badge badge-warning">{rejectedNotes.length}</span>
+              </h2>
+              <p className="m-0 mt-0.5 text-[12.5px] text-slate-500">
+                Work your advisor has asked you to update.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+
+          <div className="flex max-h-64 flex-col gap-3 overflow-y-auto p-5 scrollbar-slim">
             {rejectedNotes.length === 0 ? (
-              <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">No revisions currently requested.</div>
+              <div className="empty-state py-8">
+                <p className="empty-state-title">Nothing to revise</p>
+                <p className="empty-state-text">
+                  You have no open revision requests right now.
+                </p>
+              </div>
             ) : (
               rejectedNotes.map(f => (
-                <div key={f.id} className="p-4 bg-red-50/50 border border-red-100 rounded-xl flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-900">{f.taskTitle}</span>
-                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-md uppercase">Changes Needed</span>
+                <div
+                  key={f.id}
+                  className="flex flex-col gap-2 rounded-xl border border-warning-200 bg-warning-50/50 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[13px] font-semibold text-slate-900">{f.taskTitle}</span>
+                    <span className="badge badge-warning shrink-0">Changes Needed</span>
                   </div>
-                  <p className="m-0 text-xs text-slate-700 leading-relaxed">"{f.comment}"</p>
-                  <span className="text-[10px] text-slate-500 font-medium uppercase self-end">{f.createdAt}</span>
+                  <p className="m-0 text-[13px] leading-relaxed text-slate-700">
+                    &ldquo;{f.comment}&rdquo;
+                  </p>
+                  <span className="self-end text-[11.5px] font-medium text-slate-500">
+                    {f.createdAt}
+                  </span>
                 </div>
               ))
             )}
           </div>
         </div>
 
-        {/* Positive remarks */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-5 shadow-sm">
-          <div>
-            <h2 className="m-0 text-sm md:text-base font-bold text-slate-900">
-              Approved Milestones ({approvedNotes.length})
-            </h2>
-            <p className="m-0 mt-0.5 text-slate-500 text-xs">Outstanding milestones cleared by Lead Advisor.</p>
+        {/* Approved */}
+        <div className="card flex flex-col">
+          <div className="card-header">
+            <div>
+              <h2 className="section-title m-0 flex items-center gap-2">
+                <CheckCircle size={16} className="text-success-600" />
+                Approved Milestones
+                <span className="badge badge-success">{approvedNotes.length}</span>
+              </h2>
+              <p className="m-0 mt-0.5 text-[12.5px] text-slate-500">
+                Work your advisor has signed off.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+
+          <div className="flex max-h-64 flex-col gap-3 overflow-y-auto p-5 scrollbar-slim">
             {approvedNotes.length === 0 ? (
-              <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">No completed feedback recorded yet.</div>
+              <div className="empty-state py-8">
+                <p className="empty-state-title">No approvals yet</p>
+                <p className="empty-state-text">
+                  Approved submissions will be listed here as your advisor reviews them.
+                </p>
+              </div>
             ) : (
               approvedNotes.map(f => (
-                <div key={f.id} className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-900">{f.taskTitle}</span>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md uppercase">Approved</span>
+                <div
+                  key={f.id}
+                  className="flex flex-col gap-2 rounded-xl border border-success-200 bg-success-50/50 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[13px] font-semibold text-slate-900">{f.taskTitle}</span>
+                    <span className="badge badge-success shrink-0">Approved</span>
                   </div>
-                  <p className="m-0 text-xs text-slate-700 leading-relaxed">"{f.comment}"</p>
-                  <span className="text-[10px] text-slate-500 font-medium uppercase self-end">{f.createdAt}</span>
+                  <p className="m-0 text-[13px] leading-relaxed text-slate-700">
+                    &ldquo;{f.comment}&rdquo;
+                  </p>
+                  <span className="self-end text-[11.5px] font-medium text-slate-500">
+                    {f.createdAt}
+                  </span>
                 </div>
               ))
             )}
@@ -84,30 +125,45 @@ export default function MenteeFeedback() {
       </div>
 
       {/* History table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="px-6 py-5 border-b border-slate-200 bg-white">
-          <h2 className="m-0 text-sm md:text-base font-bold text-slate-900">Feedback History Log ({feedbacks.length})</h2>
+      <div className="card overflow-hidden">
+        <div className="card-header">
+          <h2 className="section-title m-0">
+            Feedback History{" "}
+            <span className="badge badge-neutral ml-1">{feedbacks.length}</span>
+          </h2>
         </div>
+
         {feedbacks.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm">No feedback records found.</div>
+          <div className="empty-state">
+            <span className="empty-state-icon">
+              <Inbox size={22} />
+            </span>
+            <p className="empty-state-title">No feedback recorded yet</p>
+            <p className="empty-state-text">
+              Every review decision your advisor makes will be logged here with its date and
+              notes.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[700px]">
+            <table className="data-table min-w-[700px]">
               <thead>
-                <tr className="bg-slate-50">
+                <tr>
                   {["Task Title", "Project Track", "Reviewer", "Date", "Notes"].map(h => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {feedbacks.map(f => (
-                  <tr key={f.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{f.taskTitle}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{f.projectName}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">Sarah Connor</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{f.createdAt}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600 italic truncate max-w-xs">"{f.comment}"</td>
+                  <tr key={f.id}>
+                    <td className="font-semibold text-slate-900">{f.taskTitle}</td>
+                    <td>{f.projectName}</td>
+                    <td>Sarah Connor</td>
+                    <td className="whitespace-nowrap text-slate-500">{f.createdAt}</td>
+                    <td className="max-w-xs truncate italic text-slate-600">
+                      &ldquo;{f.comment}&rdquo;
+                    </td>
                   </tr>
                 ))}
               </tbody>

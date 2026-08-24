@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import StatCard from "../ui/StatCard";
 import Button from "../ui/Button";
+import { FileText, CheckCircle, BarChart, Check } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 
 export default function MenteeProfile() {
@@ -38,33 +39,33 @@ export default function MenteeProfile() {
   const completedTasks = 0;
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl animate-fade-in">
+    <div className="flex max-w-3xl flex-col gap-5 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex justify-between items-center shadow-sm">
-        <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Student Profile</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Review your study console parameters and credentials.</p>
-        </div>
+      <div>
+        <h1 className="page-title m-0">Student Profile</h1>
+        <p className="page-subtitle mt-1">
+          Your account details and a snapshot of your progress.
+        </p>
       </div>
 
       {/* Metrics Row */}
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex flex-wrap gap-4">
         <StatCard
-          icon="📋"
+          icon={<FileText size={17} />}
           label="Tasks Assigned"
           value={totalTasks.toString()}
           badge="Curriculum tracks"
           badgeColor="blue"
         />
         <StatCard
-          icon="✓"
+          icon={<CheckCircle size={17} />}
           label="Tasks Completed"
           value={completedTasks.toString()}
           badge="Completed Milestones"
           badgeColor="green"
         />
         <StatCard
-          icon="📈"
+          icon={<BarChart size={17} />}
           label="Overall Progress"
           value={`${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%`}
           badge="Track progress"
@@ -73,49 +74,50 @@ export default function MenteeProfile() {
       </div>
 
       {/* Settings form */}
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 flex flex-col gap-8 shadow-sm">
+      <form onSubmit={handleSave} className="card flex flex-col gap-7 p-6 md:p-8">
         {saveSuccess && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium p-4 rounded-lg animate-pulse flex items-center gap-3">
-            <span>✅</span> Profile updated successfully! Changes will take effect on next reload.
+          <div className="notice notice-success">
+            <Check size={16} className="mt-px shrink-0" />
+            <span>Profile updated successfully. Changes will take effect on next reload.</span>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
           <Avatar initials={currentUser.avatar} color={currentUser.color} size={64} />
-          <div>
-            <span className="block font-bold text-slate-900 text-lg">{currentUser.name}</span>
-            <span className="block text-slate-500 text-xs font-semibold uppercase">{currentUser.role} ACCESS LEVEL</span>
+          <div className="text-center sm:text-left">
+            <span className="block font-display text-lg font-bold text-slate-900">
+              {currentUser.name}
+            </span>
+            <span className="badge badge-brand mt-1.5">{currentUser.role} access</span>
           </div>
         </div>
 
-        <hr className="border-0 border-t border-slate-200 m-0" />
+        <hr className="m-0 border-0 border-t border-slate-200" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Student Name</label>
+            <label className="field-label">Student Name</label>
             <input
               required
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Access Email Address</label>
+            <label className="field-label">Access Email Address</label>
             <input
               required
               type="email"
               value={profileEmail}
               onChange={(e) => setProfileEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field"
             />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-200">
-          <Button type="submit" className="px-6 py-2.5 text-sm font-medium">
-            Save Profile Updates
-          </Button>
+        <div className="border-t border-slate-200 pt-5">
+          <Button type="submit">Save Profile Updates</Button>
         </div>
       </form>
     </div>

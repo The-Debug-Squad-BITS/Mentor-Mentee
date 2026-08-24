@@ -1,5 +1,39 @@
 import { useState, useEffect } from "react";
 import Button from "../ui/Button";
+import { Check } from "../ui/Icons";
+
+/* Presentational toggle row — label, supporting copy and a switch. */
+function ToggleRow({ label, description, checked, onToggle }) {
+  return (
+    <div className="flex items-start justify-between gap-6 py-4 border-b border-slate-100 last:border-b-0 last:pb-0 first:pt-0">
+      <div>
+        <span className="block text-sm font-semibold text-slate-900">{label}</span>
+        <span className="block text-[13px] text-slate-500 mt-0.5 leading-relaxed max-w-md">{description}</span>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={onToggle}
+        className={
+          "relative shrink-0 mt-0.5 w-11 h-6 rounded-full border transition-colors duration-150 " +
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 " +
+          (checked
+            ? "bg-brand-600 border-brand-600"
+            : "bg-slate-200 border-slate-300 hover:bg-slate-300")
+        }
+      >
+        <span
+          className={
+            "absolute top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-white shadow-xs transition-[left] duration-150 " +
+            (checked ? "left-[22px]" : "left-[2px]")
+          }
+        />
+      </button>
+    </div>
+  );
+}
 
 export default function AdminSettings() {
   const [orgName, setOrgName] = useState("Acme Corporation");
@@ -31,8 +65,6 @@ export default function AdminSettings() {
     localStorage.setItem("mentorFlow_settings_systemLog", systemLog.toString());
     localStorage.setItem("mentorFlow_settings_sessionExpiry", sessionExpiry);
 
-    // db log stubbed
-    
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -40,112 +72,114 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl animate-fade-in">
-      {/* Title block */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex justify-between items-center shadow-sm">
-        <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Console Settings</h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Customize organization variables, active feature toggles, and system security thresholds.</p>
-        </div>
+    <div className="flex flex-col gap-5 max-w-3xl animate-fade-in">
+      {/* Page header */}
+      <div>
+        <h1 className="page-title">Settings</h1>
+        <p className="page-subtitle mt-1">
+          Manage your organization profile, platform preferences and session security.
+        </p>
       </div>
 
-      {/* Form Block */}
-      <form onSubmit={handleSave} className="bg-white rounded-xl p-6 md:p-8 border border-slate-200 flex flex-col gap-8 shadow-sm">
+      <form onSubmit={handleSave} className="flex flex-col gap-5">
         {savedSuccess && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3 text-emerald-800 text-sm font-medium transition-all duration-300 animate-pulse">
-            <span>✅</span> Brand settings saved successfully and synchronized!
+          <div className="notice notice-success animate-slide-up">
+            <Check size={16} />
+            <span>Brand settings saved successfully and synchronized!</span>
           </div>
         )}
 
-        {/* Section 1: Profile */}
-        <div>
-          <h3 className="m-0 text-xs font-bold text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Organization Profile</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+        {/* Organization profile */}
+        <section className="card">
+          <div className="card-header">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Organization Name</label>
+              <h2 className="section-title">Organization profile</h2>
+              <p className="text-[13px] text-slate-500 mt-0.5">
+                How your organization is identified across the workspace.
+              </p>
+            </div>
+          </div>
+          <div className="card-body grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label className="field-label">Organization name</label>
               <input
                 required
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
-                placeholder="e.g. Acme Corporation"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                placeholder="Acme Corporation"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Custom Slug URL</label>
+              <label className="field-label">Workspace slug</label>
               <input
                 required
                 value={orgSlug}
                 onChange={(e) => setOrgSlug(e.target.value)}
-                placeholder="e.g. acme-corp"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                placeholder="acme-corp"
+                className="input-field"
               />
+              <p className="field-hint">Lowercase letters and dashes. Spaces are converted on save.</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Section 2: Platform Configurations */}
-        <div>
-          <h3 className="m-0 text-xs font-bold text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Platform Toggles</h3>
-          <div className="flex flex-col gap-5 mt-4">
-            {/* Email toggle */}
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <span className="block font-semibold text-slate-900 text-sm">Email Notifications</span>
-                <span className="block text-slate-500 text-sm mt-0.5">Issue automated alerts and review summaries to member mailboxes.</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEmailNotif(!emailNotif)}
-                className={`w-11 h-6 rounded-full transition-all relative border border-transparent outline-none cursor-pointer flex items-center ${
-                  emailNotif ? "bg-blue-600" : "bg-slate-300"
-                }`}
+        {/* Platform preferences */}
+        <section className="card">
+          <div className="card-header">
+            <div>
+              <h2 className="section-title">Platform preferences</h2>
+              <p className="text-[13px] text-slate-500 mt-0.5">
+                Control what the platform sends out and what it records.
+              </p>
+            </div>
+          </div>
+          <div className="card-body pt-1 pb-2">
+            <ToggleRow
+              label="Email notifications"
+              description="Send automated alerts and review summaries to member mailboxes."
+              checked={emailNotif}
+              onToggle={() => setEmailNotif(!emailNotif)}
+            />
+            <ToggleRow
+              label="Audit trail logging"
+              description="Record system events so they can be reviewed in the activity log."
+              checked={systemLog}
+              onToggle={() => setSystemLog(!systemLog)}
+            />
+          </div>
+        </section>
+
+        {/* Security */}
+        <section className="card">
+          <div className="card-header">
+            <div>
+              <h2 className="section-title">Security</h2>
+              <p className="text-[13px] text-slate-500 mt-0.5">
+                Decide how long a signed-in session stays valid before it expires.
+              </p>
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="w-full sm:max-w-xs">
+              <label className="field-label">Session expiry</label>
+              <select
+                value={sessionExpiry}
+                onChange={(e) => setSessionExpiry(e.target.value)}
+                className="select-field"
               >
-                <span className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all absolute ${emailNotif ? "left-[18px]" : "left-[2px]"}`} />
-              </button>
-            </div>
-
-            {/* Logs toggle */}
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <span className="block font-semibold text-slate-900 text-sm">Audit Trail Logging</span>
-                <span className="block text-slate-500 text-sm mt-0.5">Store system execution event traces in the local audit workspace.</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSystemLog(!systemLog)}
-                className={`w-11 h-6 rounded-full transition-all relative border border-transparent outline-none cursor-pointer flex items-center ${
-                  systemLog ? "bg-blue-600" : "bg-slate-300"
-                }`}
-              >
-                <span className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all absolute ${systemLog ? "left-[18px]" : "left-[2px]"}`} />
-              </button>
+                <option value="1h">1 hour (highest security)</option>
+                <option value="8h">8 hours</option>
+                <option value="24h">24 hours</option>
+                <option value="7d">7 days</option>
+              </select>
+              <p className="field-hint">Shorter sessions ask members to sign in again more often.</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Section 3: Security */}
-        <div>
-          <h3 className="m-0 text-xs font-bold text-slate-900 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">Security Thresholds</h3>
-          <div className="w-full sm:w-64 mt-4">
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Session Expiry Timeout</label>
-            <select
-              value={sessionExpiry}
-              onChange={(e) => setSessionExpiry(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
-            >
-              <option value="1h">1 Hour (High Security)</option>
-              <option value="8h">8 Hours</option>
-              <option value="24h">24 Hours</option>
-              <option value="7d">7 Days (Default)</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-slate-200">
-          <Button type="submit" className="px-6 py-2.5 text-sm font-medium">
-            Save Configuration
-          </Button>
+        <div className="flex justify-end">
+          <Button type="submit">Save changes</Button>
         </div>
       </form>
     </div>

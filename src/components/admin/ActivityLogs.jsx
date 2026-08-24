@@ -1,7 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { useActivityStore } from "../../store/activityStore";
-import { toast } from "react-toastify";
+import Button from "../ui/Button";
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  FileText,
+  Flag,
+  Folder,
+  Inbox,
+  MessageSquare,
+  Upload,
+  User,
+} from "../ui/Icons";
 
 // ── Action → human-readable label map ────────────────────────────────────────
 export const ACTION_LABELS = {
@@ -36,23 +51,23 @@ export function formatActivityLine(activity) {
 function getEntityMeta(entityType, action) {
   if (!entityType && action) {
     const a = action.toUpperCase();
-    if (a.includes("PROJECT"))    return { icon: "🗂️",  color: "bg-blue-50 text-blue-700 border-blue-200",    label: "Project" };
-    if (a.includes("TASK"))       return { icon: "✅",   color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Task" };
-    if (a.includes("SUBMISSION")) return { icon: "📤",  color: "bg-amber-50 text-amber-700 border-amber-200",   label: "Submission" };
-    if (a.includes("MILESTONE"))  return { icon: "🏁",  color: "bg-indigo-50 text-indigo-700 border-indigo-200", label: "Milestone" };
-    if (a.includes("COMMENT"))    return { icon: "💬",  color: "bg-purple-50 text-purple-700 border-purple-200", label: "Comment" };
-    if (a.includes("TEMPLATE"))   return { icon: "📋",  color: "bg-pink-50 text-pink-700 border-pink-200",       label: "Template" };
-    if (a.includes("USER"))       return { icon: "👤",  color: "bg-cyan-50 text-cyan-700 border-cyan-200",       label: "User" };
-    return                               { icon: "⚡",   color: "bg-slate-100 text-slate-700 border-slate-200",  label: "System" };
+    if (a.includes("PROJECT"))    return { icon: Folder,        color: "bg-info-50 text-info-700 border-info-200",       label: "Project" };
+    if (a.includes("TASK"))       return { icon: CheckCircle,   color: "bg-success-50 text-success-700 border-success-200", label: "Task" };
+    if (a.includes("SUBMISSION")) return { icon: Upload,        color: "bg-warning-50 text-warning-700 border-warning-200", label: "Submission" };
+    if (a.includes("MILESTONE"))  return { icon: Flag,          color: "bg-brand-50 text-brand-700 border-brand-200",     label: "Milestone" };
+    if (a.includes("COMMENT"))    return { icon: MessageSquare, color: "bg-slate-50 text-slate-700 border-slate-200",     label: "Comment" };
+    if (a.includes("TEMPLATE"))   return { icon: FileText,      color: "bg-slate-50 text-slate-700 border-slate-200",     label: "Template" };
+    if (a.includes("USER"))       return { icon: User,          color: "bg-info-50 text-info-700 border-info-200",        label: "User" };
+    return                               { icon: Activity,      color: "bg-slate-100 text-slate-700 border-slate-200",    label: "System" };
   }
   switch (entityType) {
-    case "PROJECT":    return { icon: "🗂️",  color: "bg-blue-50 text-blue-700 border-blue-200",       label: "Project" };
-    case "TASK":       return { icon: "✅",   color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Task" };
-    case "SUBMISSION": return { icon: "📤",  color: "bg-amber-50 text-amber-700 border-amber-200",    label: "Submission" };
-    case "MILESTONE":  return { icon: "🏁",  color: "bg-indigo-50 text-indigo-700 border-indigo-200",  label: "Milestone" };
-    case "COMMENT":    return { icon: "💬",  color: "bg-purple-50 text-purple-700 border-purple-200",  label: "Comment" };
-    case "TEMPLATE":   return { icon: "📋",  color: "bg-pink-50 text-pink-700 border-pink-200",        label: "Template" };
-    default:           return { icon: "⚡",   color: "bg-slate-100 text-slate-700 border-slate-200",   label: "System" };
+    case "PROJECT":    return { icon: Folder,        color: "bg-info-50 text-info-700 border-info-200",          label: "Project" };
+    case "TASK":       return { icon: CheckCircle,   color: "bg-success-50 text-success-700 border-success-200", label: "Task" };
+    case "SUBMISSION": return { icon: Upload,        color: "bg-warning-50 text-warning-700 border-warning-200", label: "Submission" };
+    case "MILESTONE":  return { icon: Flag,          color: "bg-brand-50 text-brand-700 border-brand-200",       label: "Milestone" };
+    case "COMMENT":    return { icon: MessageSquare, color: "bg-slate-50 text-slate-700 border-slate-200",       label: "Comment" };
+    case "TEMPLATE":   return { icon: FileText,      color: "bg-slate-50 text-slate-700 border-slate-200",       label: "Template" };
+    default:           return { icon: Activity,      color: "bg-slate-100 text-slate-700 border-slate-200",      label: "System" };
   }
 }
 
@@ -87,47 +102,71 @@ const ENTITY_OPTIONS = ["ALL", "PROJECT", "TASK", "SUBMISSION", "MILESTONE", "CO
 const PAGE_SIZE = 20;
 
 // ── Single Timeline Row ───────────────────────────────────────────────────────
-function ActivityRow({ activity }) {
+function ActivityRow({ activity, isLast }) {
   const meta = getEntityMeta(activity.entityType, activity.action);
   const line = formatActivityLine(activity);
+  const EntityIcon = meta.icon;
 
   return (
-    <div className="relative flex gap-4 group">
-      {/* Circle dot on the line */}
-      <div className={`w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shrink-0 text-base shadow-sm transition-transform group-hover:scale-110 z-10 ${meta.color.split(" ")[0]} ${meta.color.split(" ")[1]}`}>
-        {meta.icon}
+    <div className="relative flex gap-4">
+      {/* Connecting rail */}
+      {!isLast && (
+        <span className="absolute left-[17px] top-10 bottom-0 w-px bg-slate-200" aria-hidden="true" />
+      )}
+
+      {/* Icon marker on the rail */}
+      <div className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 z-10 ${meta.color}`}>
+        <EntityIcon size={16} />
       </div>
 
-      <div className="flex-1 min-w-0 pb-6 border-b border-slate-100 last:border-0">
+      <div className={`flex-1 min-w-0 ${isLast ? "pb-1" : "pb-6"}`}>
         {/* Chips row */}
         <div className="flex items-center gap-2 flex-wrap mb-1.5">
-          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider border ${meta.color}`}>
+          <span className={`badge ${meta.color}`}>
             {meta.label}
           </span>
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-[0.06em]">
             {activity.action?.replace(/_/g, " ")}
           </span>
-          <span className="ml-auto text-xs text-slate-400 font-medium shrink-0">
+          <span className="ml-auto flex items-center gap-1.5 text-xs text-slate-500 shrink-0">
+            <Clock size={13} />
             {formatDate(activity.createdAt)}
           </span>
         </div>
 
         {/* Human-readable line */}
-        <p className="m-0 text-slate-800 text-sm leading-relaxed">
-          <span className="font-bold text-slate-900">{activity.userId?.name || "System"}</span>
+        <p className="m-0 text-slate-700 text-sm leading-relaxed">
+          <span className="font-semibold text-slate-900">{activity.userId?.name || "System"}</span>
           {" "}
           <span className="text-slate-600">
             {ACTION_LABELS[activity.action] || activity.action?.replace(/_/g, " ").toLowerCase()}
           </span>
           {activity.metadata?.title && (
-            <> — <span className="font-semibold text-slate-800">"{activity.metadata.title}"</span></>
+            <> — <span className="font-semibold text-slate-900">"{activity.metadata.title}"</span></>
           )}
         </p>
 
         {activity.userId?.email && (
-          <p className="m-0 mt-0.5 text-xs text-slate-400">{activity.userId.email}</p>
+          <p className="m-0 mt-1 text-xs text-slate-500">{activity.userId.email}</p>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Placeholder rows shown while the feed is loading. */
+function TimelineSkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-hidden="true">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <div className="skeleton w-9 h-9 rounded-full shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="skeleton h-4 w-40 mb-2.5" />
+            <div className="skeleton h-3.5 w-full max-w-md" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -181,118 +220,127 @@ export default function ActivityLogs() {
   const totalPages = pagination?.pages || 1;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-5 animate-fade-in">
 
-      {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-          System Activity Log
-        </h1>
-        <p className="m-0 mt-1 text-slate-500 text-sm">
-          Full audit trail of every action across the platform — filterable by type, entity, and date range.
+      {/* Page header */}
+      <div>
+        <h1 className="page-title">Activity log</h1>
+        <p className="page-subtitle mt-1">
+          An audit trail of every recorded action across the platform. Filter by action, entity or date range.
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row flex-wrap gap-3 items-start sm:items-center">
-        {/* Action filter */}
-        <div className="flex flex-col gap-1 min-w-[180px]">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Action</label>
-          <select
-            value={actionFilter}
-            onChange={(e) => setActionFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
-          >
-            {ACTION_OPTIONS.map(a => (
-              <option key={a} value={a}>{a === "ALL" ? "All Actions" : a.replace(/_/g, " ")}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Entity filter */}
-        <div className="flex flex-col gap-1 min-w-[150px]">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Entity Type</label>
-          <select
-            value={entityFilter}
-            onChange={(e) => setEntityFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
-          >
-            {ENTITY_OPTIONS.map(e => (
-              <option key={e} value={e}>{e === "ALL" ? "All Entities" : e}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Date range */}
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">From</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">To</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
-          />
-        </div>
-
-        {/* Clear filters */}
-        {(actionFilter !== "ALL" || entityFilter !== "ALL" || startDate || endDate) && (
-          <button
-            onClick={() => { setActionFilter("ALL"); setEntityFilter("ALL"); setStartDate(""); setEndDate(""); }}
-            className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg border border-slate-200 transition-colors cursor-pointer bg-white self-end"
-          >
-            Clear Filters
-          </button>
-        )}
-
-        {/* Pagination info */}
-        {pagination && (
-          <div className="ml-auto text-xs text-slate-500 font-medium self-end">
-            {pagination.total} total events · Page {page} of {totalPages}
+      <div className="card">
+        <div className="p-4 flex flex-wrap items-end gap-3">
+          {/* Action filter */}
+          <div className="flex flex-col min-w-45 flex-1 sm:flex-none">
+            <label className="field-label">Action</label>
+            <select
+              value={actionFilter}
+              onChange={(e) => setActionFilter(e.target.value)}
+              className="select-field"
+            >
+              {ACTION_OPTIONS.map(a => (
+                <option key={a} value={a}>{a === "ALL" ? "All actions" : a.replace(/_/g, " ")}</option>
+              ))}
+            </select>
           </div>
-        )}
+
+          {/* Entity filter */}
+          <div className="flex flex-col min-w-40 flex-1 sm:flex-none">
+            <label className="field-label">Entity type</label>
+            <select
+              value={entityFilter}
+              onChange={(e) => setEntityFilter(e.target.value)}
+              className="select-field"
+            >
+              {ENTITY_OPTIONS.map(e => (
+                <option key={e} value={e}>{e === "ALL" ? "All entities" : e}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date range */}
+          <div className="flex flex-col">
+            <label className="field-label">From</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="input-field"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="field-label">To</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="input-field"
+            />
+          </div>
+
+          {/* Clear filters */}
+          {(actionFilter !== "ALL" || entityFilter !== "ALL" || startDate || endDate) && (
+            <Button
+              variant="ghost"
+              onClick={() => { setActionFilter("ALL"); setEntityFilter("ALL"); setStartDate(""); setEndDate(""); }}
+            >
+              Clear filters
+            </Button>
+          )}
+
+          {/* Pagination info */}
+          {pagination && (
+            <div className="ml-auto text-[13px] text-slate-500 tabular-nums pb-2.5">
+              {pagination.total} events · page {page} of {totalPages}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertCircle size={16} />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Timeline Feed */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-          <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <h2 className="m-0 text-sm font-bold text-slate-900">Activity Timeline</h2>
-          {!loading && activities.length > 0 && (
-            <span className="ml-1 text-xs text-slate-500">({activities.length} shown)</span>
-          )}
+      <div className="card overflow-hidden">
+        <div className="card-header">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500"><Clock size={16} /></span>
+            <h2 className="section-title">Timeline</h2>
+            {!loading && activities.length > 0 && (
+              <span className="text-[13px] text-slate-500">{activities.length} shown</span>
+            )}
+          </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-5 sm:p-6">
           {loading ? (
-            <div className="py-16 text-center text-slate-400 text-sm">Loading activity log...</div>
+            <TimelineSkeleton />
           ) : activities.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-sm">
-              <div className="text-4xl mb-3">📭</div>
-              No activities match the current filters.
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <Inbox size={22} />
+              </div>
+              <h3 className="empty-state-title">No activity found</h3>
+              <p className="empty-state-text">
+                Nothing matches the current filters. Widen the date range or clear the filters to see more events.
+              </p>
             </div>
           ) : (
             <div className="flex flex-col">
               {activities.map((activity, idx) => (
-                <ActivityRow key={activity._id || idx} activity={activity} />
+                <ActivityRow
+                  key={activity._id || idx}
+                  activity={activity}
+                  isLast={idx === activities.length - 1}
+                />
               ))}
             </div>
           )}
@@ -301,37 +349,43 @@ export default function ActivityLogs() {
 
       {/* Pagination Controls */}
       {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => loadActivities(page - 1)}
             disabled={page <= 1}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
-            ← Prev
-          </button>
+            <ChevronLeft size={15} />
+            Previous
+          </Button>
           {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
             const p = i + 1;
             return (
               <button
                 key={p}
                 onClick={() => loadActivities(p)}
-                className={`w-9 h-9 rounded-lg border text-sm font-semibold transition-colors cursor-pointer ${
+                aria-label={`Go to page ${p}`}
+                aria-current={p === page ? "page" : undefined}
+                className={`w-9 h-9 rounded-lg border text-[13px] font-semibold tabular-nums transition-colors ${
                   p === page
-                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                    : "border-slate-300 text-slate-700 bg-white hover:bg-slate-50"
+                    ? "bg-brand-600 text-white border-brand-600 shadow-xs"
+                    : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400"
                 }`}
               >
                 {p}
               </button>
             );
           })}
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => loadActivities(page + 1)}
             disabled={page >= totalPages}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
-            Next →
-          </button>
+            Next
+            <ChevronRight size={15} />
+          </Button>
         </div>
       )}
     </div>

@@ -19,6 +19,7 @@ import TemplatesSection from "../components/admin/TemplatesSection";
 import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
 import CalendarSection from "../components/calendar/CalendarSection";
+import { AlertTriangle } from "../components/ui/Icons";
 import api from "../lib/api";
 
 export default function MentorDashboard() {
@@ -101,7 +102,7 @@ export default function MentorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans overflow-x-hidden w-full">
+    <div className="flex min-h-screen bg-canvas font-sans overflow-x-hidden w-full">
       <MentorSidebar
         activeNav={activeNav}
         setActiveNav={handleActiveNavChange}
@@ -111,7 +112,7 @@ export default function MentorDashboard() {
 
       <main
         className="flex-1 min-h-screen min-w-0
-        ml-0 md:ml-55 lg:ml-64
+        ml-0 md:ml-56 lg:ml-64
         py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:pr-8 lg:pl-0
         pt-16 md:pt-8"
       >
@@ -120,21 +121,24 @@ export default function MentorDashboard() {
           mobileOpen={mobileOpen}
         />
 
-        <MentorHeader
-          userName={user?.name}
-          onNewUser={() => setShowNewUserModal(true)}
-          onLogout={handleLogout}
-        />
+        <div className="mx-auto w-full max-w-[1600px]">
+          <MentorHeader
+            userName={user?.name}
+            onNewUser={() => setShowNewUserModal(true)}
+            onLogout={handleLogout}
+          />
 
-        {/* Stats error banner */}
-        {statsError && (
-          <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            ⚠️ {statsError}
+          {/* Stats error banner */}
+          {statsError && (
+            <div className="notice notice-warning mb-4">
+              <AlertTriangle size={16} className="mt-px shrink-0" />
+              <span>{statsError}</span>
+            </div>
+          )}
+
+          <div className="mt-6 md:mt-4 animate-fade-in">
+            {renderSection()}
           </div>
-        )}
-
-        <div className="mt-6 md:mt-4 animate-fade-in">
-          {renderSection()}
         </div>
       </main>
 

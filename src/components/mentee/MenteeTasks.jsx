@@ -5,6 +5,17 @@ import TaskSubmitModal from "./TaskSubmitModal";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
 import CommentSection from "../ui/CommentSection";
+import {
+  Search,
+  Layers,
+  Clock,
+  Eye,
+  CheckCircle,
+  AlertTriangle,
+  Upload,
+  Refresh,
+  Inbox,
+} from "../ui/Icons";
 
 export default function MenteeTasks() {
   const [tasks, setTasks] = useState([]);
@@ -72,12 +83,12 @@ export default function MenteeTasks() {
     );
 
   const statusStyles = {
-    TODO:            "bg-slate-100 text-slate-600 border-slate-200",
-    IN_PROGRESS:     "bg-blue-50 text-blue-700 border-blue-200",
-    SUBMITTED:       "bg-amber-50 text-amber-700 border-amber-200",
-    UNDER_REVIEW:    "bg-purple-50 text-purple-700 border-purple-200",
-    APPROVED:        "bg-emerald-50 text-emerald-700 border-emerald-200",
-    REVISION_NEEDED: "bg-red-50 text-red-700 border-red-200",
+    TODO:            "bg-slate-50 text-slate-700 border-slate-200",
+    IN_PROGRESS:     "bg-info-50 text-info-700 border-info-200",
+    SUBMITTED:       "bg-warning-50 text-warning-700 border-warning-200",
+    UNDER_REVIEW:    "bg-violet-50 text-violet-700 border-violet-200",
+    APPROVED:        "bg-success-50 text-success-700 border-success-200",
+    REVISION_NEEDED: "bg-danger-50 text-danger-700 border-danger-200",
   };
 
   const statusLabels = {
@@ -90,9 +101,9 @@ export default function MenteeTasks() {
   };
 
   const priorityStyles = {
-    LOW:    "bg-slate-100 text-slate-600 border-slate-200",
-    MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
-    HIGH:   "bg-red-50 text-red-700 border-red-200",
+    LOW:    "bg-slate-50 text-slate-600 border-slate-200",
+    MEDIUM: "bg-warning-50 text-warning-700 border-warning-200",
+    HIGH:   "bg-danger-50 text-danger-700 border-danger-200",
   };
 
   const allStatuses = [
@@ -101,37 +112,39 @@ export default function MenteeTasks() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-5 animate-fade-in">
 
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-          My Assigned Tasks
-        </h1>
-        <p className="m-0 mt-1 text-slate-500 text-sm">
+      <div>
+        <h1 className="page-title m-0">My Assigned Tasks</h1>
+        <p className="page-subtitle mt-1">
           Start tasks, submit your work, and track mentor feedback.
         </p>
       </div>
 
       {/* Filter toolbar */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
-        <input
-          placeholder="Search deliverables..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-64 px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
-        />
+      <div className="card flex flex-col items-stretch justify-between gap-3 p-3 md:flex-row md:items-center">
+        <div className="relative w-full md:w-72">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
+          <input
+            placeholder="Search deliverables..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search tasks"
+            className="input-field pl-9"
+          />
+        </div>
 
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg overflow-x-auto w-full md:w-auto">
+        <div className="tab-strip w-full overflow-x-auto md:w-auto scrollbar-none">
           {allStatuses.map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-                statusFilter === status
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "bg-transparent text-slate-600 hover:text-slate-900"
-              }`}
+              aria-pressed={statusFilter === status}
+              className={`tab-item ${statusFilter === status ? "tab-item-active" : ""}`}
             >
               {status === "ALL" ? "All Tracks" : statusLabels[status]}
             </button>
@@ -141,76 +154,95 @@ export default function MenteeTasks() {
 
       {/* Error banner */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Tasks grid */}
       {loading ? (
-        <div className="bg-white rounded-xl p-12 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
-          Loading tasks...
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="card flex flex-col gap-4 p-5">
+              <div className="flex justify-between gap-3">
+                <span className="skeleton h-5 w-28" />
+                <span className="skeleton h-5 w-20" />
+              </div>
+              <span className="skeleton h-6 w-3/4" />
+              <span className="skeleton h-4 w-full" />
+              <span className="skeleton h-4 w-2/3" />
+              <span className="skeleton mt-2 h-9 w-full" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
-          No tasks match active filter thresholds.
+        <div className="card">
+          <div className="empty-state">
+            <span className="empty-state-icon">
+              <Inbox size={22} />
+            </span>
+            <p className="empty-state-title">
+              {tasks.length === 0 ? "No tasks assigned yet" : "No tasks match this filter"}
+            </p>
+            <p className="empty-state-text">
+              {tasks.length === 0
+                ? "Tasks your mentor assigns to you will show up here, with their deadline and priority."
+                : "Try a different status filter, or clear your search to see everything."}
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <div className="grid w-full flex-1 grid-cols-1 gap-4 md:grid-cols-2">
           {filtered.map((task) => {
             const isStarting = startingTaskId === task._id;
             return (
               <div
                 key={task._id}
-                className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between gap-5 transition-all hover:-translate-y-1 hover:shadow-lg duration-200 shadow-sm"
+                className="card flex flex-col justify-between gap-5 p-5 transition-shadow duration-200 hover:shadow-md"
               >
                 {/* Top */}
                 <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-start flex-wrap gap-2">
-                    <span className="px-2.5 py-1 bg-slate-100 text-[10px] font-semibold text-slate-600 rounded-md uppercase tracking-wider border border-slate-200">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="badge badge-neutral">
                       {task.projectId?.title || "Project"}
                     </span>
                     <span
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                        statusStyles[task.status] || ""
-                      }`}
+                      className={`badge ${statusStyles[task.status] || "badge-neutral"}`}
                     >
+                      <span className="badge-dot" />
                       {statusLabels[task.status] || task.status}
                     </span>
                   </div>
 
                   {/* Milestone badge — shown when task is linked to a milestone */}
                   {task.milestoneId && (
-                    <div className="flex items-center gap-1.5">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                        <path d="M2 17l10 5 10-5" />
-                        <path d="M2 12l10 5 10-5" />
-                      </svg>
-                      <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 text-brand-600">
+                      <Layers size={13} />
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em]">
                         {task.milestoneId?.title || "Milestone"}
                       </span>
                     </div>
                   )}
 
-                  <h3 className="m-0 text-base md:text-lg font-bold text-slate-900 tracking-tight leading-snug">
+                  <h3 className="m-0 font-display text-[16px] font-bold leading-snug tracking-tight text-slate-900">
                     {task.title}
                   </h3>
 
                   {task.description && (
-                    <p className="m-0 text-slate-600 text-sm leading-relaxed line-clamp-2">
+                    <p className="m-0 line-clamp-2 text-[13.5px] leading-relaxed text-slate-600">
                       {task.description}
                     </p>
                   )}
 
                   {/* Show mentor feedback when REVISION_NEEDED */}
                   {task.status === "REVISION_NEEDED" && task.feedback && (
-                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="text-[10px] font-bold text-red-700 uppercase tracking-wider mb-1">
-                        Mentor Feedback:
+                    <div className="mt-1 rounded-xl border border-danger-200 bg-danger-50/60 p-3.5">
+                      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-danger-700">
+                        <Refresh size={13} /> Mentor Feedback
                       </div>
-                      <div className="text-sm text-red-900 leading-relaxed">
-                        "{task.feedback}"
+                      <div className="text-[13px] leading-relaxed text-danger-800">
+                        &ldquo;{task.feedback}&rdquo;
                       </div>
                     </div>
                   )}
@@ -218,19 +250,18 @@ export default function MenteeTasks() {
 
                 {/* Bottom */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-center text-xs text-slate-500 font-medium border-t border-slate-100 pt-4">
-                    <span>
+                  <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 text-[12.5px] font-medium text-slate-500">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock size={14} className="text-slate-400" />
                       Deadline:{" "}
-                      <span className="text-slate-900">
+                      <span className="font-semibold text-slate-900">
                         {task.dueDate
                           ? new Date(task.dueDate).toLocaleDateString()
                           : "None"}
                       </span>
                     </span>
                     <span
-                      className={`px-2 py-0.5 rounded border text-[10px] font-bold uppercase tracking-wide ${
-                        priorityStyles[task.priority] || "bg-slate-100 text-slate-600 border-slate-200"
-                      }`}
+                      className={`badge ${priorityStyles[task.priority] || "badge-neutral"}`}
                     >
                       {task.priority} Priority
                     </span>
@@ -241,45 +272,39 @@ export default function MenteeTasks() {
                     <Button
                       onClick={() => handleStartTask(task._id)}
                       disabled={isStarting}
-                      className="w-full justify-center text-sm py-2.5"
+                      className="w-full"
                     >
-                      {isStarting ? "Starting..." : "🚀 Start Task"}
+                      {isStarting ? "Starting..." : "Start Task"}
                     </Button>
                   )}
 
                   {task.status === "IN_PROGRESS" && (
-                    <Button
-                      onClick={() => setSubmitTask(task)}
-                      className="w-full justify-center text-sm py-2.5 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-                    >
-                      📤 Submit Work
+                    <Button onClick={() => setSubmitTask(task)} className="w-full">
+                      <Upload size={16} /> Submit Work
                     </Button>
                   )}
 
                   {task.status === "REVISION_NEEDED" && (
-                    <Button
-                      onClick={() => setSubmitTask(task)}
-                      className="w-full justify-center text-sm py-2.5 bg-orange-600 hover:bg-orange-700 focus:ring-orange-500 text-white"
-                    >
-                      🔄 Resubmit Work
+                    <Button onClick={() => setSubmitTask(task)} className="w-full">
+                      <Refresh size={16} /> Resubmit Work
                     </Button>
                   )}
 
                   {task.status === "SUBMITTED" && (
-                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200">
-                      ⏳ Pending Review
+                    <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-warning-200 bg-warning-50 py-2.5 text-[13.5px] font-semibold text-warning-700">
+                      <Clock size={16} /> Pending Review
                     </div>
                   )}
 
                   {task.status === "UNDER_REVIEW" && (
-                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-purple-700 bg-purple-50 border border-purple-200">
-                      🔍 Under Review
+                    <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-violet-200 bg-violet-50 py-2.5 text-[13.5px] font-semibold text-violet-700">
+                      <Eye size={16} /> Under Review
                     </div>
                   )}
 
                   {task.status === "APPROVED" && (
-                    <div className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
-                      ✅ Approved
+                    <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-success-200 bg-success-50 py-2.5 text-[13.5px] font-semibold text-success-700">
+                      <CheckCircle size={16} /> Approved
                     </div>
                   )}
 

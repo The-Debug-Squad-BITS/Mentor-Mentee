@@ -2,6 +2,70 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import Button from "../components/ui/Button";
+import {
+  Logo,
+  Lock,
+  Eye,
+  EyeOff,
+  Check,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+} from "../components/ui/Icons";
+
+/* Presentational: inline spinner shown inside the submit button. */
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/* Presentational: password field with a show/hide toggle. */
+function PasswordField({ id, label, value, onChange, placeholder, visible, onToggle }) {
+  return (
+    <div>
+      <label htmlFor={id} className="field-label">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={visible ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required
+          className="input-field pr-11"
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={visible ? "Hide password" : "Show password"}
+          title={visible ? "Hide password" : "Show password"}
+          className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+        >
+          {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -73,28 +137,30 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F4EF] flex items-center justify-center px-4 font-['DM_Sans',sans-serif]">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
 
+        {/* Brand */}
+        <div className="mb-6 flex items-center justify-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <Logo size={20} />
+          </span>
+          <span className="font-display text-[16px] font-bold tracking-tight text-slate-900">
+            Mentora
+          </span>
+        </div>
+
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-[#E2DDD8] p-10">
+        <div className="card p-8">
 
           {/* Header */}
-          <div className="mb-8">
-            <div className="w-10 h-10 bg-[#E8B86D] rounded-xl flex items-center justify-center mb-5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                stroke="#1A1714" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
+          <div className="mb-6">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-brand-100 bg-brand-50 text-brand-600">
+              <Lock size={20} />
             </div>
-            <p className="text-[11px] font-medium tracking-[0.18em] text-[#B09070] uppercase mb-2">
-              Security
-            </p>
-            <h1 className="font-['Fraunces',serif] text-[28px] font-light text-[#1A1714] leading-[1.2]">
-              Set your new password
-            </h1>
-            <p className="text-[13px] text-[#9C948C] mt-2 leading-relaxed">
+            <p className="eyebrow">Account security</p>
+            <h1 className="page-title mt-2">Set a new password</h1>
+            <p className="page-subtitle mt-2">
               {user?.mustChangePassword
                 ? "You must set a new password before you can continue."
                 : "Enter your current password and choose a new one."}
@@ -103,16 +169,17 @@ export default function ChangePasswordPage() {
 
           {/* ── Success state ────────────────────────────────────── */}
           {success ? (
-            <div className="flex flex-col items-center gap-4 py-6">
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                  stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-success-200 bg-success-50 text-success-600">
+                <CheckCircle size={26} />
               </div>
-              <div className="text-center">
-                <p className="text-[15px] font-medium text-[#1A1714]">Password changed successfully!</p>
-                <p className="text-[13px] text-[#9C948C] mt-1">Redirecting to your dashboard…</p>
+              <div>
+                <p className="font-display text-[15px] font-bold text-slate-900">
+                  Password changed successfully
+                </p>
+                <p className="mt-1 text-[13px] text-slate-600">
+                  Taking you to your dashboard…
+                </p>
               </div>
             </div>
 
@@ -122,110 +189,90 @@ export default function ChangePasswordPage() {
 
               {/* Error banner */}
               {error && (
-                <div className="text-[12px] text-[#B91C1C] px-3.5 py-2.5 bg-[#FEF2F2] border border-[#FECACA] rounded-xl leading-relaxed">
-                  {error}
+                <div className="notice notice-danger" role="alert">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
                 </div>
               )}
 
               {/* Current Password */}
-              <div>
-                <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="current-password"
-                    type={showCurrent ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Your current password"
-                    required
-                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrent(!showCurrent)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
-                  >
-                    {showCurrent ? "Hide" : "Show"}
-                  </button>
-                </div>
-              </div>
+              <PasswordField
+                id="current-password"
+                label="Current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Your current password"
+                visible={showCurrent}
+                onToggle={() => setShowCurrent(!showCurrent)}
+              />
 
               {/* New Password */}
-              <div>
-                <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="new-password"
-                    type={showNew ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Min. 8 characters"
-                    required
-                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNew(!showNew)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
-                  >
-                    {showNew ? "Hide" : "Show"}
-                  </button>
-                </div>
-              </div>
+              <PasswordField
+                id="new-password"
+                label="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                visible={showNew}
+                onToggle={() => setShowNew(!showNew)}
+              />
 
               {/* Confirm New Password */}
-              <div>
-                <label className="block text-[12px] font-medium text-[#7A736C] mb-1.5 tracking-[0.04em]">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="confirm-password"
-                    type={showConfirm ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat your new password"
-                    required
-                    className="w-full px-4 py-3 bg-[#FAFAF9] border border-[#E2DDD8] rounded-xl text-sm text-[#1A1714] outline-none transition-colors duration-150 focus:border-[#B09070] focus:bg-white pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-[12px] font-bold text-stone-400 cursor-pointer hover:text-stone-600 select-none font-sans"
-                  >
-                    {showConfirm ? "Hide" : "Show"}
-                  </button>
-                </div>
+              <PasswordField
+                id="confirm-password"
+                label="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat your new password"
+                visible={showConfirm}
+                onToggle={() => setShowConfirm(!showConfirm)}
+              />
+
+              {/* Requirements */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                <p className="text-[12px] font-semibold text-slate-700">
+                  Password requirements
+                </p>
+                <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] text-slate-600">
+                  <li className="flex items-center gap-2">
+                    <Check size={14} />
+                    At least 8 characters long
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} />
+                    Both new password fields must match
+                  </li>
+                </ul>
               </div>
 
               {/* Submit */}
-              <button
+              <Button
                 id="change-password-submit"
                 type="submit"
+                variant="primary"
+                size="lg"
                 disabled={loading}
-                className="w-full mt-2 py-3.5 bg-[#E8B86D] text-[#1A1714] text-sm font-medium rounded-xl border-0 cursor-pointer tracking-wide transition-opacity duration-150 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-1 w-full"
               >
+                {loading && <Spinner />}
                 {loading ? "Changing password…" : "Change Password"}
-              </button>
+              </Button>
             </form>
           )}
         </div>
 
         {/* Back to dashboard link (only shown if NOT a forced first-login) */}
         {!user?.mustChangePassword && !success && (
-          <p className="text-center mt-5 text-[13px] text-[#9C948C]">
-            <button
+          <div className="mt-5 flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => navigate(dashboardPath())}
-              className="text-[#1A1714] font-medium border-b border-[#C5BEB8] bg-transparent border-0 border-b cursor-pointer"
-              style={{ borderTop: "none", borderLeft: "none", borderRight: "none" }}
             >
-              ← Back to dashboard
-            </button>
-          </p>
+              <ArrowLeft size={15} />
+              Back to dashboard
+            </Button>
+          </div>
         )}
       </div>
     </div>

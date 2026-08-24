@@ -73,7 +73,7 @@ export default function LoginPage({ onNavigate, onBack }) {
     setError("Google login is not available. Please use your email and password.");
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] bg-white text-slate-900 overflow-x-hidden">
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
       <LoginRightPanel
         email={email}

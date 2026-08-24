@@ -16,6 +16,8 @@ import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
 import CalendarSection from "../components/calendar/CalendarSection";
 
+import { AlertTriangle } from "../components/ui/Icons";
+
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import { useDashboardStore } from "../store/dashboardStore";
@@ -143,7 +145,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans overflow-x-hidden w-full">
+    <div className="flex min-h-screen bg-canvas font-sans overflow-x-hidden w-full">
       <AdminSidebar
         activeNav={activeNav}
         setActiveNav={handleActiveNavChange}
@@ -153,7 +155,7 @@ export default function AdminDashboard() {
 
       <main
         className="flex-1 min-h-screen min-w-0
-        ml-0 md:ml-55 lg:ml-65
+        ml-0 md:ml-56 lg:ml-64
         p-4 sm:p-6 lg:p-8
         pt-16 md:pt-8"
       >
@@ -162,21 +164,24 @@ export default function AdminDashboard() {
           mobileOpen={mobileOpen}
         />
 
-        <AdminHeader
-          onAddUser={() => setShowCreateUser(true)}
-          userName={user?.name}
-          onLogout={handleLogout}
-        />
+        <div className="mx-auto w-full max-w-[1600px]">
+          <AdminHeader
+            onAddUser={() => setShowCreateUser(true)}
+            userName={user?.name}
+            onLogout={handleLogout}
+          />
 
-        {/* Stats error banner */}
-        {statsError && (
-          <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            ⚠️ {statsError} Showing local data instead.
+          {/* Stats error banner */}
+          {statsError && (
+            <div className="notice notice-warning mb-4">
+              <AlertTriangle size={16} className="mt-px shrink-0" />
+              <span>{statsError} Showing local data instead.</span>
+            </div>
+          )}
+
+          <div className="mt-6 md:mt-4">
+            {renderSection()}
           </div>
-        )}
-
-        <div className="mt-6 md:mt-4">
-          {renderSection()}
         </div>
       </main>
 
