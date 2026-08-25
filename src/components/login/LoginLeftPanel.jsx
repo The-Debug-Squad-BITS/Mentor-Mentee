@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Logo, ArrowLeft, Layers, Target, CheckCircle } from "../ui/Icons";
+import Brand from "../ui/Brand";
+import { ArrowLeft, Layers, Target, CheckCircle } from "../ui/Icons";
 
 /* Presentational: one proof point row on the dark brand panel. */
 function ProofPoint({ icon, title, text }) {
@@ -29,12 +30,7 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
     <div className="surface-ink scrollbar-slim hidden lg:flex lg:h-full lg:flex-col lg:justify-between lg:overflow-y-auto px-10 py-9 xl:px-14 xl:py-12">
       {/* Brand row */}
       <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <Logo size={20} />
-        </span>
-        <span className="font-display text-[16px] font-bold tracking-tight text-white">
-          Mentora
-        </span>
+        <Brand size="lg" tone="dark" />
         <button
           onClick={handleHome}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.06] px-3 py-1.5 text-[13px] font-medium text-slate-300 transition-colors duration-150 hover:bg-white/[0.12] hover:text-white"
@@ -53,8 +49,8 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
           Run every mentor–mentee project in one place.
         </h1>
         <p className="mt-3.5 text-[14px] leading-relaxed text-slate-400 xl:text-[15px]">
-          Mentora gives students, mentors and faculty a shared workspace for
-          academic projects — from kickoff to final review.
+          Trellis gives students, supervisors and coordinators a shared
+          workspace for academic projects — from kickoff to final approval.
         </p>
       </div>
 

@@ -1,7 +1,7 @@
 import Avatar from "../ui/Avatar";
+import Brand from "../ui/Brand";
 import { useAuthStore } from "../../store/authStore";
 import {
-  Logo,
   Close,
   Dashboard,
   Folder,
@@ -107,17 +107,7 @@ export default function AdminSidebar({
       >
         {/* Brand */}
         <div className="flex items-center gap-3 h-16 shrink-0 px-4 lg:px-5 border-b border-white/[0.06]">
-          <div className="w-9 h-9 rounded-lg bg-brand-500/15 text-brand-300 flex items-center justify-center shrink-0">
-            <Logo size={20} />
-          </div>
-          <div className="min-w-0">
-            <div className="font-display text-[15px] font-bold text-white leading-tight truncate">
-              Mentora
-            </div>
-            <div className="text-[11px] text-slate-400 leading-tight truncate">
-              Admin workspace
-            </div>
-          </div>
+          <Brand size="lg" tone="dark" subtitle="Admin workspace" className="min-w-0" />
           {/* Close button — mobile only */}
           <button
             onClick={() => setMobileOpen(false)}

@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- SVG first for crisp scaling; PNG is the fallback for Safari < 16. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="180x180" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="apple-mobile-web-app-title" content="Trellis" />
+    <meta name="application-name" content="Trellis" />
 
     <title>Trellis — Academic Project & Capstone Supervision Platform</title>
     <meta

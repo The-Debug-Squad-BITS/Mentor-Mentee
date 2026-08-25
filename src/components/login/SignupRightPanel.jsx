@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Logo, ArrowLeft } from "../ui/Icons";
+import Brand from "../ui/Brand";
+import { ArrowLeft } from "../ui/Icons";
 import Button from "../ui/Button";
 import SignupForm from "./SignupForm";
 
@@ -37,12 +38,7 @@ export default function SignupRightPanel({
     <div className="flex w-full flex-col bg-white px-5 py-8 sm:px-10 lg:px-14 lg:py-12">
       {/* Compact brand header — replaces the dark panel below lg */}
       <div className="mx-auto flex w-full max-w-sm items-center gap-2.5 lg:hidden">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-          <Logo size={20} />
-        </span>
-        <span className="font-display text-[16px] font-bold tracking-tight text-slate-900">
-          Mentora
-        </span>
+        <Brand size="lg" />
         <button
           onClick={handleHome}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-slate-900"

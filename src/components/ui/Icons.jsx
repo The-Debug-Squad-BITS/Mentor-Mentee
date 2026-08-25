@@ -8,6 +8,8 @@
    Usage:  <Icon.Check size={16} />   or   <ArrowRight />
    ========================================================================== */
 
+import { BrandMark } from "./Brand";
+
 function Svg({ size = 16, children, ...props }) {
   return (
     <svg
@@ -260,24 +262,11 @@ export function Inbox(p) {
 /* ── Brand mark ─────────────────────────────────────────────────────────── */
 
 /**
- * The Mentora mark: two overlapping rounded chevrons reading as a stylised
- * "M" and as two paths converging — mentor and mentee meeting on a project.
- * Uses `currentColor` so it inherits whatever surface it sits on.
+ * The Trellis mark. Defined in `ui/Brand.jsx`, which owns the brand identity;
+ * aliased here as `Logo` so existing icon call sites keep working. Imported
+ * rather than re-exported so the `Icon` namespace below can reference it.
  */
-export function Logo({ size = 20 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
-      <path
-        d="M4 18V9.2a1.6 1.6 0 0 1 2.7-1.15L12 13l5.3-4.95A1.6 1.6 0 0 1 20 9.2V18"
-        stroke="currentColor"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="19.2" r="1.9" fill="currentColor" />
-    </svg>
-  );
-}
+export const Logo = BrandMark;
 
 /**
  * StarIcon — retained for backwards compatibility with existing call sites.

@@ -22,7 +22,7 @@ export default function MentorHeader({ userName, onNewUser, onLogout }) {
 
         {/* Logout button */}
         {onLogout && (
-          <Button variant="ghost" onClick={onLogout} title="Log out of Mentora">
+          <Button variant="ghost" onClick={onLogout} title="Log out of Trellis">
             <LogOut size={16} />
             <span className="hidden sm:inline">Logout</span>
           </Button>

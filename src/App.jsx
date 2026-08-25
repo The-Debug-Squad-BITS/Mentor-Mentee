@@ -5,6 +5,7 @@ import { connectSocket } from "./lib/socket";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Lock, ArrowRight } from "./components/ui/Icons";
+import Brand from "./components/ui/Brand";
 
 // Pages
 import LandingPage        from "./pages/LandingPage";
@@ -70,6 +71,7 @@ function UnauthorizedPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-canvas font-sans p-6">
+      <Brand size="lg" className="mb-6" />
       <div className="card max-w-md w-full p-10 text-center shadow-sm">
         <span className="inline-flex w-12 h-12 mb-5 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500">
           <Lock size={22} />

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
+import Brand from "../components/ui/Brand";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import Button from "../components/ui/Button";
 import {
-  Logo,
   Lock,
   Eye,
   EyeOff,
@@ -142,12 +142,7 @@ export default function ChangePasswordPage() {
 
         {/* Brand */}
         <div className="mb-6 flex items-center justify-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
-            <Logo size={20} />
-          </span>
-          <span className="font-display text-[16px] font-bold tracking-tight text-slate-900">
-            Mentora
-          </span>
+          <Brand size="lg" />
         </div>
 
         {/* Card */}

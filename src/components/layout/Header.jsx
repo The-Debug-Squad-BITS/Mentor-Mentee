@@ -1,7 +1,8 @@
 import { useState } from "react";
+import Brand from "../ui/Brand";
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
-import { Logo, Menu, Close, ArrowRight } from "../ui/Icons";
+import { Menu, Close, ArrowRight } from "../ui/Icons";
 import { navLinks } from "../../data/landingData";
 
 /* ==========================================================================
@@ -21,12 +22,7 @@ export default function Header({ onLogin, onSignup }) {
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Brand */}
           <a href="#top" className="flex shrink-0 items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-              <Logo size={18} />
-            </span>
-            <span className="font-display text-[17px] font-bold tracking-tight text-slate-900">
-              Trellis
-            </span>
+            <Brand size="md" />
           </a>
 
           {/* Section links */}

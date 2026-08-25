@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Logo } from "../ui/Icons";
+import Brand from "../ui/Brand";
 import { footerTagline, footerNav } from "../../data/landingData";
 
 /* ==========================================================================
@@ -21,12 +21,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="max-w-xs">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">
-                <Logo size={18} />
-              </span>
-              <span className="font-display text-[17px] font-bold tracking-tight text-slate-900">
-                Trellis
-              </span>
+              <Brand size="md" />
             </div>
             <p className="mt-4 text-[13.5px] leading-relaxed text-slate-600">{footerTagline}</p>
           </div>

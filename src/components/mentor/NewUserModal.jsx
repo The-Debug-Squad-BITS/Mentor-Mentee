@@ -15,7 +15,7 @@ export default function NewUserModal({ onClose }) {
               Add New User
             </h2>
             <p className="m-0 mt-1 text-[13px] text-slate-500">
-              Invite a new mentee to your Mentora workspace.
+              Invite a new mentee to your Trellis workspace.
             </p>
           </div>
 

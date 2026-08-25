@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { toLocalInput } from "../../lib/datetime";
 
 const COLOR_PRESETS = [
-  { name: "EduFlow Blue", hex: "#4A90D9" },
+  { name: "Blue", hex: "#4A90D9" },
   { name: "Orange", hex: "#E67E22" },
   { name: "Purple", hex: "#8E44AD" },
   { name: "Green", hex: "#27AE60" },

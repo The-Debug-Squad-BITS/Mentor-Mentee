@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
-import { Icon, Logo, ArrowRight } from "../ui/Icons";
+import { Icon, ArrowRight } from "../ui/Icons";
+import { BrandMark } from "../ui/Brand";
 import { productPreview as p } from "../../data/landingData";
 
 /* ==========================================================================
@@ -55,8 +56,8 @@ export default function DashboardPreview() {
           {/* Sidebar */}
           <aside className="hidden w-52 shrink-0 flex-col bg-ink-900 p-3 md:flex">
             <div className="flex items-center gap-2.5 px-2 py-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 text-white">
-                <Logo size={16} />
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-600 text-white">
+                <BrandMark size={15} />
               </span>
               <span className="min-w-0">
                 <span className="block truncate font-display text-[14px] font-bold text-white">
