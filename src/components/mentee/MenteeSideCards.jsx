@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { useDashboardStore } from "../../store/dashboardStore";
 import Button from "../ui/Button";
+import api from "../../lib/api";
 
 export function RecentFeedbackCard() {
   const { menteeStats } = useDashboardStore();
@@ -63,18 +64,26 @@ export function NotificationsCard() {
     role: "MENTEE"
   };
 
-  const refreshNotifs = () => {
-    // Stubbed until integrated with backend API
-    setNotifications([]);
+  const refreshNotifs = async () => {
+    try {
+      const response = await api.get('/notifications');
+      setNotifications(response.data.data.notifications || []);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
   };
 
   useEffect(() => {
     refreshNotifs();
   }, [currentUser.id]);
 
-  const handleMarkAllRead = () => {
-    // Stubbed until integrated with backend API
-    refreshNotifs();
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch('/notifications/mark-read');
+      refreshNotifs();
+    } catch (err) {
+      console.error("Failed to mark notifications read:", err);
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -106,7 +115,7 @@ export function NotificationsCard() {
         ) : (
           notifications.map((n) => (
             <div
-              key={n.id}
+              key={n._id || n.id}
               className="flex gap-3 py-3 border-b border-slate-100 last:border-0"
             >
               <div
@@ -121,10 +130,10 @@ export function NotificationsCard() {
                     fontWeight: !n.isRead ? 600 : 400,
                   }}
                 >
-                  {n.body}
+                  {n.message || n.body}
                 </div>
                 <div className="text-xs text-slate-500 font-medium">
-                  {n.createdAt}
+                  {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
             </div>

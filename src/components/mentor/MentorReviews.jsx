@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 
 export default function MentorReviews() {
@@ -109,7 +110,7 @@ export default function MentorReviews() {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
 
       {/* Header */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
@@ -380,7 +381,7 @@ export default function MentorReviews() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500 font-medium">
                         {sub.submittedAt
-                          ? new Date(sub.submittedAt).toLocaleDateString()
+                          ? formatUIDate(new Date(sub.submittedAt))
                           : "—"}
                       </td>
                     </tr>

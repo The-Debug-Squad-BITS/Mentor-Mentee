@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 
 export default function MentorTasks() {
@@ -197,7 +198,7 @@ export default function MentorTasks() {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in pl-0 md:pl-4 lg:pl-8">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Title & Toolbar */}
       <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div>
@@ -293,7 +294,7 @@ export default function MentorTasks() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                        {t.dueDate ? formatUIDate(new Date(t.dueDate)) : "—"}
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusStyles[t.status] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
@@ -365,7 +366,7 @@ export default function MentorTasks() {
               <div className="flex justify-between items-center text-sm">
                 <span className="font-semibold text-slate-500">Due Date</span>
                 <span className="font-bold text-slate-900">
-                  {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : "Not set"}
+                  {selectedTask.dueDate ? formatUIDate(new Date(selectedTask.dueDate)) : "Not set"}
                 </span>
               </div>
             </div>

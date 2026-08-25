@@ -7,8 +7,53 @@ import api from "../../lib/api";
 import { formatActivityLine } from "./ActivityLogs";
 
 export default function DashboardOverview({ projects, logs, onAddProject, apiStats, onNavigate }) {
-  const [newProjectName, setNewProjectName] = useState("");
-  
+  // Project creation modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newProjectDesc, setNewProjectDesc] = useState("");
+  const [newProjectStartDate, setNewProjectStartDate] = useState("");
+  const [newProjectEndDate, setNewProjectEndDate] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState(null);
+
+  const handleCreateProject = async () => {
+    if (!newProjectTitle.trim()) return;
+    if (newProjectStartDate && newProjectEndDate && new Date(newProjectEndDate) < new Date(newProjectStartDate)) {
+      setCreateError("End date cannot be before start date");
+      return;
+    }
+    setCreateLoading(true);
+    setCreateError(null);
+
+    try {
+      await api.post("/projects", {
+        title: newProjectTitle.trim(),
+        description: newProjectDesc.trim(),
+        startDate: newProjectStartDate,
+        endDate: newProjectEndDate,
+      });
+      // Reset form and close modal
+      setNewProjectTitle("");
+      setNewProjectDesc("");
+      setNewProjectStartDate("");
+      setNewProjectEndDate("");
+      setCreateError(null);
+      setShowCreateModal(false);
+      
+      // Refresh dashboard list
+      if (onAddProject) onAddProject();
+    } catch (err) {
+      if (err.response?.status === 400) {
+        setCreateError(err.response.data.message || "Validation error. Check all fields.");
+      } else {
+        setCreateError("Failed to create project. Please try again.");
+      }
+      console.error("Create project error:", err);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   // Quick invite states
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("MENTEE");
@@ -21,12 +66,6 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   const totalMentees     = apiStats?.totalMentees      ?? 0;
   const totalProjects    = apiStats?.totalProjects     ?? 0;
   const pendingInvites   = apiStats?.pendingInvitations ?? 0;
-
-  const handleAdd = () => {
-    if (!newProjectName.trim()) return;
-    onAddProject(newProjectName.trim());
-    setNewProjectName("");
-  };
 
   const [inviteError, setInviteError] = useState("");
 
@@ -124,19 +163,12 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
             <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-slate-50/50">
               <div>
                 <h2 className="m-0 text-base font-bold text-slate-900">
-                  Active Projects Overview
+                  Projects Overview
                 </h2>
-                <p className="m-0 text-slate-500 text-sm mt-1">Projects currently in development.</p>
+                <p className="m-0 text-slate-500 text-sm mt-1">Overview of organizational project tracks.</p>
               </div>
               <div className="flex gap-2">
-                <input
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                  placeholder="Project name..."
-                  className="px-3 py-2 rounded-lg border border-slate-300 outline-none text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all flex-1 sm:w-48"
-                />
-                <Button onClick={handleAdd}>Create</Button>
+                <Button onClick={() => setShowCreateModal(true)}>+ Create Project</Button>
               </div>
             </div>
 
@@ -156,22 +188,22 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {projects.filter(p => p.status !== "Archived").map((p) => (
+                  {projects.filter(p => p.status?.toUpperCase() !== "ARCHIVED").map((p) => (
                     <tr
-                       key={p.id}
+                       key={p._id}
                        className="hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-6 py-4 font-semibold text-slate-900">
-                        {p.name}
+                        {p.title}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
-                        {p.mentorName || "Unassigned"}
+                        {p.mentorId?.name || "Unassigned"}
                       </td>
                       <td className="px-6 py-4">
                         <StatusBadge status={p.status} />
                       </td>
                       <td className="px-6 py-4 w-48">
-                        <ProgressBar value={p.progress} />
+                        <ProgressBar value={p.progress || 0} />
                       </td>
                     </tr>
                   ))}
@@ -295,6 +327,94 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           </div>
         </div>
       </div>
+
+      {/* Creation Modal Overlay */}
+      {showCreateModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="bg-white rounded-xl p-8 w-full max-w-md flex flex-col gap-6 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div>
+              <h3 className="m-0 text-xl font-bold text-slate-900">Create New Project</h3>
+              <p className="m-0 mt-1 text-slate-500 text-sm">Launch a new organizational tracking workspace.</p>
+            </div>
+
+            {createError && (
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                ⚠️ {createError}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Project Title</label>
+                <input
+                  value={newProjectTitle}
+                  onChange={(e) => setNewProjectTitle(e.target.value)}
+                  placeholder="e.g. AI Chatbot Project"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  disabled={createLoading}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+                <textarea
+                  value={newProjectDesc}
+                  onChange={(e) => setNewProjectDesc(e.target.value)}
+                  placeholder="Describe project details..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                  style={{ minHeight: 80 }}
+                  disabled={createLoading}
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">Start Date</label>
+                  <input
+                    type="date"
+                    value={newProjectStartDate}
+                    onChange={(e) => setNewProjectStartDate(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    disabled={createLoading}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={newProjectEndDate}
+                    onChange={(e) => setNewProjectEndDate(e.target.value)}
+                    min={newProjectStartDate}
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    disabled={createLoading}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-2 justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewProjectTitle("");
+                  setNewProjectDesc("");
+                  setNewProjectStartDate("");
+                  setNewProjectEndDate("");
+                  setCreateError(null);
+                }}
+                disabled={createLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateProject}
+                disabled={createLoading}
+              >
+                {createLoading ? "Creating..." : "Launch Project"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

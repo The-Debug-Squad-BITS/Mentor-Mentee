@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
+import { useAuthStore } from "../../store/authStore";
 import { toast } from "react-toastify";
 import { toLocalInput } from "../../lib/datetime";
 
@@ -13,8 +14,13 @@ const EVENT_TYPE_BADGES = {
 
 export default function EventDetailModal({ event, onClose }) {
   const { updateEventInStore, removeEventFromStore } = useCalendarStore();
+  const { user: currentUser } = useAuthStore();
+  const currentUserId = currentUser?._id || currentUser?.id;
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState(event?.sharedWith || []);
 
   // Edit form state. Optional-chained so every hook stays unconditional even
   // before the null-event bail-out below (fixes the rules-of-hooks crash).
@@ -27,9 +33,22 @@ export default function EventDetailModal({ event, onClose }) {
     color: event?.color || "#4A90D9",
   });
 
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const res = await api.get("/users/workspace-members");
+        setMembers(res.data.data.users || []);
+      } catch (err) {
+        console.error("Failed to fetch workspace members:", err);
+      }
+    };
+    fetchMembers();
+  }, []);
+
   if (!event) return null;
 
   const isCustom = event.eventType === "CUSTOM";
+  const isOwner = event.userId === currentUserId;
   const badgeInfo = EVENT_TYPE_BADGES[event.eventType] || EVENT_TYPE_BADGES.CUSTOM;
 
   const formatDate = (isoString, isAllDay) => {
@@ -73,6 +92,10 @@ export default function EventDetailModal({ event, onClose }) {
       toast.error("Title is required");
       return;
     }
+    if (editForm.endDate && new Date(editForm.endDate) < new Date(editForm.startDate)) {
+      toast.error("End date cannot be before start date");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -83,6 +106,7 @@ export default function EventDetailModal({ event, onClose }) {
         endDate: editForm.endDate ? new Date(editForm.endDate).toISOString() : undefined,
         isAllDay: editForm.isAllDay,
         color: editForm.color,
+        sharedWith: selectedMembers,
       };
 
       const res = await api.patch(`/calendar/${event._id}`, patch);
@@ -152,6 +176,27 @@ export default function EventDetailModal({ event, onClose }) {
               </div>
             )}
 
+            {isCustom && !isOwner && (
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Created By</div>
+                <p className="text-sm text-slate-700 font-medium m-0">
+                  {members.find((m) => m._id === event.userId)?.name || "Another Member"}
+                </p>
+              </div>
+            )}
+
+            {isCustom && event.sharedWith && event.sharedWith.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-semibold text-slate-400 mb-1">Shared With</div>
+                <p className="text-sm text-slate-700 font-medium m-0">
+                  {event.sharedWith
+                    .map((id) => members.find((m) => m._id === id)?.name)
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              </div>
+            )}
+
             {!isCustom && (
               <div className="bg-amber-50 text-amber-800 p-3 rounded-xl text-xs mb-4 border border-amber-200">
                 ℹ️ Auto-generated deadline/meeting event. Created from system entities.
@@ -159,7 +204,7 @@ export default function EventDetailModal({ event, onClose }) {
             )}
 
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-              {isCustom && (
+              {isCustom && isOwner && (
                 <>
                   <button
                     type="button"
@@ -177,6 +222,15 @@ export default function EventDetailModal({ event, onClose }) {
                     Edit Event
                   </button>
                 </>
+              )}
+              {isCustom && !isOwner && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors border-0 cursor-pointer"
+                >
+                  Close
+                </button>
               )}
               {!isCustom && (
                 <button
@@ -241,6 +295,7 @@ export default function EventDetailModal({ event, onClose }) {
                   type={editForm.isAllDay ? "date" : "datetime-local"}
                   value={editForm.isAllDay && editForm.endDate ? editForm.endDate.slice(0, 10) : editForm.endDate}
                   onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+                  min={editForm.isAllDay ? editForm.startDate.slice(0, 10) : editForm.startDate}
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"
                 />
               </div>
@@ -254,6 +309,33 @@ export default function EventDetailModal({ event, onClose }) {
                 onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
                 className="w-8 h-8 rounded border-0 cursor-pointer p-0 bg-transparent"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Share with Members</label>
+              {members.length === 0 ? (
+                <div className="text-xs text-slate-400 italic">No other members in your organization.</div>
+              ) : (
+                <div className="max-h-24 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-1.5">
+                  {members.map((member) => (
+                    <label key={member._id} className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={selectedMembers.includes(member._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedMembers((prev) => [...prev, member._id]);
+                          } else {
+                            setSelectedMembers((prev) => prev.filter((id) => id !== member._id));
+                          }
+                        }}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span>{member.name} <span className="text-slate-400 font-normal">({member.role.toLowerCase()})</span></span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

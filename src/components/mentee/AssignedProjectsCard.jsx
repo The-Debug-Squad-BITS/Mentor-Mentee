@@ -2,8 +2,12 @@ import Avatar from "../ui/Avatar";
 import ProgressBar from "../ui/ProgressBar";
 import Button from "../ui/Button";
 import { useAuthStore } from "../../store/authStore";
+import { useState, useEffect } from "react";
+import api from "../../lib/api";
 
 export default function AssignedProjectsCard({ onViewAll }) {
+  const [myProjects, setMyProjects] = useState([]);
+  
   const { user } = useAuthStore();
   const currentUser = user || {
     id: "1",
@@ -11,8 +15,43 @@ export default function AssignedProjectsCard({ onViewAll }) {
     role: "MENTEE"
   };
 
-  // Fetch real assigned projects for this Mentee
-  const myProjects = [];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const [projRes, tasksRes] = await Promise.all([
+          api.get("/projects"),
+          api.get("/tasks")
+        ]);
+        
+        const allProjects = projRes.data.data.projects || [];
+        const allTasks = tasksRes.data.data.tasks || [];
+        
+        const mappedProjects = allProjects.map(p => {
+          const pTasks = allTasks.filter(t => (t.projectId._id || t.projectId) === p._id);
+          const totalTasks = pTasks.length;
+          const completedTasks = pTasks.filter(t => t.status === 'APPROVED').length;
+          const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+          
+          return {
+            id: p._id,
+            name: p.title,
+            progress: progress,
+            mentor: p.mentorId ? {
+              name: p.mentorId.name || "Mentor",
+              avatar: p.mentorId.name ? p.mentorId.name.substring(0, 2).toUpperCase() : "M",
+              color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+            } : null
+          };
+        });
+        
+        setMyProjects(mappedProjects);
+      } catch (error) {
+        console.error("Error fetching mentee projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
