@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../lib/api";
 import MenteeSidebar, {
   MenteeSidebarToggle,
 } from "../components/mentee/MenteeSidebar";
@@ -37,8 +38,13 @@ export default function MenteeDashboard() {
     navigate("/login");
   };
 
-  const refreshMenteeData = () => {
-    setMenteeTasks([]);
+  const refreshMenteeData = async () => {
+    try {
+      const response = await api.get('/tasks', { params: { limit: 5 } });
+      setMenteeTasks(response.data.data.tasks || []);
+    } catch (err) {
+      console.error("Failed to fetch mentee tasks:", err);
+    }
   };
 
   useEffect(() => {

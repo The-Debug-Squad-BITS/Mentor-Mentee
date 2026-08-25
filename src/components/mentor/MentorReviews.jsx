@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 import {
   AlertTriangle,
@@ -388,7 +389,7 @@ export default function MentorReviews() {
                       </td>
                       <td className="whitespace-nowrap text-slate-500">
                         {sub.submittedAt
-                          ? new Date(sub.submittedAt).toLocaleDateString()
+                          ? formatUIDate(new Date(sub.submittedAt))
                           : "—"}
                       </td>
                     </tr>

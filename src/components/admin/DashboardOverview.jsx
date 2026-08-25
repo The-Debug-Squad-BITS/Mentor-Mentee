@@ -8,7 +8,52 @@ import api from "../../lib/api";
 import { formatActivityLine } from "./ActivityLogs";
 
 export default function DashboardOverview({ projects, logs, onAddProject, apiStats, onNavigate }) {
-  const [newProjectName, setNewProjectName] = useState("");
+  // Project creation modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newProjectTitle, setNewProjectTitle] = useState("");
+  const [newProjectDesc, setNewProjectDesc] = useState("");
+  const [newProjectStartDate, setNewProjectStartDate] = useState("");
+  const [newProjectEndDate, setNewProjectEndDate] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState(null);
+
+  const handleCreateProject = async () => {
+    if (!newProjectTitle.trim()) return;
+    if (newProjectStartDate && newProjectEndDate && new Date(newProjectEndDate) < new Date(newProjectStartDate)) {
+      setCreateError("End date cannot be before start date");
+      return;
+    }
+    setCreateLoading(true);
+    setCreateError(null);
+
+    try {
+      await api.post("/projects", {
+        title: newProjectTitle.trim(),
+        description: newProjectDesc.trim(),
+        startDate: newProjectStartDate,
+        endDate: newProjectEndDate,
+      });
+      // Reset form and close modal
+      setNewProjectTitle("");
+      setNewProjectDesc("");
+      setNewProjectStartDate("");
+      setNewProjectEndDate("");
+      setCreateError(null);
+      setShowCreateModal(false);
+      
+      // Refresh dashboard list
+      if (onAddProject) onAddProject();
+    } catch (err) {
+      if (err.response?.status === 400) {
+        setCreateError(err.response.data.message || "Validation error. Check all fields.");
+      } else {
+        setCreateError("Failed to create project. Please try again.");
+      }
+      console.error("Create project error:", err);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   // Quick invite states
   const [inviteEmail, setInviteEmail] = useState("");
@@ -22,12 +67,6 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   const totalMentees     = apiStats?.totalMentees      ?? 0;
   const totalProjects    = apiStats?.totalProjects     ?? 0;
   const pendingInvites   = apiStats?.pendingInvitations ?? 0;
-
-  const handleAdd = () => {
-    if (!newProjectName.trim()) return;
-    onAddProject(newProjectName.trim());
-    setNewProjectName("");
-  };
 
   const [inviteError, setInviteError] = useState("");
 
@@ -62,7 +101,8 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
   };
 
   // Presentational slices of exactly the data the table / list already rendered.
-  const activeProjects = projects.filter(p => p.status !== "Archived");
+  // Case-insensitive so an "ARCHIVED" status from the API is filtered too.
+  const visibleProjects = projects.filter(p => p.status?.toUpperCase() !== "ARCHIVED");
   const pendingInvitations = invitationsList.filter(i => i.status === "PENDING");
 
   return (
@@ -128,37 +168,25 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           <section className="card overflow-hidden">
             <div className="card-header">
               <div>
-                <h2 className="section-title m-0">Active projects</h2>
+                <h2 className="section-title m-0">Projects overview</h2>
                 <p className="m-0 mt-0.5 text-[13px] text-slate-500">
-                  Everything currently in development across the institution.
+                  Every project track across the organisation.
                 </p>
               </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <input
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                  placeholder="New project name"
-                  aria-label="New project name"
-                  className="input-field py-2 flex-1 sm:w-52"
-                />
-                <Button onClick={handleAdd} className="shrink-0">
-                  <Icon.Plus size={16} />
-                  Create
-                </Button>
-              </div>
+              <Button onClick={() => setShowCreateModal(true)} className="shrink-0">
+                <Icon.Plus size={16} />
+                Create project
+              </Button>
             </div>
 
-            {/* Scrollable table */}
-            {activeProjects.length === 0 ? (
+            {visibleProjects.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
                   <Icon.Folder size={22} />
                 </div>
-                <p className="empty-state-title">No active projects</p>
+                <p className="empty-state-title">No projects yet</p>
                 <p className="empty-state-text">
-                  Projects show up here as soon as they are created. Name one in the field
-                  above to get started.
+                  Create the first project to start tracking milestones, tasks and reviews.
                 </p>
               </div>
             ) : (
@@ -172,19 +200,15 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
                     </tr>
                   </thead>
                   <tbody>
-                    {activeProjects.map((p) => (
-                      <tr key={p.id}>
-                        <td className="font-semibold text-slate-900">
-                          {p.name}
-                        </td>
-                        <td className="text-slate-600">
-                          {p.mentorName || "Unassigned"}
-                        </td>
+                    {visibleProjects.map((p) => (
+                      <tr key={p._id}>
+                        <td className="font-semibold text-slate-900">{p.title}</td>
+                        <td className="text-slate-600">{p.mentorId?.name || "Unassigned"}</td>
                         <td>
                           <StatusBadge status={p.status} />
                         </td>
                         <td className="w-48">
-                          <ProgressBar value={p.progress} />
+                          <ProgressBar value={p.progress || 0} />
                         </td>
                       </tr>
                     ))}
@@ -348,6 +372,94 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
           </section>
         </div>
       </div>
+
+      {/* Creation Modal Overlay */}
+      {showCreateModal && (
+        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="modal-panel max-w-md flex flex-col gap-6 p-6 sm:p-7" onClick={e => e.stopPropagation()}>
+            <div>
+              <h3 className="m-0 font-display text-[17px] font-bold tracking-tight text-slate-900">Create project</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">Set up a new project workspace for a supervisor and team.</p>
+            </div>
+
+            {createError && (
+              <div className="notice notice-danger" role="alert">
+                <Icon.AlertTriangle size={16} className="mt-px shrink-0" />
+                <span>{createError}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-5">
+              <div>
+                <label className="field-label">Project Title</label>
+                <input
+                  value={newProjectTitle}
+                  onChange={(e) => setNewProjectTitle(e.target.value)}
+                  placeholder="e.g. AI Chatbot Project"
+                  className="input-field"
+                  disabled={createLoading}
+                />
+              </div>
+              <div>
+                <label className="field-label">Description</label>
+                <textarea
+                  value={newProjectDesc}
+                  onChange={(e) => setNewProjectDesc(e.target.value)}
+                  placeholder="Describe project details..."
+                  className="textarea-field min-h-20 resize-none"
+                  disabled={createLoading}
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="field-label">Start Date</label>
+                  <input
+                    type="date"
+                    value={newProjectStartDate}
+                    onChange={(e) => setNewProjectStartDate(e.target.value)}
+                    className="input-field"
+                    disabled={createLoading}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="field-label">End Date</label>
+                  <input
+                    type="date"
+                    value={newProjectEndDate}
+                    onChange={(e) => setNewProjectEndDate(e.target.value)}
+                    min={newProjectStartDate}
+                    className="input-field"
+                    disabled={createLoading}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewProjectTitle("");
+                  setNewProjectDesc("");
+                  setNewProjectStartDate("");
+                  setNewProjectEndDate("");
+                  setCreateError(null);
+                }}
+                disabled={createLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateProject}
+                disabled={createLoading}
+              >
+                {createLoading ? "Creating..." : "Launch Project"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

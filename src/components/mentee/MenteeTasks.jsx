@@ -3,6 +3,7 @@ import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
 import TaskSubmitModal from "./TaskSubmitModal";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 import Button from "../ui/Button";
 import CommentSection from "../ui/CommentSection";
 import {
@@ -256,7 +257,7 @@ export default function MenteeTasks() {
                       Deadline:{" "}
                       <span className="font-semibold text-slate-900">
                         {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString()
+                          ? formatUIDate(new Date(task.dueDate))
                           : "None"}
                       </span>
                     </span>

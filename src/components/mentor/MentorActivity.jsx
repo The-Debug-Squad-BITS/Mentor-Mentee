@@ -15,6 +15,7 @@ import {
   Inbox,
   Info,
 } from "../ui/Icons";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Entity-type → icon / color chip (reuses same logic) ──────────────────────
 function getEntityMeta(entityType, action) {
@@ -41,7 +42,7 @@ function formatDate(dateStr) {
   if (diffMins < 60)  return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7)   return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return formatUIDate(date);
 }
 
 export default function MentorActivity() {

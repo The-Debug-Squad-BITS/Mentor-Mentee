@@ -14,6 +14,7 @@ import {
   Clock,
   Refresh,
 } from "../ui/Icons";
+import { formatUIDate } from "../../lib/datetime";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -211,7 +212,7 @@ export default function TaskSubmitModal({ task, onClose, onSubmitSuccess }) {
                 {task.dueDate && (
                   <span className="inline-flex items-center gap-1 text-danger-600">
                     <Clock size={13} />
-                    Due {new Date(task.dueDate).toLocaleDateString()}
+                    Due {formatUIDate(new Date(task.dueDate))}
                   </span>
                 )}
               </p>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useDashboardStore } from "../../store/dashboardStore";
 import Button from "../ui/Button";
@@ -106,18 +107,26 @@ export function NotificationsCard() {
     role: "MENTEE"
   };
 
-  const refreshNotifs = () => {
-    // Stubbed until integrated with backend API
-    setNotifications([]);
+  const refreshNotifs = async () => {
+    try {
+      const response = await api.get('/notifications');
+      setNotifications(response.data.data.notifications || []);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
   };
 
   useEffect(() => {
     refreshNotifs();
   }, [currentUser.id]);
 
-  const handleMarkAllRead = () => {
-    // Stubbed until integrated with backend API
-    refreshNotifs();
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch('/notifications/mark-read');
+      refreshNotifs();
+    } catch (err) {
+      console.error("Failed to mark notifications read:", err);
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -141,7 +150,7 @@ export function NotificationsCard() {
           <EmptyRow>You&apos;re all caught up.</EmptyRow>
         ) : (
           notifications.map((n) => (
-            <div key={n.id} className="flex gap-3 border-b border-slate-100 py-3 last:border-0">
+            <div key={n._id || n.id} className="flex gap-3 border-b border-slate-100 py-3 last:border-0">
               <span
                 className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
                   !n.isRead ? "bg-brand-500" : "bg-slate-300"
@@ -153,9 +162,16 @@ export function NotificationsCard() {
                     !n.isRead ? "font-semibold text-slate-900" : "text-slate-600"
                   }`}
                 >
-                  {n.body}
+                  {n.message || n.body}
                 </div>
-                <div className="text-[11.5px] font-medium text-slate-500">{n.createdAt}</div>
+                <div className="text-[11.5px] font-medium text-slate-500">
+                  {new Date(n.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
           ))

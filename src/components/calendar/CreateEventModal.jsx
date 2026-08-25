@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Close, AlertTriangle, AlertCircle, Inbox, Calendar } from "../ui/Icons";
 import api from "../../lib/api";
 import { useCalendarStore } from "../../store/calendarStore";
@@ -17,6 +17,8 @@ const COLOR_PRESETS = [
 export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
   const { addEvent } = useCalendarStore();
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState([]);
 
   // Default to the clicked day at local midnight, or "now" in local time — both
   // formatted for a datetime-local input so the value shown is the value saved.
@@ -32,6 +34,20 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
     isAllDay: false,
     color: "#4A90D9",
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const fetchMembers = async () => {
+      try {
+        const res = await api.get("/users/workspace-members");
+        setMembers(res.data.data.users || []);
+        setSelectedMembers([]); // Reset selected members
+      } catch (err) {
+        console.error("Failed to fetch workspace members:", err);
+      }
+    };
+    fetchMembers();
+  }, [isOpen]);
 
   // All hooks are declared above, so bailing out here keeps hook order stable.
   if (!isOpen) return null;
@@ -54,6 +70,10 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
       toast.error("Please select a start date");
       return;
     }
+    if (formData.endDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+      toast.error("End date cannot be before start date");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -64,6 +84,7 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
         isAllDay: formData.isAllDay,
         color: formData.color,
+        sharedWith: selectedMembers,
       };
 
       const res = await api.post("/calendar", payload);
@@ -167,6 +188,7 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
                 name="endDate"
                 value={formData.isAllDay && formData.endDate ? formData.endDate.slice(0, 10) : formData.endDate}
                 onChange={handleChange}
+                min={formData.isAllDay ? formData.startDate.slice(0, 10) : formData.startDate}
                 className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -200,6 +222,35 @@ export default function CreateEventModal({ isOpen, onClose, defaultDate }) {
                 title="Custom color picker"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Share with Members
+            </label>
+            {members.length === 0 ? (
+              <div className="text-xs text-slate-400 italic">No other members in your organization.</div>
+            ) : (
+              <div className="max-h-28 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-1.5">
+                {members.map((member) => (
+                  <label key={member._id} className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={selectedMembers.includes(member._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedMembers((prev) => [...prev, member._id]);
+                        } else {
+                          setSelectedMembers((prev) => prev.filter((id) => id !== member._id));
+                        }
+                      }}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>{member.name} <span className="text-slate-400 font-normal">({member.role.toLowerCase()})</span></span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">

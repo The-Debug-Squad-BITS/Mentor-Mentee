@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useTaskStore } from "../../store/taskStore";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
+import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
 import { Plus, Search, Trash, Close, Inbox, AlertTriangle, AlertCircle } from "../ui/Icons";
 
@@ -312,7 +313,7 @@ export default function MentorTasks() {
                         </span>
                       </td>
                       <td className="whitespace-nowrap text-slate-500">
-                        {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "—"}
+                        {t.dueDate ? formatUIDate(new Date(t.dueDate)) : "—"}
                       </td>
                       <td>
                         <span className={`badge ${statusStyles[t.status] || "badge-neutral"}`}>
@@ -398,7 +399,7 @@ export default function MentorTasks() {
               <div className="flex items-center justify-between gap-3 text-[13px]">
                 <dt className="font-medium text-slate-500">Due Date</dt>
                 <dd className="m-0 font-semibold text-slate-900">
-                  {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : "Not set"}
+                  {selectedTask.dueDate ? formatUIDate(new Date(selectedTask.dueDate)) : "Not set"}
                 </dd>
               </div>
             </dl>

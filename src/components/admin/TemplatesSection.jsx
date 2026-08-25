@@ -465,6 +465,7 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
   const [endDate, setEndDate] = useState("");
   const [mentorId, setMentorId] = useState("");
   const [selectedMentees, setSelectedMentees] = useState([]);
+  const [bulkCount, setBulkCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -483,10 +484,15 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
         endDate,
         mentorId: mentorId || undefined,
         mentees: selectedMentees.length > 0 ? selectedMentees : undefined,
+        bulkCount,
       });
       const { project, milestonesCreated, tasksCreated } = response.data.data;
       setResult({ project, milestonesCreated, tasksCreated });
-      toast.success(`Project "${project.title}" created from template!`);
+      if (bulkCount > 1) {
+        toast.success(`${bulkCount} projects created from template!`);
+      } else {
+        toast.success(`Project "${project.title}" created from template!`);
+      }
       if (onSuccess) onSuccess(project);
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to create project from template.";
@@ -534,9 +540,20 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                 <CheckCircle size={24} />
               </span>
               <div>
-                <h3 className="m-0 font-display text-base font-bold text-slate-900">Project created</h3>
+                <h3 className="m-0 font-display text-base font-bold text-slate-900">
+                  {bulkCount > 1 ? `${bulkCount} projects created` : "Project created"}
+                </h3>
                 <p className="m-0 mt-1.5 text-[13px] text-slate-600 leading-relaxed">
-                  <strong className="font-semibold text-slate-900">"{result.project.title}"</strong> has been set up with:
+                  {bulkCount > 1 ? (
+                    <>
+                      Projects starting with{" "}
+                      <strong className="font-semibold text-slate-900">"{result.project.title}"</strong> have been set up with:
+                    </>
+                  ) : (
+                    <>
+                      <strong className="font-semibold text-slate-900">"{result.project.title}"</strong> has been set up with:
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -652,6 +669,24 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                     ))
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="template-bulk-count" className="field-label">
+                  Number of projects to create
+                </label>
+                <input
+                  id="template-bulk-count"
+                  type="number"
+                  min="1"
+                  max="50"
+                  required
+                  value={bulkCount}
+                  onChange={e => setBulkCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                  className="input-field"
+                  disabled={loading}
+                />
+                <p className="field-hint">Create up to 50 projects from this template at once.</p>
               </div>
             </div>
 
