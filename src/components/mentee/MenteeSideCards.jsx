@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../lib/api";
+import { getSocket } from "../../lib/socket";
 import { useAuthStore } from "../../store/authStore";
 import { useDashboardStore } from "../../store/dashboardStore";
 import Button from "../ui/Button";
@@ -120,12 +121,14 @@ export function NotificationsCard() {
     refreshNotifs();
   }, [currentUser.id]);
 
-  const handleMarkAllRead = async () => {
-    try {
-      await api.patch('/notifications/mark-read');
-      refreshNotifs();
-    } catch (err) {
-      console.error("Failed to mark notifications read:", err);
+  // Same path NotificationBell uses: the backend handles this over the socket
+  // (`mark_all_read`), so there is no REST equivalent to call here.
+  const handleMarkAllRead = () => {
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('mark_all_read');
+      // Optimistic update
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
     }
   };
 
