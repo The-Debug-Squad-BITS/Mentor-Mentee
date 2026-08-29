@@ -6,9 +6,35 @@ import Button from "../ui/Button";
 import { ArrowLeft, Folder, Mail, CheckCircle, Inbox } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import { avatarColor } from "../../lib/avatarColor";
+
+/* Mirrors the project card's layout so the swap to real content doesn't jump. */
+function ProjectCardSkeleton() {
+  return (
+    <div className="card flex flex-col justify-between gap-5 p-5">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <span className="skeleton h-4 w-1/2" />
+          <span className="skeleton h-5 w-16 rounded-full" />
+        </div>
+        <span className="skeleton h-3 w-full" />
+        <span className="skeleton h-3 w-4/5" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="skeleton h-1.5 w-full rounded-full" />
+        <div className="flex items-center gap-2">
+          <span className="skeleton h-7 w-7 rounded-full" />
+          <span className="skeleton h-7 w-7 rounded-full" />
+          <span className="skeleton h-3 w-20 ml-auto" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MentorProjects() {
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [allTasks, setAllTasks] = useState([]);
   const [allSubmissions, setAllSubmissions] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -68,7 +94,7 @@ export default function MentorProjects() {
             ...m,
             id: m._id,
             avatar: m.name ? m.name.substring(0, 2).toUpperCase() : "U",
-            color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+            color: avatarColor(m._id || m.name)
           }))
         };
       });
@@ -76,6 +102,8 @@ export default function MentorProjects() {
     } catch (error) {
       console.error("Error fetching projects:", error);
       setProjects([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -352,7 +380,11 @@ export default function MentorProjects() {
       </div>
 
       {/* Projects Grid */}
-      {projects.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => <ProjectCardSkeleton key={i} />)}
+        </div>
+      ) : projects.length === 0 ? (
         <div className="card">
           <div className="empty-state">
             <span className="empty-state-icon">

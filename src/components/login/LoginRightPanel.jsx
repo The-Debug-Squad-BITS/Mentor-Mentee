@@ -27,7 +27,7 @@ export default function LoginRightPanel({
     <div className="scrollbar-slim flex w-full flex-col bg-white px-5 py-8 sm:px-10 lg:h-full lg:overflow-y-auto lg:px-14 lg:py-10">
       {/* Compact brand header — replaces the dark panel below lg */}
       <div className="mx-auto flex w-full max-w-sm items-center gap-2.5 lg:hidden">
-        <Brand size="lg" />
+        <Brand size="lg" to="/" />
         <button
           onClick={handleHome}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-slate-900"

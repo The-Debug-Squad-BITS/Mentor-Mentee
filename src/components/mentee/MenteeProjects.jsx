@@ -5,9 +5,34 @@ import StatusBadge from "../ui/StatusBadge";
 import { Folder } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import { avatarColor } from "../../lib/avatarColor";
+
+/* Mirrors the project card's layout so the swap to real content doesn't jump. */
+function ProjectCardSkeleton() {
+  return (
+    <div className="card flex flex-col justify-between gap-5 p-5">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <span className="skeleton h-4 w-1/2" />
+          <span className="skeleton h-5 w-16 rounded-full" />
+        </div>
+        <span className="skeleton h-3 w-full" />
+        <span className="skeleton h-3 w-4/5" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="skeleton h-1.5 w-full rounded-full" />
+        <div className="flex items-center gap-2">
+          <span className="skeleton h-7 w-7 rounded-full" />
+          <span className="skeleton h-3 w-24" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MenteeProjects() {
   const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
 
   const { user } = useAuthStore();
@@ -45,7 +70,7 @@ export default function MenteeProjects() {
             mentor: p.mentorId ? {
               name: p.mentorId.name || "Mentor",
               avatar: p.mentorId.name ? p.mentorId.name.substring(0, 2).toUpperCase() : "M",
-              color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+              color: avatarColor(p.mentorId._id || p.mentorId.name)
             } : null
           };
         });
@@ -53,6 +78,8 @@ export default function MenteeProjects() {
         setProjects(mappedProjects);
       } catch (error) {
         console.error("Error fetching mentee projects:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -74,7 +101,11 @@ export default function MenteeProjects() {
       </div>
 
       {/* Grid listing */}
-      {projects.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => <ProjectCardSkeleton key={i} />)}
+        </div>
+      ) : projects.length === 0 ? (
         <div className="card">
           <div className="empty-state">
             <span className="empty-state-icon">

@@ -1,18 +1,17 @@
 import NotificationBell from "../ui/NotificationBell";
 import Button from "../ui/Button";
 import { LogOut, Users } from "../ui/Icons";
+import { pageMeta } from "../../lib/pageMeta";
 
-export default function AdminHeader({ onAddUser, userName, onLogout }) {
+export default function AdminHeader({ activeNav, onAddUser, userName, onLogout }) {
+  const { title, subtitle } = pageMeta("ADMIN", activeNav, userName);
+
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 lg:mb-8">
       {/* Title + greeting */}
       <div className="min-w-0">
-        <h1 className="page-title">System Overview</h1>
-        <p className="page-subtitle mt-1">
-          {userName
-            ? `Welcome, ${userName} — manage platform operations, users, and analytics.`
-            : "Manage platform operations, users, and analytics."}
-        </p>
+        <h1 className="page-title">{title}</h1>
+        <p className="page-subtitle mt-1">{subtitle}</p>
       </div>
 
       {/* Action buttons */}

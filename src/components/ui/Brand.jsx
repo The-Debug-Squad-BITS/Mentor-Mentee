@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 /* ==========================================================================
    Trellis — brand identity
    --------------------------------------------------------------------------
@@ -81,19 +83,33 @@ const TONES = {
  * @param {"light"|"dark"} tone      light chrome vs the ink sidebars
  * @param {string} [subtitle]        e.g. "Mentor workspace"
  * @param {boolean} [wordmark=true]  false renders the tile alone
+ * @param {string} [to]              route to link to; omit for a static lockup
  */
 export default function Brand({
   size = "md",
   tone = "light",
   subtitle,
   wordmark = true,
+  to,
   className = "",
 }) {
   const s = SIZES[size] || SIZES.md;
   const t = TONES[tone] || TONES.light;
 
+  // A logo that goes home is an expectation, not a nicety — but only where a
+  // destination is given, so error and loading screens stay inert.
+  const Wrapper = to ? Link : "span";
+  const wrapperProps = to
+    ? { to, "aria-label": "Trellis — go to the home page" }
+    : {};
+
   return (
-    <span className={`flex items-center gap-2.5 ${className}`}>
+    <Wrapper
+      {...wrapperProps}
+      className={`flex items-center gap-2.5 ${
+        to ? "rounded-lg no-underline transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500" : ""
+      } ${className}`}
+    >
       <span
         className={`flex shrink-0 items-center justify-center ${s.tile} ${t.tile}`}
       >
@@ -114,6 +130,6 @@ export default function Brand({
           )}
         </span>
       )}
-    </span>
+    </Wrapper>
   );
 }

@@ -16,9 +16,18 @@ import MeetingsSection from "../components/meetings/MeetingsSection";
 import CalendarSection from "../components/calendar/CalendarSection";
 import { Layers } from "../components/ui/Icons";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
+import { pageMeta } from "../lib/pageMeta";
 
 export default function MenteeDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
+
+  // Behind a login, so never indexed; the title tracks the open section.
+  useSeo({
+    title: `${pageMeta("MENTEE", activeNav).title} — Trellis`,
+    path: "/mentee/dashboard",
+    noindex: true,
+  });
   const [menteeTasks, setMenteeTasks] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -123,7 +132,8 @@ export default function MenteeDashboard() {
         <div className="mx-auto w-full max-w-[1600px]">
           <MenteeHeader
             activeNav={activeNav}
-            onMessageMentor={() => handleActiveNavChange("Feedback")}
+            onMessageMentor={() => handleActiveNavChange("Messages")}
+            onRequestMeeting={() => handleActiveNavChange("Meetings")}
             userName={user?.name}
             onLogout={handleLogout}
           />

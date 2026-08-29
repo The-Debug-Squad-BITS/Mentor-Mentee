@@ -6,8 +6,15 @@ import ResetPasswordModal from "../components/login/ResetPasswordModal";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
 
 export default function LoginPage({ onNavigate, onBack }) {
+  useSeo({
+    title: "Sign in — Trellis",
+    description: "Sign in to your Trellis workspace to manage supervised academic projects, submissions and reviews.",
+    path: "/login",
+  });
+
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [error, setError]         = useState("");

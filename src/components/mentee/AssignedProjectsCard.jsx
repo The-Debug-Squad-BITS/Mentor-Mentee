@@ -5,9 +5,11 @@ import { Folder, ArrowRight } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 import { useState, useEffect } from "react";
 import api from "../../lib/api";
+import { avatarColor } from "../../lib/avatarColor";
 
 export default function AssignedProjectsCard({ onViewAll }) {
   const [myProjects, setMyProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const { user } = useAuthStore();
   const currentUser = user || {
@@ -40,7 +42,7 @@ export default function AssignedProjectsCard({ onViewAll }) {
             mentor: p.mentorId ? {
               name: p.mentorId.name || "Mentor",
               avatar: p.mentorId.name ? p.mentorId.name.substring(0, 2).toUpperCase() : "M",
-              color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0')
+              color: avatarColor(p.mentorId._id || p.mentorId.name)
             } : null
           };
         });
@@ -48,6 +50,8 @@ export default function AssignedProjectsCard({ onViewAll }) {
         setMyProjects(mappedProjects);
       } catch (error) {
         console.error("Error fetching mentee projects:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -63,7 +67,19 @@ export default function AssignedProjectsCard({ onViewAll }) {
         </Button>
       </div>
 
-      {myProjects.length === 0 ? (
+      {loading ? (
+        <div className="flex flex-col gap-3 p-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className="skeleton h-9 w-9 shrink-0 rounded-lg" />
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <span className="skeleton h-3 w-1/2" />
+                <span className="skeleton h-2.5 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : myProjects.length === 0 ? (
         <div className="empty-state">
           <span className="empty-state-icon">
             <Folder size={22} />

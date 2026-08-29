@@ -5,8 +5,15 @@ import SignupRightPanel from "../components/login/SignupRightPanel";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
 
 export default function SignupPage({ onNavigate, onBack }) {
+  useSeo({
+    title: "Create a workspace — Trellis",
+    description: "Set up a Trellis workspace for your department and start running supervised student projects.",
+    path: "/signup",
+  });
+
   const [organizationName, setOrganizationName] = useState("");
   const [adminName, setAdminName]               = useState("");
   const [email, setEmail]                       = useState("");

@@ -3,9 +3,25 @@ import Avatar from "../ui/Avatar";
 import { Close, Users, Mail } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import { avatarColor } from "../../lib/avatarColor";
+
+/* Matches the member card's shape so the swap to real data doesn't jump. */
+function MemberCardSkeleton() {
+  return (
+    <div className="card flex items-center gap-4 p-5">
+      <span className="skeleton h-11 w-11 shrink-0 rounded-full" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <span className="skeleton h-3.5 w-1/2" />
+        <span className="skeleton h-3 w-3/4" />
+        <span className="skeleton h-5 w-24 rounded-full" />
+      </div>
+    </div>
+  );
+}
 
 export default function MentorTeam() {
   const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
 
   const { user } = useAuthStore();
@@ -58,7 +74,7 @@ export default function MentorTeam() {
                   name: m.name,
                   email: m.email,
                   avatar: m.name ? m.name.substring(0, 2).toUpperCase() : "U",
-                  color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0'),
+                  color: avatarColor(mId || m.name),
                   projects: []
                 });
               }
@@ -76,6 +92,8 @@ export default function MentorTeam() {
         setTeamMembers(Array.from(membersMap.values()));
       } catch (error) {
         console.error("Error fetching team members:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -95,7 +113,11 @@ export default function MentorTeam() {
       {/* Grid List */}
       <div className="flex flex-col items-start gap-5 lg:flex-row">
         <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
-          {teamMembers.length === 0 ? (
+          {loading ? (
+            <>
+              {[0, 1, 2, 3].map((i) => <MemberCardSkeleton key={i} />)}
+            </>
+          ) : teamMembers.length === 0 ? (
             <div className="card col-span-full">
               <div className="empty-state">
                 <span className="empty-state-icon">

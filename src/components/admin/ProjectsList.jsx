@@ -11,7 +11,8 @@ import { formatUIDate } from "../../lib/datetime";
 export default function ProjectsList({ onViewProject, onRefresh }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Starts true so the first paint is a skeleton, not a "no projects" empty state.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Creation modal states
@@ -168,13 +169,12 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
 
       {/* Search, Filter, Action Bar */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div className="flex gap-3 flex-wrap items-center">
+        <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
           <input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 bg-slate-50 focus:bg-white transition-colors"
-            style={{ minWidth: 240 }}
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm transition-colors outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/12 sm:flex-none sm:w-60"
           />
           <select
             value={statusFilter}

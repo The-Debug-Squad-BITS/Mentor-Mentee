@@ -11,13 +11,52 @@
     <meta name="apple-mobile-web-app-title" content="Trellis" />
     <meta name="application-name" content="Trellis" />
 
-    <title>Trellis — Academic Project & Capstone Supervision Platform</title>
+    <title>Trellis — Academic Project &amp; Capstone Supervision Platform</title>
     <meta
       name="description"
       content="Trellis is an academic project and capstone supervision platform. Departments run final-year projects, capstones, dissertations and supervised internships through milestones, tasks, student submissions and supervisor review."
     />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#4f46e5" />
     <meta name="color-scheme" content="light" />
+
+    <!-- Open Graph — link previews in Slack, Teams, WhatsApp, LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Trellis" />
+    <meta property="og:title" content="Trellis — Academic Project &amp; Capstone Supervision Platform" />
+    <meta
+      property="og:description"
+      content="One place for a department to run supervised student projects — milestone plan, student submission, supervisor approval, and a record of every decision."
+    />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:image" content="%VITE_SITE_URL%/favicon.png" />
+    <meta property="og:image:alt" content="The Trellis lattice mark" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Trellis — Academic Project &amp; Capstone Supervision Platform" />
+    <meta
+      name="twitter:description"
+      content="One place for a department to run supervised student projects — milestone plan, student submission, supervisor approval, and a record of every decision."
+    />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/favicon.png" />
+
+    <!--
+      Organization graph. The product (SoftwareApplication) and the FAQ
+      (FAQPage) are injected at runtime from src/lib/seo.js, so they are
+      generated from the same copy the page renders and cannot drift.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Trellis",
+        "url": "%VITE_SITE_URL%/",
+        "logo": "%VITE_SITE_URL%/favicon.png",
+        "description": "Academic project and capstone supervision platform for university departments."
+      }
+    </script>
 
     <!-- Preconnect to the font CDN so the first paint is not blocked on DNS/TLS -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import HeroSection from "../components/sections/HeroSection";
@@ -9,6 +10,9 @@ import RolesSection from "../components/sections/RolesSection";
 import ProductComparisonSection from "../components/sections/ProductComparisonSection";
 import FaqSection from "../components/sections/FaqSection";
 import FinalCtaSection from "../components/sections/FinalCtaSection";
+import useSeo from "../hooks/useSeo";
+import { setJsonLd, faqJsonLd, productJsonLd, DEFAULT_DESCRIPTION } from "../lib/seo";
+import { faqs } from "../data/LandingData";
 
 /* ==========================================================================
    LandingPage — the public marketing page.
@@ -20,7 +24,24 @@ import FinalCtaSection from "../components/sections/FinalCtaSection";
    All copy lives in `src/data/landingData.js`.
    ========================================================================== */
 
-export default function LandingPage({ initialPage = null }) {
+export default function LandingPage() {
+  useSeo({
+    title: "Trellis — Academic Project & Capstone Supervision Platform",
+    description: DEFAULT_DESCRIPTION,
+    path: "/",
+  });
+
+  // Built from the same `faqs` array FaqSection renders, so the structured data
+  // always matches the visible answers.
+  useEffect(() => {
+    setJsonLd("product", productJsonLd());
+    setJsonLd("faq", faqJsonLd(faqs));
+    return () => {
+      setJsonLd("product", null);
+      setJsonLd("faq", null);
+    };
+  }, []);
+
   return (
     <div id="top" className="min-h-screen bg-canvas font-sans text-slate-900">
       <Header />

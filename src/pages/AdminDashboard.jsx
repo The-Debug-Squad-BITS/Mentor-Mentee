@@ -20,10 +20,19 @@ import { AlertTriangle } from "../components/ui/Icons";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
+import { pageMeta } from "../lib/pageMeta";
 import { useDashboardStore } from "../store/dashboardStore";
 
 export default function AdminDashboard() {
   const [activeNav, setActiveNav]               = useState("Dashboard");
+
+  // Behind a login, so never indexed; the title tracks the open section.
+  useSeo({
+    title: `${pageMeta("ADMIN", activeNav).title} — Trellis`,
+    path: "/admin/dashboard",
+    noindex: true,
+  });
   const [projects, setProjects]                 = useState([]);
   const [logs, setLogs]                         = useState([]);
   const [showCreateUser, setShowCreateUser]     = useState(false);
@@ -173,6 +182,7 @@ export default function AdminDashboard() {
 
         <div className="mx-auto w-full max-w-[1600px]">
           <AdminHeader
+            activeNav={activeNav}
             onAddUser={() => setShowCreateUser(true)}
             userName={user?.name}
             onLogout={handleLogout}

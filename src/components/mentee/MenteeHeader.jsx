@@ -1,20 +1,17 @@
 import NotificationBell from "../ui/NotificationBell";
 import Button from "../ui/Button";
 import { LogOut, MessageSquare, Calendar } from "../ui/Icons";
+import { pageMeta } from "../../lib/pageMeta";
 
-export default function MenteeHeader({ activeNav, onMessageMentor, userName, onLogout }) {
+export default function MenteeHeader({ activeNav, onMessageMentor, onRequestMeeting, userName, onLogout }) {
+  const { title, subtitle } = pageMeta("MENTEE", activeNav, userName);
+
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 lg:mb-8">
       {/* Title */}
       <div className="min-w-0">
-        <h1 className="page-title">
-          {activeNav === "Dashboard" ? "My Dashboard" : activeNav}
-        </h1>
-        <p className="page-subtitle mt-1">
-          {userName
-            ? `Welcome, ${userName} — track your progress, manage tasks, and connect with your mentors.`
-            : "Track your progress, manage tasks, and connect with your mentors."}
-        </p>
+        <h1 className="page-title">{title}</h1>
+        <p className="page-subtitle mt-1">{subtitle}</p>
       </div>
 
       {/* Buttons */}
@@ -37,7 +34,7 @@ export default function MenteeHeader({ activeNav, onMessageMentor, userName, onL
         </Button>
 
         {/* Request Meeting */}
-        <Button>
+        <Button onClick={onRequestMeeting}>
           <Calendar size={16} />
           <span className="hidden sm:inline">Request Meeting</span>
           <span className="sm:hidden">Meeting</span>

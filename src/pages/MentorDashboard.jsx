@@ -11,8 +11,9 @@ import MentorTeam from "../components/mentor/MentorTeam";
 import MentorReviews from "../components/mentor/MentorReviews";
 import MentorActivity from "../components/mentor/MentorActivity";
 import MentorProfile from "../components/mentor/MentorProfile";
-import NewUserModal from "../components/mentor/NewUserModal";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
+import { pageMeta } from "../lib/pageMeta";
 import { useDashboardStore } from "../store/dashboardStore";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
 import TemplatesSection from "../components/admin/TemplatesSection";
@@ -24,7 +25,13 @@ import api from "../lib/api";
 
 export default function MentorDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
-  const [showNewUserModal, setShowNewUserModal] = useState(false);
+
+  // Behind a login, so never indexed; the title tracks the open section.
+  useSeo({
+    title: `${pageMeta("MENTOR", activeNav).title} — Trellis`,
+    path: "/mentor/dashboard",
+    noindex: true,
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [statsError, setStatsError] = useState(null);
 
@@ -123,8 +130,8 @@ export default function MentorDashboard() {
 
         <div className="mx-auto w-full max-w-[1600px]">
           <MentorHeader
+            activeNav={activeNav}
             userName={user?.name}
-            onNewUser={() => setShowNewUserModal(true)}
             onLogout={handleLogout}
           />
 
@@ -142,9 +149,6 @@ export default function MentorDashboard() {
         </div>
       </main>
 
-      {showNewUserModal && (
-        <NewUserModal onClose={() => setShowNewUserModal(false)} />
-      )}
     </div>
   );
 }

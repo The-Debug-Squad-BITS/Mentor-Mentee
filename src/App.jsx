@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { connectSocket } from "./lib/socket";
@@ -6,20 +6,24 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Lock, ArrowRight } from "./components/ui/Icons";
 import Brand from "./components/ui/Brand";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+import RouteLoader from "./components/ui/RouteLoader";
 
-// Pages
-import LandingPage        from "./pages/LandingPage";
-import LoginPage          from "./pages/LoginPage";
-import SignupPage         from "./pages/SignupPage";
-import ChangePasswordPage from "./pages/ChangePasswordPage";
-import AdminDashboard     from "./pages/AdminDashboard";
-import MentorDashboard    from "./pages/MentorDashboard";
-import MenteeDashboard    from "./pages/MenteeDashboard";
+// Pages — code-split per route. Each dashboard pulls in a large, role-specific
+// subtree that the other two roles never render, and a visitor on the landing
+// page needs none of them. Splitting here is what keeps the first load small.
+const LandingPage        = lazy(() => import("./pages/LandingPage"));
+const LoginPage          = lazy(() => import("./pages/LoginPage"));
+const SignupPage         = lazy(() => import("./pages/SignupPage"));
+const ChangePasswordPage = lazy(() => import("./pages/ChangePasswordPage"));
+const AdminDashboard     = lazy(() => import("./pages/AdminDashboard"));
+const MentorDashboard    = lazy(() => import("./pages/MentorDashboard"));
+const MenteeDashboard    = lazy(() => import("./pages/MenteeDashboard"));
 
 // ── ProtectedRoute ─────────────────────────────────────────────────────────
 // Redirects to /login if not authenticated.
 // Redirects to /unauthorized if role is not in allowedRoles.
-function ProtectedRoute({ element, allowedRoles }) {
+function ProtectedRoute({ element, allowedRoles, allowTempPassword = false }) {
   const { user, token } = useAuthStore();
 
   if (!token || !user) {
@@ -27,8 +31,9 @@ function ProtectedRoute({ element, allowedRoles }) {
   }
 
   // Force temp-password users to /change-password before accessing any dashboard.
-  // Skip this check when we're already rendering the ChangePasswordPage itself.
-  if (user.mustChangePassword && element?.type?.name !== 'ChangePasswordPage') {
+  // The change-password route opts out via allowTempPassword: routes are lazy(),
+  // so their element has no stable .type.name to identify them by any more.
+  if (user.mustChangePassword && !allowTempPassword) {
     return <Navigate to="/change-password" replace />;
   }
 
@@ -115,7 +120,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
+      <ErrorBoundary>
+        <Suspense fallback={<RouteLoader />}>
+          <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
 
@@ -130,6 +137,7 @@ export default function App() {
             <ProtectedRoute
               element={<ChangePasswordPage />}
               allowedRoles={["ADMIN", "MENTOR", "MENTEE"]}
+              allowTempPassword
             />
           }
         />
@@ -177,7 +185,9 @@ export default function App() {
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       <ToastContainer
         position="bottom-center"
         autoClose={3000}

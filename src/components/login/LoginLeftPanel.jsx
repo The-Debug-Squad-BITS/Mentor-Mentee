@@ -30,7 +30,7 @@ export default function LoginLeftPanel({ onNavigate, onBack }) {
     <div className="surface-ink scrollbar-slim hidden lg:flex lg:h-full lg:flex-col lg:justify-between lg:overflow-y-auto px-10 py-9 xl:px-14 xl:py-12">
       {/* Brand row */}
       <div className="flex items-center gap-2.5">
-        <Brand size="lg" tone="dark" />
+        <Brand size="lg" tone="dark" to="/" />
         <button
           onClick={handleHome}
           className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/12 bg-white/[0.06] px-3 py-1.5 text-[13px] font-medium text-slate-300 transition-colors duration-150 hover:bg-white/[0.12] hover:text-white"
