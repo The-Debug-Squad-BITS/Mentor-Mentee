@@ -12,7 +12,7 @@ import FaqSection from "../components/sections/FaqSection";
 import FinalCtaSection from "../components/sections/FinalCtaSection";
 import useSeo from "../hooks/useSeo";
 import { setJsonLd, faqJsonLd, productJsonLd, DEFAULT_DESCRIPTION } from "../lib/seo";
-import { faqs } from "../data/LandingData";
+import { faqs } from "../data/landingData";
 
 /* ==========================================================================
    LandingPage — the public marketing page.

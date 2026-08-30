@@ -60,6 +60,17 @@ function seoFiles(siteUrl) {
   return {
     name: "trellis-seo-files",
     apply: "build",
+
+    // Vite only substitutes %VITE_SITE_URL% in index.html when the variable is
+    // actually defined; when it is not, it warns and leaves the literal token
+    // in place, which would ship "%VITE_SITE_URL%/" as the canonical URL and in
+    // every Open Graph and JSON-LD field. robots.txt and sitemap.xml already
+    // fall back to `origin`, so resolve the HTML against the same value and
+    // keep the two consistent.
+    transformIndexHtml(html) {
+      return html.split("%VITE_SITE_URL%").join(origin);
+    },
+
     generateBundle() {
       this.emitFile({ type: "asset", fileName: "robots.txt", source: robots });
       this.emitFile({ type: "asset", fileName: "sitemap.xml", source: sitemap });
