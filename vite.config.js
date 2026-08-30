@@ -61,14 +61,24 @@ function seoFiles(siteUrl) {
     name: "trellis-seo-files",
     apply: "build",
 
-    // Vite only substitutes %VITE_SITE_URL% in index.html when the variable is
-    // actually defined; when it is not, it warns and leaves the literal token
-    // in place, which would ship "%VITE_SITE_URL%/" as the canonical URL and in
-    // every Open Graph and JSON-LD field. robots.txt and sitemap.xml already
-    // fall back to `origin`, so resolve the HTML against the same value and
-    // keep the two consistent.
+    // Two separate problems with %VITE_SITE_URL% in index.html:
+    //
+    // 1. When the variable is undefined, Vite warns and leaves the literal
+    //    token in place, shipping "%VITE_SITE_URL%/" as the canonical URL and
+    //    in every Open Graph and JSON-LD field. robots.txt and sitemap.xml
+    //    already fall back to `origin`, so resolve the HTML the same way.
+    //
+    // 2. When it *is* defined, Vite substitutes the raw value before this hook
+    //    runs. The template writes "%VITE_SITE_URL%/", so a value ending in a
+    //    slash yields "https://host//" — which search engines treat as a
+    //    different URL from the real one. Collapse repeated slashes directly
+    //    after the host so the deployed value cannot depend on whether someone
+    //    typed a trailing slash into the dashboard.
     transformIndexHtml(html) {
-      return html.split("%VITE_SITE_URL%").join(origin);
+      return html
+        .split("%VITE_SITE_URL%")
+        .join(origin)
+        .replace(/(https?:\/\/[^/"'\s]+)\/{2,}/g, "$1/");
     },
 
     generateBundle() {
