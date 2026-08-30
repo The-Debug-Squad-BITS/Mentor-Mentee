@@ -40,13 +40,6 @@ export default function Header({ onLogin, onSignup }) {
 
           {/* Actions */}
           <div className="hidden items-center gap-2 lg:flex">
-            <button
-              className="rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-500 underline-offset-4 transition-colors duration-150 hover:text-slate-900 hover:underline"
-              onClick={() => navigate("/admin-dashboard")}
-            >
-              Demo Admin
-            </button>
-
             <Button variant="secondary" size="sm" onClick={() => navigate("/login")}>
               Sign in
             </Button>
@@ -112,16 +105,6 @@ export default function Header({ onLogin, onSignup }) {
               >
                 Get Started <ArrowRight size={16} />
               </Button>
-
-              <button
-                className="mt-1 self-center rounded-lg px-2.5 py-2 text-[13px] font-medium text-slate-500 underline-offset-4 transition-colors duration-150 hover:text-slate-900 hover:underline"
-                onClick={() => {
-                  setMenuOpen(false);
-                  navigate("/admin-dashboard");
-                }}
-              >
-                Demo Admin
-              </button>
             </div>
           </div>
         </div>
