@@ -61,7 +61,8 @@ export default function LoginPage({ onNavigate, onBack }) {
         setError(data.message);
       } else if (!err.response) {
         setError(
-          "Cannot connect to the server. Make sure the backend is running on port 5000."
+          err.userMessage ||
+            "Cannot reach the server. It may be starting up — please try again in a moment."
         );
       } else {
         setError("Login failed. Please try again.");

@@ -5,7 +5,14 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
   // Without this a dropped backend leaves requests pending forever and the UI
   // sits on a skeleton with no way to recover.
-  timeout: 20000,
+  //
+  // 60s rather than 20s because free hosting tiers suspend an idle service and
+  // cold-start it on the next request, which regularly takes longer than 20
+  // seconds. At 20s the first request after a quiet period aborted before the
+  // server had finished waking, and the user saw a generic failure for a
+  // backend that was working perfectly — retrying always "fixed" it, which
+  // made the cause hard to see.
+  timeout: 60000,
 });
 
 /**

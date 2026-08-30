@@ -41,7 +41,14 @@ export default function CreateUserModal({ onClose, onUserCreated }) {
           setError(err.response.data.message || "Validation error. Check all fields.");
         }
       } else {
-        setError("Something went wrong. Please try again.");
+        // No response at all means a network failure or a timeout, not a
+        // server error — say so rather than blaming the request.
+        setError(
+          err.userMessage ||
+            (!err.response
+              ? "Cannot reach the server. It may be starting up — please try again in a moment."
+              : "Something went wrong. Please try again.")
+        );
       }
       console.error("Invite user error:", err);
     } finally {
