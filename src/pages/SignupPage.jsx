@@ -5,8 +5,15 @@ import SignupRightPanel from "../components/login/SignupRightPanel";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
 
 export default function SignupPage({ onNavigate, onBack }) {
+  useSeo({
+    title: "Create a workspace — Trellis",
+    description: "Set up a Trellis workspace for your department and start running supervised student projects.",
+    path: "/signup",
+  });
+
   const [organizationName, setOrganizationName] = useState("");
   const [adminName, setAdminName]               = useState("");
   const [email, setEmail]                       = useState("");
@@ -68,7 +75,7 @@ export default function SignupPage({ onNavigate, onBack }) {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] bg-white text-slate-900 overflow-x-hidden">
       {/* Reuse the exact same left panel as login */}
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
 

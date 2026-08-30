@@ -6,8 +6,15 @@ import ResetPasswordModal from "../components/login/ResetPasswordModal";
 
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
 
 export default function LoginPage({ onNavigate, onBack }) {
+  useSeo({
+    title: "Sign in — Trellis",
+    description: "Sign in to your Trellis workspace to manage supervised academic projects, submissions and reviews.",
+    path: "/login",
+  });
+
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [error, setError]         = useState("");
@@ -69,11 +76,8 @@ export default function LoginPage({ onNavigate, onBack }) {
     doLogin(email, password);
   };
 
-  const handleGoogleLogin = () =>
-    setError("Google login is not available. Please use your email and password.");
-
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] bg-[#F7F4EF] font-['DM_Sans',sans-serif] text-[#1A1714] overflow-x-hidden">
+    <div className="grid min-h-screen grid-cols-1 overflow-x-hidden bg-white text-slate-900 lg:h-screen lg:grid-cols-[1.05fr_0.95fr] lg:overflow-hidden">
       <LoginLeftPanel onNavigate={onNavigate} onBack={onBack} />
       <LoginRightPanel
         email={email}
@@ -83,7 +87,6 @@ export default function LoginPage({ onNavigate, onBack }) {
         loading={loading}
         error={error}
         onSubmit={handleSubmit}
-        onGoogleLogin={handleGoogleLogin}
         onNavigate={onNavigate}
         onBack={onBack}
         onForgotPassword={() => setShowResetModal(true)}

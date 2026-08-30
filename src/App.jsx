@@ -1,23 +1,29 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { connectSocket } from "./lib/socket";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Lock, ArrowRight } from "./components/ui/Icons";
+import Brand from "./components/ui/Brand";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+import RouteLoader from "./components/ui/RouteLoader";
 
-// Pages
-import LandingPage        from "./pages/LandingPage";
-import LoginPage          from "./pages/LoginPage";
-import SignupPage         from "./pages/SignupPage";
-import ChangePasswordPage from "./pages/ChangePasswordPage";
-import AdminDashboard     from "./pages/AdminDashboard";
-import MentorDashboard    from "./pages/MentorDashboard";
-import MenteeDashboard    from "./pages/MenteeDashboard";
+// Pages — code-split per route. Each dashboard pulls in a large, role-specific
+// subtree that the other two roles never render, and a visitor on the landing
+// page needs none of them. Splitting here is what keeps the first load small.
+const LandingPage        = lazy(() => import("./pages/LandingPage"));
+const LoginPage          = lazy(() => import("./pages/LoginPage"));
+const SignupPage         = lazy(() => import("./pages/SignupPage"));
+const ChangePasswordPage = lazy(() => import("./pages/ChangePasswordPage"));
+const AdminDashboard     = lazy(() => import("./pages/AdminDashboard"));
+const MentorDashboard    = lazy(() => import("./pages/MentorDashboard"));
+const MenteeDashboard    = lazy(() => import("./pages/MenteeDashboard"));
 
 // ── ProtectedRoute ─────────────────────────────────────────────────────────
 // Redirects to /login if not authenticated.
 // Redirects to /unauthorized if role is not in allowedRoles.
-function ProtectedRoute({ element, allowedRoles }) {
+function ProtectedRoute({ element, allowedRoles, allowTempPassword = false }) {
   const { user, token } = useAuthStore();
 
   if (!token || !user) {
@@ -25,8 +31,9 @@ function ProtectedRoute({ element, allowedRoles }) {
   }
 
   // Force temp-password users to /change-password before accessing any dashboard.
-  // Skip this check when we're already rendering the ChangePasswordPage itself.
-  if (user.mustChangePassword && element?.type?.name !== 'ChangePasswordPage') {
+  // The change-password route opts out via allowTempPassword: routes are lazy(),
+  // so their element has no stable .type.name to identify them by any more.
+  if (user.mustChangePassword && !allowTempPassword) {
     return <Navigate to="/change-password" replace />;
   }
 
@@ -68,30 +75,28 @@ function UnauthorizedPage() {
     "/login";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 font-sans p-6">
-      <div
-        className="bg-white rounded-3xl p-10 max-w-md w-full text-center border border-slate-100"
-        style={{ boxShadow: "0 8px 40px rgba(99,102,241,0.1)" }}
-      >
-        <div className="text-5xl mb-4">🚫</div>
-        <h1 className="text-xl font-black text-slate-800 m-0 mb-2">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-canvas font-sans p-6">
+      <Brand size="lg" className="mb-6" />
+      <div className="card max-w-md w-full p-10 text-center shadow-sm">
+        <span className="inline-flex w-12 h-12 mb-5 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500">
+          <Lock size={22} />
+        </span>
+        <h1 className="font-display text-xl font-bold text-slate-900 m-0 mb-2">
           Access Denied
         </h1>
-        <p className="text-slate-500 text-sm m-0 mb-6 leading-relaxed">
+        <p className="text-slate-600 text-sm m-0 mb-7 leading-relaxed">
           You don't have permission to access this page.
           {user && (
-            <> Your role is <strong className="text-slate-700">{user.role}</strong>.</>
+            <> Your role is <strong className="font-semibold text-slate-900">{user.role}</strong>.</>
           )}
         </p>
         <a
           href={dashboard}
-          className="inline-block px-6 py-3 rounded-xl text-white text-sm font-bold no-underline"
-          style={{
-            background: "linear-gradient(135deg, #6366f1, #818cf8)",
-            boxShadow: "0 4px 16px rgba(99,102,241,0.3)",
-          }}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg
+            bg-brand-600 text-white text-sm font-semibold no-underline shadow-xs
+            transition-colors duration-150 hover:bg-brand-700"
         >
-          Go to My Dashboard
+          Go to My Dashboard <ArrowRight size={16} />
         </a>
       </div>
     </div>
@@ -115,7 +120,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
+      <ErrorBoundary>
+        <Suspense fallback={<RouteLoader />}>
+          <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
 
@@ -130,6 +137,7 @@ export default function App() {
             <ProtectedRoute
               element={<ChangePasswordPage />}
               allowedRoles={["ADMIN", "MENTOR", "MENTEE"]}
+              allowTempPassword
             />
           }
         />
@@ -177,7 +185,9 @@ export default function App() {
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       <ToastContainer
         position="bottom-center"
         autoClose={3000}

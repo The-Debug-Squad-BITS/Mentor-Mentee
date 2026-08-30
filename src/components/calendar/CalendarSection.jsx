@@ -225,7 +225,7 @@ export default function CalendarSection() {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-xl text-sm border border-red-100 flex items-center justify-between">
+        <div className="bg-danger-50 text-danger-700 p-4 rounded-xl text-sm border border-red-100 flex items-center justify-between">
           <span>{error}</span>
           <button
             onClick={() => fetchMonthEvents(currentYear, currentMonth)}
@@ -256,7 +256,7 @@ export default function CalendarSection() {
                 key={idx}
                 className={`min-h-[110px] p-1.5 transition-colors relative flex flex-col justify-between group ${
                   dayObj.isCurrentMonth ? "bg-white" : "bg-slate-50/60 text-slate-400"
-                } ${todayFlag ? "bg-indigo-50/30" : ""}`}
+                } ${todayFlag ? "bg-brand-50/30" : ""}`}
               >
                 {/* Date Cell Header */}
                 <div className="flex items-center justify-between mb-1">
@@ -274,7 +274,7 @@ export default function CalendarSection() {
 
                   <button
                     onClick={() => openAddModal(dayObj.dateKey)}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs font-bold bg-slate-100 hover:bg-indigo-50 w-5 h-5 rounded flex items-center justify-center border-0 cursor-pointer transition-all"
+                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-brand-600 text-xs font-bold bg-slate-100 hover:bg-brand-50 w-5 h-5 rounded flex items-center justify-center border-0 cursor-pointer transition-all"
                     title="Add event on this date"
                   >
                     +

@@ -1,44 +1,70 @@
+/* ==========================================================================
+   StatCard — a single headline metric.
+   --------------------------------------------------------------------------
+   Props are unchanged: { icon, label, value, badge, badgeColor, onClick }.
+   `badgeColor` still accepts green | blue | purple | amber | red | indigo.
+
+   Layout intent: the number is the hero. Label sits above it as quiet
+   context, the icon anchors the top-left, and the badge carries delta or
+   status information at the top-right.
+   ========================================================================== */
+
 const badgeStyles = {
-  green: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
-  blue: "bg-blue-50 text-blue-600 border-blue-200/60",
-  purple: "bg-purple-50 text-purple-600 border-purple-200/60",
-  amber: "bg-amber-50 text-amber-600 border-amber-200/60",
-  red: "bg-red-50 text-red-600 border-red-200/60",
-  indigo: "bg-indigo-50 text-indigo-600 border-indigo-200/60",
+  green:  "bg-success-50 text-success-700 border-success-200",
+  blue:   "bg-info-50    text-info-700    border-info-200",
+  purple: "bg-violet-50  text-violet-700  border-violet-200",
+  amber:  "bg-warning-50 text-warning-700 border-warning-200",
+  red:    "bg-danger-50  text-danger-700  border-danger-200",
+  indigo: "bg-brand-50   text-brand-700   border-brand-200",
 };
 
 export default function StatCard({ icon, label, value, badge, badgeColor, onClick }) {
+  const interactive = Boolean(onClick);
+
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-xl md:rounded-2xl
-        p-4 md:p-5 lg:p-6
-        flex-1 min-w-35 md:min-w-40 lg:min-w-45
-        border border-slate-200/75 relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-slate-300
-        ${onClick ? "cursor-pointer select-none" : ""}`}
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.01)" }}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick(e);
+              }
+            }
+          : undefined
+      }
+      className={`group bg-white border border-slate-200/80 rounded-2xl shadow-xs
+        p-5 flex-1 min-w-40
+        transition-[box-shadow,border-color] duration-200
+        ${interactive
+          ? "cursor-pointer select-none hover:shadow-md hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          : ""}`}
     >
-      <div className="flex justify-between items-start">
-        {/* Icon */}
-        <div className="w-9 h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 bg-slate-50 border border-slate-100 rounded-xl text-slate-700 flex items-center justify-center text-[16px] md:text-[18px] lg:text-[20px] shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className="w-10 h-10 shrink-0 rounded-xl bg-slate-50 border border-slate-200/70
+            text-slate-600 flex items-center justify-center text-[17px]
+            transition-colors duration-200 group-hover:bg-brand-50 group-hover:text-brand-600 group-hover:border-brand-100"
+        >
           {icon}
         </div>
 
-        {/* Badge */}
         {badge && (
           <span
-            className={`px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-bold border ${badgeStyles[badgeColor] || badgeStyles.blue}`}
+            className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap
+              ${badgeStyles[badgeColor] || badgeStyles.indigo}`}
           >
             {badge}
           </span>
         )}
       </div>
 
-      <div className="mt-4 lg:mt-5">
-        <div className="text-[12px] md:text-[13px] text-slate-500 font-medium">
-          {label}
-        </div>
-        <div className="text-[24px] md:text-[28px] lg:text-[32px] font-bold text-slate-900 leading-[1.1] mt-1 tracking-tight">
+      <div className="mt-4">
+        <div className="text-[13px] font-medium text-slate-500">{label}</div>
+        <div className="font-display text-[28px] font-bold text-slate-900 leading-tight tracking-tight mt-0.5 tabular-nums">
           {value}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Close, AlertTriangle, AlertCircle, Inbox, Folder, Target, CheckCircle, Clock } from "../ui/Icons";
 import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
 import Button from "../ui/Button";
@@ -10,7 +11,8 @@ import { formatUIDate } from "../../lib/datetime";
 export default function ProjectsList({ onViewProject, onRefresh }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Starts true so the first paint is a skeleton, not a "no projects" empty state.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Creation modal states
@@ -136,28 +138,28 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       {/* Projects summary stats */}
       <div className="flex gap-4 flex-wrap">
         <StatCard
-          icon="📁"
+          icon={<Folder size={17} />}
           label="Total Projects"
           value={totalProjCount.toString()}
           badge="Global Catalog"
           badgeColor="blue"
         />
         <StatCard
-          icon="🚀"
+          icon={<Target size={17} />}
           label="Active"
           value={activeProjCount.toString()}
           badge="In Development"
           badgeColor="green"
         />
         <StatCard
-          icon="✅"
+          icon={<CheckCircle size={17} />}
           label="Completed"
           value={completedProjCount.toString()}
           badge="Finished"
           badgeColor="blue"
         />
         <StatCard
-          icon="⏸️"
+          icon={<Clock size={17} />}
           label="On Hold / Planned"
           value={holdOrPlannedCount.toString()}
           badge="Waiting"
@@ -166,19 +168,18 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       </div>
 
       {/* Search, Filter, Action Bar */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
-        <div className="flex gap-3 flex-wrap items-center">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
           <input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 focus:bg-white transition-colors"
-            style={{ minWidth: 240 }}
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-4 py-2 text-sm transition-colors outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/12 sm:flex-none sm:w-60"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm bg-slate-50 focus:bg-white font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            className="px-4 py-2 rounded-lg border border-slate-300 text-sm bg-slate-50 focus:bg-white font-medium text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 transition-colors"
           >
             <option value="All">All Statuses</option>
             <option value="PLANNED">Planned</option>
@@ -198,34 +199,48 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
 
       {/* Error Banner */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Project Grid Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="card overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
           <h2 className="m-0 text-base font-bold text-slate-900">All Organization Projects ({filtered.length})</h2>
         </div>
         {loading ? (
-          <div className="p-12 text-center text-slate-500 text-sm font-medium">Loading projects...</div>
+          <div className="flex flex-col gap-3 p-5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <span key={i} className="skeleton h-11 w-full" />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm font-medium">No projects match the filters.</div>
+          <div className="empty-state">
+            <span className="empty-state-icon">
+              <Folder size={22} />
+            </span>
+            <p className="empty-state-title">No projects match the filters</p>
+            <p className="empty-state-text">
+              Clear the search or change the status filter, or create a new project to get
+              started.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[800px]">
+            <table className="data-table min-w-[800px]">
               <thead>
-                <tr className="bg-slate-50">
+                <tr>
                   {["Project Name", "Assigned Mentor", "Mentees", "Status", "Dates", "Actions"].map(h => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {filtered.map(p => (
                   <tr key={p._id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td>
                       <span className="block font-semibold text-slate-900 text-sm">{p.title}</span>
                       {p.description && (
                         <span className="block text-xs text-slate-500 mt-1 truncate max-w-[250px]">{p.description}</span>
@@ -241,12 +256,13 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                         <span className="text-slate-400 italic">Unassigned</span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <select
                         value={p.status}
                         onChange={(e) => handleStatusChange(p._id, e.target.value)}
                         disabled={updatingProjectId === p._id}
-                        className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer transition-colors shadow-sm"
+                        aria-label={`Status for ${p.title}`}
+                        className="cursor-pointer rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors outline-none hover:border-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <option value="PLANNED">Planned</option>
                         <option value="ACTIVE">Active</option>
@@ -285,60 +301,61 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
 
       {/* Creation Modal Overlay */}
       {showCreateModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
-          <div className="bg-white rounded-xl p-8 w-full max-w-md flex flex-col gap-6 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-ink-950/45 backdrop-blur-[2px] animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="modal-panel max-w-md flex flex-col gap-6 p-6 sm:p-7" onClick={e => e.stopPropagation()}>
             <div>
               <h3 className="m-0 text-xl font-bold text-slate-900">Create New Project</h3>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Launch a new organizational tracking workspace.</p>
+              <p className="page-subtitle mt-1">Launch a new organizational tracking workspace.</p>
             </div>
 
             {createError && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                ⚠️ {createError}
-              </div>
+              <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{createError}</span>
+        </div>
             )}
 
             <div className="flex flex-col gap-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Project Title</label>
+                <label className="field-label">Project Title</label>
                 <input
                   value={newProjectTitle}
                   onChange={(e) => setNewProjectTitle(e.target.value)}
                   placeholder="e.g. AI Chatbot Project"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="input-field"
                   disabled={createLoading}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+                <label className="field-label">Description</label>
                 <textarea
                   value={newProjectDesc}
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   placeholder="Describe project details..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                  className="input-field resize-none"
                   style={{ minHeight: 80 }}
                   disabled={createLoading}
                 />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Start Date</label>
+                  <label className="field-label">Start Date</label>
                   <input
                     type="date"
                     value={newProjectStartDate}
                     onChange={(e) => setNewProjectStartDate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="input-field"
                     disabled={createLoading}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">End Date</label>
+                  <label className="field-label">End Date</label>
                   <input
                     type="date"
                     value={newProjectEndDate}
                     onChange={(e) => setNewProjectEndDate(e.target.value)}
                     min={newProjectStartDate}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="input-field"
                     disabled={createLoading}
                   />
                 </div>

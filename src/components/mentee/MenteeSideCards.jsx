@@ -1,24 +1,69 @@
 import { useState, useEffect } from "react";
+import api from "../../lib/api";
+import { getSocket } from "../../lib/socket";
 import { useAuthStore } from "../../store/authStore";
 import { useDashboardStore } from "../../store/dashboardStore";
 import Button from "../ui/Button";
-import api from "../../lib/api";
+import {
+  MessageSquare,
+  Bell,
+  Flag,
+  Video,
+  Clock,
+  Calendar,
+  User,
+  ExternalLink,
+} from "../ui/Icons";
+
+/* ==========================================================================
+   The five context cards in the mentee dashboard's right rail.
+   --------------------------------------------------------------------------
+   They previously repeated the same header/body/empty markup five times with
+   small inconsistencies. `SideCard` and `EmptyRow` factor that out so the
+   rail reads as one rhythm.
+   ========================================================================== */
+
+function SideCard({ icon: Glyph, title, action, children }) {
+  return (
+    <div className="card flex flex-col animate-fade-in">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 px-5 py-3.5">
+        <h2 className="section-title m-0 flex items-center gap-2">
+          <Glyph size={16} className="text-slate-400" />
+          {title}
+        </h2>
+        {action}
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function EmptyRow({ children }) {
+  return (
+    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-7 text-center text-[13px] text-slate-500">
+      {children}
+    </div>
+  );
+}
+
+/** Shared list-item shell — a quiet tile with a title row and meta beneath. */
+function Tile({ children }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-colors duration-150 hover:bg-slate-50">
+      {children}
+    </div>
+  );
+}
 
 export function RecentFeedbackCard() {
   const { menteeStats } = useDashboardStore();
   const feedbacks = menteeStats?.recentFeedback || [];
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
-      <h2 className="m-0 text-base font-bold text-slate-900">
-        Recent Advisor Feedback
-      </h2>
-
-      <div className="flex flex-col gap-3">
+    <SideCard icon={MessageSquare} title="Recent Advisor Feedback">
+      <div className="flex flex-col gap-2.5">
         {feedbacks.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No advisor feedback logged yet.
-          </div>
+          <EmptyRow>No advisor feedback yet.</EmptyRow>
         ) : (
           feedbacks.map((fb, idx) => {
             const taskTitle = fb.taskId?.title || fb.taskTitle || "Task Review";
@@ -27,30 +72,29 @@ export function RecentFeedbackCard() {
             const reviewerName = fb.reviewedBy?.name || fb.mentorName || "Advisor";
 
             return (
-              <div
-                key={fb._id || idx}
-                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
-              >
-                <div className="flex justify-between items-center mb-1 gap-2">
-                  <span className="text-sm font-semibold text-blue-600 truncate flex-1">
+              <Tile key={fb._id || idx}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex-1 truncate text-[13px] font-semibold text-slate-900">
                     {taskTitle}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium shrink-0">
-                    {dateStr ? new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ""}
+                  <span className="shrink-0 text-[11.5px] font-medium text-slate-500">
+                    {dateStr
+                      ? new Date(dateStr).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                      : ""}
                   </span>
                 </div>
-                <p className="m-0 text-sm text-slate-700 leading-relaxed italic">
-                  "{feedbackText}"
+                <p className="m-0 text-[13px] leading-relaxed text-slate-700">
+                  &ldquo;{feedbackText}&rdquo;
                 </p>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider self-end mt-1">
+                <span className="self-end text-[11.5px] font-medium text-slate-500">
                   — {reviewerName}
                 </span>
-              </div>
+              </Tile>
             );
           })
         )}
       </div>
-    </div>
+    </SideCard>
   );
 }
 
@@ -77,70 +121,66 @@ export function NotificationsCard() {
     refreshNotifs();
   }, [currentUser.id]);
 
-  const handleMarkAllRead = async () => {
-    try {
-      await api.patch('/notifications/mark-read');
-      refreshNotifs();
-    } catch (err) {
-      console.error("Failed to mark notifications read:", err);
+  // Same path NotificationBell uses: the backend handles this over the socket
+  // (`mark_all_read`), so there is no REST equivalent to call here.
+  const handleMarkAllRead = () => {
+    const socket = getSocket();
+    if (socket) {
+      socket.emit('mark_all_read');
+      // Optimistic update
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
     }
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
-      <div className="flex justify-between items-center">
-        <h2 className="m-0 text-base font-bold text-slate-900">
-          Notifications Feed
-        </h2>
-        {unreadCount > 0 ? (
-          <Button
-            variant="ghost"
-            onClick={handleMarkAllRead}
-            className="text-xs py-1 px-2 text-blue-600 hover:text-blue-700"
-          >
+    <SideCard
+      icon={Bell}
+      title="Notifications"
+      action={
+        unreadCount > 0 ? (
+          <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
             Mark Read
           </Button>
         ) : (
-          <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">All Read</span>
-        )}
-      </div>
-
+          <span className="text-[11.5px] font-medium text-slate-400">All read</span>
+        )
+      }
+    >
       <div className="flex flex-col">
         {notifications.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200 mt-1">
-            No notifications inboxed.
-          </div>
+          <EmptyRow>You&apos;re all caught up.</EmptyRow>
         ) : (
           notifications.map((n) => (
-            <div
-              key={n._id || n.id}
-              className="flex gap-3 py-3 border-b border-slate-100 last:border-0"
-            >
-              <div
-                className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                style={{ background: !n.isRead ? "#2563eb" : "#cbd5e1" }}
+            <div key={n._id || n.id} className="flex gap-3 border-b border-slate-100 py-3 last:border-0">
+              <span
+                className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                  !n.isRead ? "bg-brand-500" : "bg-slate-300"
+                }`}
               />
               <div className="min-w-0">
                 <div
-                  className="text-sm leading-snug mb-1"
-                  style={{
-                    color: !n.isRead ? "#0f172a" : "#475569",
-                    fontWeight: !n.isRead ? 600 : 400,
-                  }}
+                  className={`mb-1 text-[13px] leading-snug ${
+                    !n.isRead ? "font-semibold text-slate-900" : "text-slate-600"
+                  }`}
                 >
                   {n.message || n.body}
                 </div>
-                <div className="text-xs text-slate-500 font-medium">
-                  {new Date(n.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                <div className="text-[11.5px] font-medium text-slate-500">
+                  {new Date(n.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
             </div>
           ))
         )}
       </div>
-    </div>
+    </SideCard>
   );
 }
 
@@ -149,50 +189,49 @@ export function UpcomingMilestonesCard() {
   const milestones = menteeStats?.upcomingMilestones || [];
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
-      <h2 className="m-0 text-base font-bold text-slate-900">
-        Upcoming Milestones
-      </h2>
-
-      <div className="flex flex-col gap-3">
+    <SideCard icon={Flag} title="Upcoming Milestones">
+      <div className="flex flex-col gap-2.5">
         {milestones.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No upcoming milestones.
-          </div>
+          <EmptyRow>No upcoming milestones.</EmptyRow>
         ) : (
           milestones.map((ms, idx) => (
-            <div
-              key={ms._id || idx}
-              className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
-            >
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-sm font-semibold text-slate-900 leading-snug">
+            <Tile key={ms._id || idx}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-[13px] font-semibold leading-snug text-slate-900">
                   {ms.title}
                 </span>
-                <span className="text-xs font-semibold uppercase shrink-0">
-                  <span className={`px-2 py-0.5 rounded text-[10px] ${
-                    ms.status === "COMPLETED" ? "bg-emerald-100 text-emerald-800" :
-                    ms.status === "IN_PROGRESS" ? "bg-blue-100 text-blue-800" :
-                    ms.status === "OVERDUE" ? "bg-red-100 text-red-800" :
-                    "bg-slate-100 text-slate-800"
-                  }`}>
-                    {ms.status?.replace("_", " ")}
-                  </span>
+                <span
+                  className={`badge shrink-0 ${
+                    ms.status === "COMPLETED"
+                      ? "badge-success"
+                      : ms.status === "IN_PROGRESS"
+                      ? "badge-info"
+                      : ms.status === "OVERDUE"
+                      ? "badge-danger"
+                      : "badge-neutral"
+                  }`}
+                >
+                  {ms.status?.replace("_", " ")}
                 </span>
               </div>
               {ms.dueDate && (
-                <div className="flex items-center gap-1 text-xs text-slate-500">
-                  <span>📅 Due:</span>
-                  <span className="font-semibold">
-                    {new Date(ms.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                <div className="flex items-center gap-1.5 text-[12px] text-slate-500">
+                  <Calendar size={13} className="text-slate-400" />
+                  Due
+                  <span className="font-semibold text-slate-700">
+                    {new Date(ms.dueDate).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </span>
                 </div>
               )}
-            </div>
+            </Tile>
           ))
         )}
       </div>
-    </div>
+    </SideCard>
   );
 }
 
@@ -201,27 +240,20 @@ export function UpcomingMeetingsCard({ onNavigate }) {
   const meetings = menteeStats?.upcomingMeetings || [];
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
-          <span>📅</span> Upcoming Meetings
-        </h2>
-        {onNavigate && (
-          <Button
-            variant="ghost"
-            onClick={() => onNavigate("Meetings")}
-            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2 py-1 rounded"
-          >
+    <SideCard
+      icon={Video}
+      title="Upcoming Meetings"
+      action={
+        onNavigate && (
+          <Button variant="ghost" size="sm" onClick={() => onNavigate("Meetings")}>
             View All
           </Button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
+        )
+      }
+    >
+      <div className="flex flex-col gap-2.5">
         {meetings.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No upcoming meetings.
-          </div>
+          <EmptyRow>No upcoming meetings.</EmptyRow>
         ) : (
           meetings.map((meeting, idx) => {
             const date = new Date(meeting.scheduledAt);
@@ -231,25 +263,27 @@ export function UpcomingMeetingsCard({ onNavigate }) {
               hour: '2-digit',
               minute: '2-digit'
             });
-            
+
             return (
-              <div
-                key={meeting._id || idx}
-                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
-              >
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-sm font-semibold text-slate-900 leading-snug">
+              <Tile key={meeting._id || idx}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[13px] font-semibold leading-snug text-slate-900">
                     {meeting.title}
                   </span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold shrink-0 ${
-                    meeting.type === "AUDIO" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"
-                  }`}>
+                  <span
+                    className={`badge shrink-0 ${
+                      meeting.type === "AUDIO" ? "badge-warning" : "badge-info"
+                    }`}
+                  >
                     {meeting.type || "VIDEO"}
                   </span>
                 </div>
-                
-                <div className="flex flex-wrap justify-between items-center text-xs text-slate-550 gap-1 mt-1">
-                  <span>👤 Host: {meeting.hostId?.name || "Advisor"}</span>
+
+                <div className="mt-0.5 flex flex-wrap items-center justify-between gap-1 text-[12px] text-slate-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <User size={13} className="text-slate-400" />
+                    {meeting.hostId?.name || "Advisor"}
+                  </span>
                   <span className="font-semibold text-slate-700">{formatted}</span>
                 </div>
 
@@ -258,17 +292,19 @@ export function UpcomingMeetingsCard({ onNavigate }) {
                     href={meeting.meetingLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 text-center w-full px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all no-underline inline-block"
+                    className="mt-1.5 inline-flex w-full items-center justify-center gap-1.5 rounded-lg
+                      bg-success-600 px-3 py-2 text-[12.5px] font-semibold text-white no-underline shadow-xs
+                      transition-colors duration-150 hover:bg-success-700"
                   >
-                    Join Call ↗
+                    Join Call <ExternalLink size={13} />
                   </a>
                 )}
-              </div>
+              </Tile>
             );
           })
         )}
       </div>
-    </div>
+    </SideCard>
   );
 }
 
@@ -277,57 +313,50 @@ export function UpcomingDeadlinesCard({ onNavigate }) {
   const deadlines = menteeStats?.upcomingDeadlines || [];
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col gap-5 shadow-sm animate-fade-in">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
-          <span>⏰</span> Upcoming Deadlines
-        </h2>
-        {onNavigate && (
-          <Button
-            variant="ghost"
-            onClick={() => onNavigate("Calendar")}
-            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2 py-1 rounded"
-          >
+    <SideCard
+      icon={Clock}
+      title="Upcoming Deadlines"
+      action={
+        onNavigate && (
+          <Button variant="ghost" size="sm" onClick={() => onNavigate("Calendar")}>
             Calendar
           </Button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3">
+        )
+      }
+    >
+      <div className="flex flex-col gap-2.5">
         {deadlines.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No upcoming deadlines.
-          </div>
+          <EmptyRow>No upcoming deadlines.</EmptyRow>
         ) : (
           deadlines.map((dl, idx) => {
             const date = new Date(dl.startDate);
             const formatted = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
             const isMilestone = dl.eventType === "MILESTONE_DEADLINE";
-            const badgeCls = isMilestone ? "bg-purple-100 text-purple-800" : "bg-orange-100 text-orange-800";
-            
+            const badgeCls = isMilestone ? "badge-brand" : "badge-warning";
+
             return (
-              <div
-                key={dl._id || idx}
-                className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-2 hover:bg-slate-100/50 transition-colors"
-              >
-                <div className="flex justify-between items-start gap-2">
-                  <span className="text-sm font-semibold text-slate-900 leading-snug">
+              <Tile key={dl._id || idx}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[13px] font-semibold leading-snug text-slate-900">
                     {dl.title}
                   </span>
-                  <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold shrink-0 ${badgeCls}`}>
+                  <span className={`badge shrink-0 ${badgeCls}`}>
                     {isMilestone ? "Milestone" : "Task"}
                   </span>
                 </div>
-                
-                <div className="flex justify-between items-center text-xs text-slate-550 mt-1">
-                  <span>📅 Due Date:</span>
+
+                <div className="mt-0.5 flex items-center justify-between text-[12px] text-slate-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar size={13} className="text-slate-400" />
+                    Due date
+                  </span>
                   <span className="font-semibold text-slate-700">{formatted}</span>
                 </div>
-              </div>
+              </Tile>
             );
           })
         )}
       </div>
-    </div>
+    </SideCard>
   );
 }

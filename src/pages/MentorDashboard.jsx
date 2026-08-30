@@ -11,19 +11,27 @@ import MentorTeam from "../components/mentor/MentorTeam";
 import MentorReviews from "../components/mentor/MentorReviews";
 import MentorActivity from "../components/mentor/MentorActivity";
 import MentorProfile from "../components/mentor/MentorProfile";
-import NewUserModal from "../components/mentor/NewUserModal";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
+import { pageMeta } from "../lib/pageMeta";
 import { useDashboardStore } from "../store/dashboardStore";
 import PlaceholderSection from "../components/admin/PlaceholderSection";
 import TemplatesSection from "../components/admin/TemplatesSection";
 import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
 import CalendarSection from "../components/calendar/CalendarSection";
+import { AlertTriangle } from "../components/ui/Icons";
 import api from "../lib/api";
 
 export default function MentorDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
-  const [showNewUserModal, setShowNewUserModal] = useState(false);
+
+  // Behind a login, so never indexed; the title tracks the open section.
+  useSeo({
+    title: `${pageMeta("MENTOR", activeNav).title} — Trellis`,
+    path: "/mentor/dashboard",
+    noindex: true,
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [statsError, setStatsError] = useState(null);
 
@@ -101,7 +109,7 @@ export default function MentorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans overflow-x-hidden w-full">
+    <div className="flex min-h-screen bg-canvas font-sans overflow-x-hidden w-full">
       <MentorSidebar
         activeNav={activeNav}
         setActiveNav={handleActiveNavChange}
@@ -111,7 +119,7 @@ export default function MentorDashboard() {
 
       <main
         className="flex-1 min-h-screen min-w-0
-        ml-0 md:ml-55 lg:ml-64
+        ml-0 md:ml-56 lg:ml-64
         p-4 sm:p-6 lg:p-8
         pt-16 md:pt-8"
       >
@@ -120,27 +128,27 @@ export default function MentorDashboard() {
           mobileOpen={mobileOpen}
         />
 
-        <MentorHeader
-          userName={user?.name}
-          onNewUser={() => setShowNewUserModal(true)}
-          onLogout={handleLogout}
-        />
+        <div className="mx-auto w-full max-w-[1600px]">
+          <MentorHeader
+            activeNav={activeNav}
+            userName={user?.name}
+            onLogout={handleLogout}
+          />
 
-        {/* Stats error banner */}
-        {statsError && (
-          <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            ⚠️ {statsError}
+          {/* Stats error banner */}
+          {statsError && (
+            <div className="notice notice-warning mb-4">
+              <AlertTriangle size={16} className="mt-px shrink-0" />
+              <span>{statsError}</span>
+            </div>
+          )}
+
+          <div className="mt-6 md:mt-4 animate-fade-in">
+            {renderSection()}
           </div>
-        )}
-
-        <div className="mt-6 md:mt-4 animate-fade-in">
-          {renderSection()}
         </div>
       </main>
 
-      {showNewUserModal && (
-        <NewUserModal onClose={() => setShowNewUserModal(false)} />
-      )}
     </div>
   );
 }

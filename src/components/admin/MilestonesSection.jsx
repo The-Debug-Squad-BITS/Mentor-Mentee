@@ -202,7 +202,7 @@ export default function MilestonesSection({ projectId }) {
     return (
       <div className="flex flex-col gap-6 animate-fade-in">
         {/* Back button + title */}
-        <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-center gap-4">
             <Button
               variant="secondary"
@@ -218,7 +218,7 @@ export default function MilestonesSection({ projectId }) {
                 </h2>
                 <StatusBadge status={currentMilestone.status} />
               </div>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Milestone progress & tasks</p>
+              <p className="page-subtitle mt-1">Milestone progress & tasks</p>
             </div>
           </div>
 
@@ -227,7 +227,7 @@ export default function MilestonesSection({ projectId }) {
               <select
                 value={currentMilestone.status}
                 onChange={(e) => handleStatusChange(currentMilestone._id, e.target.value)}
-                className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"
+                className="px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 bg-white"
               >
                 {MILESTONE_STATUSES.map(s => (
                   <option key={s} value={s}>{s.replace("_", " ")}</option>
@@ -244,7 +244,11 @@ export default function MilestonesSection({ projectId }) {
 
         {/* Progress stats */}
         {detailLoading ? (
-          <div className="p-8 text-center text-slate-500 text-sm">Loading milestone details...</div>
+          <div className="flex flex-col gap-3 p-5">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="skeleton h-16 w-full" />
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
@@ -271,7 +275,7 @@ export default function MilestonesSection({ projectId }) {
 
         {/* Description */}
         {currentMilestone.description && (
-          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+          <div className="card p-6">
             <h3 className="m-0 mb-3 text-base font-bold text-slate-900">Description</h3>
             <p className="m-0 text-slate-700 text-sm leading-relaxed">{currentMilestone.description}</p>
           </div>
@@ -279,7 +283,7 @@ export default function MilestonesSection({ projectId }) {
 
         {/* Due Date */}
         {currentMilestone.dueDate && (
-          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+          <div className="card p-6">
             <div className="flex gap-6 text-sm text-slate-700">
               <div>
                 <span className="block text-xs text-slate-500 font-semibold uppercase mb-1">Due Date</span>
@@ -294,19 +298,23 @@ export default function MilestonesSection({ projectId }) {
         )}
 
         {/* Milestone Tasks List */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="card overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-200 bg-slate-50">
             <h3 className="m-0 text-base font-bold text-slate-900">
               Milestone Tasks ({milestoneTasks.length})
             </h3>
           </div>
           {tasksLoading ? (
-            <div className="p-8 text-center text-slate-500 text-sm">Loading tasks...</div>
+            <div className="flex flex-col gap-3 p-5">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="skeleton h-11 w-full" />
+            ))}
+          </div>
           ) : milestoneTasks.length === 0 ? (
             <div className="p-8 text-center text-slate-500 text-sm">No tasks linked to this milestone yet.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[500px]">
+              <table className="data-table min-w-[500px]">
                 <thead>
                   <tr className="bg-white border-b border-slate-200">
                     {["Task Title", "Assignee", "Priority", "Status"].map(h => (
@@ -314,13 +322,13 @@ export default function MilestonesSection({ projectId }) {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {milestoneTasks.map(t => (
                     <tr key={t._id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{t.title}</td>
+                      <td className="font-semibold text-slate-900">{t.title}</td>
                       <td className="px-6 py-4 text-sm text-slate-700">{t.assignedTo?.name || "Unassigned"}</td>
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">{t.priority}</td>
-                      <td className="px-6 py-4"><StatusBadge status={t.status} /></td>
+                      <td><StatusBadge status={t.status} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -342,7 +350,7 @@ export default function MilestonesSection({ projectId }) {
       <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
           <h2 className="m-0 text-lg font-bold text-slate-900 tracking-tight">Project Milestones</h2>
-          <p className="m-0 mt-1 text-slate-500 text-sm">Checkpoints and deliverable gates for this project.</p>
+          <p className="page-subtitle mt-1">Checkpoints and deliverable gates for this project.</p>
         </div>
         {canManage && (
           <Button
@@ -357,53 +365,53 @@ export default function MilestonesSection({ projectId }) {
       {(showCreateForm || editingMilestone) && canManage && (
         <form
           onSubmit={editingMilestone ? handleUpdateMilestone : handleCreateMilestone}
-          className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col gap-5 shadow-sm"
+          className="bg-brand-50 border border-brand-200 rounded-xl p-6 flex flex-col gap-5 shadow-sm"
         >
           <h3 className="m-0 text-base font-bold text-slate-900">
             {editingMilestone ? "Edit Milestone" : "Create New Milestone"}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Title *</label>
+              <label className="field-label">Title *</label>
               <input
                 required
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="e.g. Phase 1 Completion"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="input-field"
                 disabled={formLoading}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Due Date</label>
+              <label className="field-label">Due Date</label>
               <input
                 type="date"
                 value={formDueDate}
                 onChange={(e) => setFormDueDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
+                className="select-field"
                 disabled={formLoading}
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+            <label className="field-label">Description</label>
             <textarea
               value={formDesc}
               onChange={(e) => setFormDesc(e.target.value)}
               placeholder="Describe this milestone..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+              className="input-field resize-none"
               style={{ minHeight: 80 }}
               disabled={formLoading}
             />
           </div>
           <div className="w-32">
-            <label className="block text-xs font-semibold text-slate-700 mb-2">Order</label>
+            <label className="field-label">Order</label>
             <input
               type="number"
               value={formOrder}
               onChange={(e) => setFormOrder(e.target.value)}
               placeholder="1"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field"
               disabled={formLoading}
             />
           </div>
@@ -422,7 +430,11 @@ export default function MilestonesSection({ projectId }) {
 
       {/* Milestones List */}
       {loading ? (
-        <div className="p-8 text-center text-slate-500 text-sm">Loading milestones...</div>
+        <div className="flex flex-col gap-3 p-5">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="skeleton h-16 w-full" />
+            ))}
+          </div>
       ) : milestones.length === 0 ? (
         <div className="bg-white rounded-xl p-8 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
           No milestones have been created for this project yet.
@@ -458,7 +470,7 @@ export default function MilestonesSection({ projectId }) {
                       <select
                         value={m.status}
                         onChange={(e) => handleStatusChange(m._id, e.target.value)}
-                        className="px-2 py-1.5 rounded-md border border-slate-300 text-xs outline-none focus:border-blue-500 bg-white"
+                        className="px-2 py-1.5 rounded-md border border-slate-300 text-xs outline-none focus:border-brand-500 bg-white"
                       >
                         {MILESTONE_STATUSES.map(s => (
                           <option key={s} value={s}>{s.replace("_", " ")}</option>

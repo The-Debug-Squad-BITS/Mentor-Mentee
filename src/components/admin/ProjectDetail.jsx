@@ -1,4 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import {
+  Close, AlertTriangle, AlertCircle, Inbox,
+  Folder, CheckCircle, Upload, Flag, MessageSquare, FileText,
+  Activity as ActivityIcon, Clock,
+} from "../ui/Icons";
 import Avatar from "../ui/Avatar";
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
@@ -13,13 +18,13 @@ import { formatUIDate } from "../../lib/datetime";
 function getProjectEntityMeta(entityType, action) {
   const k = entityType || "";
   const a = action || "";
-  if (k === "PROJECT"    || a.includes("PROJECT"))    return { icon: "🗂️",  color: "bg-blue-50 text-blue-700 border-blue-200",       label: "Project" };
-  if (k === "TASK"       || a.includes("TASK"))       return { icon: "✅",   color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Task" };
-  if (k === "SUBMISSION" || a.includes("SUBMISSION")) return { icon: "📤",  color: "bg-amber-50 text-amber-700 border-amber-200",    label: "Submission" };
-  if (k === "MILESTONE"  || a.includes("MILESTONE"))  return { icon: "🏁",  color: "bg-indigo-50 text-indigo-700 border-indigo-200",  label: "Milestone" };
-  if (k === "COMMENT"    || a.includes("COMMENT"))    return { icon: "💬",  color: "bg-purple-50 text-purple-700 border-purple-200",  label: "Comment" };
-  if (k === "TEMPLATE"   || a.includes("TEMPLATE"))   return { icon: "📋",  color: "bg-pink-50 text-pink-700 border-pink-200",        label: "Template" };
-  return                                                      { icon: "⚡",   color: "bg-slate-100 text-slate-700 border-slate-200",   label: "System" };
+  if (k === "PROJECT"    || a.includes("PROJECT"))    return { icon: Folder,        color: "bg-info-50 text-info-700 border-info-200",          label: "Project" };
+  if (k === "TASK"       || a.includes("TASK"))       return { icon: CheckCircle,   color: "bg-success-50 text-success-700 border-success-200", label: "Task" };
+  if (k === "SUBMISSION" || a.includes("SUBMISSION")) return { icon: Upload,        color: "bg-warning-50 text-warning-700 border-warning-200", label: "Submission" };
+  if (k === "MILESTONE"  || a.includes("MILESTONE"))  return { icon: Flag,          color: "bg-brand-50 text-brand-700 border-brand-200",       label: "Milestone" };
+  if (k === "COMMENT"    || a.includes("COMMENT"))    return { icon: MessageSquare, color: "bg-violet-50 text-violet-700 border-violet-200",    label: "Comment" };
+  if (k === "TEMPLATE"   || a.includes("TEMPLATE"))   return { icon: FileText,      color: "bg-pink-50 text-pink-700 border-pink-200",          label: "Template" };
+  return                                                      { icon: ActivityIcon, color: "bg-slate-50 text-slate-700 border-slate-200",       label: "System" };
 }
 
 function fmtRelative(dateStr) {
@@ -55,49 +60,64 @@ function ProjectActivityFeed({ projectId }) {
   }, [projectId]);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        <h3 className="m-0 text-sm font-bold text-slate-900">Project Activity</h3>
-        {!loading && activities.length > 0 && (
-          <span className="ml-1 text-xs text-slate-500">({activities.length} events)</span>
-        )}
+    <div className="card overflow-hidden">
+      <div className="card-header">
+        <h3 className="section-title m-0 flex items-center gap-2">
+          <Clock size={16} className="text-slate-400" />
+          Project Activity
+          {!loading && activities.length > 0 && (
+            <span className="badge badge-neutral">{activities.length} events</span>
+          )}
+        </h3>
       </div>
 
-      <div className="p-6">
+      <div className="p-5 sm:p-6">
         {loading ? (
-          <div className="py-12 text-center text-slate-400 text-sm">Loading activity...</div>
+          <div className="ml-4 flex flex-col gap-6 border-l-2 border-slate-100 pl-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="relative">
+                <span className="skeleton absolute -left-[41px] top-0 h-8 w-8 rounded-full" />
+                <span className="skeleton mb-2 block h-4 w-32" />
+                <span className="skeleton block h-4 w-3/4" />
+              </div>
+            ))}
+          </div>
         ) : error ? (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-            ⚠️ {error}
+          <div className="notice notice-danger">
+            <AlertTriangle size={16} className="mt-px shrink-0" />
+            <span>{error}</span>
           </div>
         ) : activities.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 text-sm">
-            <div className="text-3xl mb-2">📭</div>
-            No activity recorded for this project yet.
+          <div className="empty-state">
+            <span className="empty-state-icon">
+              <Inbox size={22} />
+            </span>
+            <p className="empty-state-title">No activity yet</p>
+            <p className="empty-state-text">
+              Task, submission and review events on this project will appear here as they happen.
+            </p>
           </div>
         ) : (
-          <div className="relative border-l-2 border-slate-100 ml-4 pl-6 flex flex-col gap-0">
+          <div className="relative ml-4 flex flex-col gap-0 border-l-2 border-slate-100 pl-6">
             {activities.map((activity, idx) => {
               const meta = getProjectEntityMeta(activity.entityType, activity.action);
+              const Glyph = meta.icon;
               return (
-                <div key={activity._id || idx} className="relative pb-5 last:pb-0 group">
-                  <div className={`w-8 h-8 rounded-full border-2 border-white absolute -left-[41px] top-0 flex items-center justify-center text-sm shadow-sm transition-transform group-hover:scale-110 z-10 ${meta.color.split(" ")[0]} ${meta.color.split(" ")[1]}`}>
-                    {meta.icon}
+                <div key={activity._id || idx} className="group relative pb-5 last:pb-0">
+                  <div
+                    className={`absolute -left-[41px] top-0 z-10 flex h-8 w-8 items-center justify-center
+                      rounded-full border-2 border-white shadow-xs ${meta.color.split(" ")[0]} ${meta.color.split(" ")[1]}`}
+                  >
+                    <Glyph size={15} />
                   </div>
                   <div className="pl-1">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-md tracking-wider border ${meta.color}`}>
-                        {meta.label}
-                      </span>
-                      <span className="ml-auto text-xs text-slate-400 font-medium shrink-0">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <span className={`badge ${meta.color}`}>{meta.label}</span>
+                      <span className="ml-auto shrink-0 text-[12px] font-medium text-slate-500">
                         {fmtRelative(activity.createdAt)}
                       </span>
                     </div>
-                    <p className="m-0 text-slate-700 text-sm leading-relaxed">
+                    <p className="m-0 text-[13.5px] leading-relaxed text-slate-700">
                       {formatActivityLine(activity)}
                     </p>
                   </div>
@@ -270,7 +290,17 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500 text-sm">Loading project details...</div>;
+  if (loading) return (
+    <div className="flex flex-col gap-4 animate-fade-in">
+      <span className="skeleton h-8 w-64" />
+      <span className="skeleton h-4 w-96 max-w-full" />
+      <div className="card flex flex-col gap-3 p-5">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} className="skeleton h-11 w-full" />
+        ))}
+      </div>
+    </div>
+  );
   if (error || !project) return <div className="p-8 text-center text-slate-700 font-medium">{error || "Project not found."}</div>;
 
   return (
@@ -287,10 +317,10 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">{project.title}</h1>
+              <h1 className="page-title m-0">{project.title}</h1>
               <StatusBadge status={project.status} />
             </div>
-            <p className="m-0 mt-1 text-slate-500 text-sm">Project Overseer & Deliverables Console</p>
+            <p className="page-subtitle mt-1">Project Overseer & Deliverables Console</p>
           </div>
         </div>
 
@@ -312,7 +342,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
       {/* Assignment overlay panel */}
       {showAssignForm && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             {/* Assign Mentor Column */}
             <div className="flex flex-col justify-between bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
@@ -323,7 +353,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                 <select
                   value={selectedMentor}
                   onChange={(e) => setSelectedMentor(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 transition-colors"
                 >
                   <option value="">-- Choose Mentor --</option>
                   {mentors.map(m => (
@@ -366,7 +396,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                                 setSelectedMentees([...selectedMentees, st._id]);
                               }
                             }}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                            className="rounded border-slate-300 accent-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
                           />
                           <span className="text-sm font-medium text-slate-800">{st.name}</span>
                           <span className="text-xs text-slate-500 ml-auto">{st.email}</span>
@@ -483,7 +513,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
           </div>
 
           {/* Task Summary Table */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="card overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
               <h2 className="m-0 text-base font-bold text-slate-900">Task Summary ({tasks.length})</h2>
             </div>
@@ -491,7 +521,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
               <div className="p-8 text-center text-slate-500 text-sm">No tasks assigned under this project yet.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[500px]">
+                <table className="data-table min-w-[500px]">
                   <thead>
                     <tr className="bg-white border-b border-slate-200">
                       {["Task Title", "Assignee", "Priority", "Status"].map(h => (
@@ -499,13 +529,13 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody>
                     {tasks.map(t => (
                       <tr key={t._id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-slate-900 text-sm">{t.title}</td>
+                        <td className="font-semibold text-slate-900">{t.title}</td>
                         <td className="px-6 py-4 text-sm text-slate-700">{t.assignedTo?.name || "Unassigned"}</td>
                         <td className="px-6 py-4 text-sm text-slate-700 font-medium">{t.priority}</td>
-                        <td className="px-6 py-4"><StatusBadge status={t.status} /></td>
+                        <td><StatusBadge status={t.status} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -525,7 +555,7 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
                 value={project.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 disabled={statusLoading}
-                className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-xs text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer transition-colors shadow-sm"
+                className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold text-xs text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 cursor-pointer transition-colors shadow-sm"
               >
                 <option value="PLANNED">Planned</option>
                 <option value="ACTIVE">Active</option>

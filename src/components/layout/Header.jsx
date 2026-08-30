@@ -1,78 +1,114 @@
+import { useState } from "react";
+import Brand from "../ui/Brand";
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
-import { StarIcon, ArrowRight } from "../ui/Icons";
+import { Menu, Close, ArrowRight } from "../ui/Icons";
 import { navLinks } from "../../data/landingData";
+
+/* ==========================================================================
+   Header — sticky public navigation for the landing page.
+   --------------------------------------------------------------------------
+   Anchor links scroll to the sections below (html has scroll-behavior:smooth).
+   Below `lg` the links and actions collapse into a disclosure panel.
+   ========================================================================== */
 
 export default function Header({ onLogin, onSignup }) {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between flex-wrap gap-4 py-5 border-b border-stone-200">
-      {/* Logo */}
-      <div className="flex items-center gap-2.5">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: "#E8B86D" }}
-        >
-          <StarIcon />
-        </div>
-        <p className="text-xs text-stone-500 tracking-wide">
-          Mentorship platform
-        </p>
-      </div>
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between gap-4">
+          {/* Brand */}
+          <a href="#top" className="flex shrink-0 items-center gap-2.5">
+            <Brand size="md" />
+          </a>
 
-      {/* Nav */}
+          {/* Section links */}
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Page sections">
+            {navLinks.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
-      <nav className="flex items-center gap-1 flex-wrap">
-        {navLinks.map((item) => (
+          {/* Actions */}
+          <div className="hidden items-center gap-2 lg:flex">
+            <Button variant="secondary" size="sm" onClick={() => navigate("/login")}>
+              Sign in
+            </Button>
+
+            <Button variant="primary" size="sm" onClick={() => navigate("/signup")}>
+              Get Started <ArrowRight size={15} />
+            </Button>
+          </div>
+
+          {/* Mobile disclosure toggle */}
           <button
-            key={item}
-            className="text-[14px] text-[#6B6560] no-underline px-4 py-2 rounded-full transition-[background,color] duration-150 cursor-pointer bg-transparent border-none font-['DM_Sans',sans-serif] hover:bg-[rgba(26,23,20,0.06)] hover:text-[#1A1714]"
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-xs transition-colors duration-150 hover:bg-slate-50 hover:text-slate-900 lg:hidden"
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={menuOpen}
+            aria-controls="landing-mobile-nav"
+            onClick={() => setMenuOpen((open) => !open)}
           >
-            {item}
+            {menuOpen ? <Close size={18} /> : <Menu size={18} />}
           </button>
-        ))}
-      </nav>
-
-      {/* Actions */}
-      {/* <div className="flex items-center gap-2.5 flex-wrap">
-        <Button
-          variant="secondary"
-          className="border-amber/60 bg-amber/10"
-          onClick={() => navigate("/admin-dashboard")}
-        >
-          Demo Admin
-        </Button>
-        <Button variant="secondary" onClick={onLogin}>
-          Sign in
-        </Button>
-        <Button variant="primary" onClick={onSignup}>
-          Get Started <ArrowRight />
-        </Button>
-      </div> */}
-
-      <div className="flex items-center gap-2.5 flex-wrap">
-        <button
-          className="inline-flex items-center gap-2 px-7 py-3.25 bg-[rgba(232,184,109,0.1)] text-[#1A1714] rounded-full text-[14px] font-medium no-underline border border-[#E8B86D] cursor-pointer transition-[border-color,background] duration-150 font-['DM_Sans',sans-serif] hover:border-[#C5BEB8] hover:bg-[#FDFCFB]"
-          onClick={() => navigate("/admin-dashboard")}
-        >
-          Demo Admin
-        </button>
-
-        <button
-          className="inline-flex items-center gap-2 px-7 py-3.25 bg-white text-[#1A1714] rounded-full text-[14px] font-medium no-underline border border-[#E2DDD8] cursor-pointer transition-[border-color,background] duration-150 font-['DM_Sans',sans-serif] hover:border-[#C5BEB8] hover:bg-[#FDFCFB]"
-          onClick={() => navigate("/login")}
-        >
-          Sign in
-        </button>
-
-        <button
-          className="inline-flex items-center gap-2 px-7 py-3.25 bg-[#1A1714] text-[#F7F4EF] rounded-full text-[14px] font-medium no-underline border-none cursor-pointer transition-[background] duration-150 font-['DM_Sans',sans-serif] hover:bg-[#2E2A26]"
-          onClick={() => navigate("/signup")}
-        >
-          Get Started <ArrowRight />
-        </button>
+        </div>
       </div>
+
+      {/* Mobile panel */}
+      {menuOpen && (
+        <div
+          id="landing-mobile-nav"
+          className="animate-fade-in border-t border-slate-200 bg-white shadow-lg lg:hidden"
+        >
+          <div className="mx-auto w-full max-w-6xl px-5 pb-5 pt-3 sm:px-6">
+            <nav className="flex flex-col" aria-label="Page sections">
+              {navLinks.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors duration-150 hover:bg-slate-50 hover:text-slate-900"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+
+            <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4">
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/login");
+                }}
+              >
+                Sign in
+              </Button>
+
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/signup");
+                }}
+              >
+                Get Started <ArrowRight size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

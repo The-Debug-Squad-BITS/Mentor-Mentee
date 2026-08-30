@@ -1,10 +1,32 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { useDashboardStore } from "../../store/dashboardStore";
+import { Target, Clock, Refresh } from "../ui/Icons";
 import api from "../../lib/api";
+
+/* Same three-tile grid, so the row reserves its height before the numbers land. */
+function QuickStatsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+          <div className="flex items-start justify-between gap-3">
+            <span className="skeleton h-3 w-24" />
+            <span className="skeleton h-7 w-7 rounded-lg" />
+          </div>
+          <span className="skeleton mt-3 block h-7 w-16" />
+          <span className="skeleton mt-2 block h-3 w-28" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function MenteeQuickStats() {
   const { token } = useAuthStore();
+  // Cached in the store, so the skeleton only appears on a cold load. Signed-out
+  // means nothing is coming, so it starts resolved.
+  const [loading, setLoading] = useState(Boolean(token));
   const { menteeStats, setMenteeStats } = useDashboardStore();
 
   // ── Fetch mentee dashboard stats from backend ──────────────────────────
@@ -17,6 +39,8 @@ export default function MenteeQuickStats() {
         setMenteeStats(response.data.data);
       } catch (err) {
         console.error("Failed to fetch mentee dashboard stats:", err);
+      } finally {
+        setLoading(false);
       }
     };
     if (token) fetchStats();
@@ -37,42 +61,72 @@ export default function MenteeQuickStats() {
       label: "Overall Progress",
       value: `${progressPercent}%`,
       suffix: `${completedTasks} / ${assignedTasks} tasks done`,
-      suffixColor: "#10b981", // emerald-500
+      suffixClass: "text-success-600",
+      icon: Target,
+      // Only the progress tile carries a bar — it is the one value with a scale.
+      bar: progressPercent,
     },
     {
       label: "Pending Tasks",
       value: pendingTasks.toString(),
       suffix: "still to do",
-      suffixColor: "#64748b", // slate-500
+      suffixClass: "text-slate-500",
+      icon: Clock,
     },
     {
       label: "Revision Requests",
       value: revisionRequests.toString(),
       suffix: "needs changes",
-      suffixColor: revisionRequests > 0 ? "#ef4444" : "#64748b", // red-500 or slate-500
+      suffixClass: revisionRequests > 0 ? "text-danger-600" : "text-slate-500",
+      icon: Refresh,
+      alert: revisionRequests > 0,
     },
   ];
 
+  if (loading && !menteeStats) return <QuickStatsSkeleton />;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-7 animate-fade-in">
-      {stats.map((s) => (
-        <div
-          key={s.label}
-          className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center min-w-[160px]"
-        >
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">
-            {s.label}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in">
+      {stats.map((s) => {
+        const Glyph = s.icon;
+        return (
+          <div
+            key={s.label}
+            className={`bg-white rounded-2xl border p-5 shadow-xs ${
+              s.alert ? "border-danger-200" : "border-slate-200/80"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
+                  s.alert
+                    ? "border-danger-100 bg-danger-50 text-danger-600"
+                    : "border-slate-200 bg-slate-50 text-slate-500"
+                }`}
+              >
+                <Glyph size={16} />
+              </span>
+              <span className="text-[13px] font-medium text-slate-500">{s.label}</span>
+            </div>
+
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="font-display text-[30px] font-bold leading-none tracking-tight text-slate-900 tabular-nums">
+                {s.value}
+              </span>
+              <span className={`text-[13px] font-medium ${s.suffixClass}`}>{s.suffix}</span>
+            </div>
+
+            {s.bar !== undefined && (
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-brand-500 transition-[width] duration-500 ease-out"
+                  style={{ width: `${s.bar}%` }}
+                />
+              </div>
+            )}
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-slate-900 leading-none">
-              {s.value}
-            </span>
-            <span className="text-sm font-medium" style={{ color: s.suffixColor }}>
-              {s.suffix}
-            </span>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

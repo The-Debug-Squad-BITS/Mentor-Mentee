@@ -1,11 +1,27 @@
 import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
-import Button from "../ui/Button";
+import { Close, Users, Mail } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
 import api from "../../lib/api";
+import { avatarColor } from "../../lib/avatarColor";
+
+/* Matches the member card's shape so the swap to real data doesn't jump. */
+function MemberCardSkeleton() {
+  return (
+    <div className="card flex items-center gap-4 p-5">
+      <span className="skeleton h-11 w-11 shrink-0 rounded-full" />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <span className="skeleton h-3.5 w-1/2" />
+        <span className="skeleton h-3 w-3/4" />
+        <span className="skeleton h-5 w-24 rounded-full" />
+      </div>
+    </div>
+  );
+}
 
 export default function MentorTeam() {
   const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
 
   const { user } = useAuthStore();
@@ -58,7 +74,7 @@ export default function MentorTeam() {
                   name: m.name,
                   email: m.email,
                   avatar: m.name ? m.name.substring(0, 2).toUpperCase() : "U",
-                  color: "#" + Math.floor(Math.random()*16777215).toString(16).padEnd(6, '0'),
+                  color: avatarColor(mId || m.name),
                   projects: []
                 });
               }
@@ -76,6 +92,8 @@ export default function MentorTeam() {
         setTeamMembers(Array.from(membersMap.values()));
       } catch (error) {
         console.error("Error fetching team members:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -83,28 +101,48 @@ export default function MentorTeam() {
   }, [currentUser.id]);
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-5 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-        <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Mentees Directory</h1>
-        <p className="m-0 mt-1 text-slate-500 text-sm">Review member details and progress charts for team members under your supervision.</p>
+      <div>
+        <h1 className="page-title m-0">Mentees Directory</h1>
+        <p className="page-subtitle mt-1">
+          Member details and progress for everyone under your supervision.
+        </p>
       </div>
 
       {/* Grid List */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          {teamMembers.length === 0 ? (
-            <div className="bg-white rounded-xl p-12 border border-slate-200 text-center text-slate-500 text-sm w-full shadow-sm">
-              No mentees currently assigned to your projects.
+      <div className="flex flex-col items-start gap-5 lg:flex-row">
+        <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
+          {loading ? (
+            <>
+              {[0, 1, 2, 3].map((i) => <MemberCardSkeleton key={i} />)}
+            </>
+          ) : teamMembers.length === 0 ? (
+            <div className="card col-span-full">
+              <div className="empty-state">
+                <span className="empty-state-icon">
+                  <Users size={22} />
+                </span>
+                <p className="empty-state-title">No mentees assigned yet</p>
+                <p className="empty-state-text">
+                  Students assigned to your projects will appear here, along with their
+                  workspace and progress.
+                </p>
+              </div>
             </div>
           ) : (
             teamMembers.map(m => (
-              <div
+              <button
                 key={m.id}
+                type="button"
                 onClick={() => setSelectedMember(m)}
-                className={`bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md duration-200 shadow-sm ${
-                  selectedMember && selectedMember.id === m.id ? "bg-blue-50/50 border-blue-200" : ""
-                }`}
+                aria-pressed={selectedMember?.id === m.id}
+                className={`flex items-center gap-4 rounded-2xl border bg-white p-4 text-left shadow-xs
+                  transition-[box-shadow,border-color] duration-200 hover:shadow-md ${
+                    selectedMember && selectedMember.id === m.id
+                      ? "border-brand-300 ring-2 ring-brand-500/15"
+                      : "border-slate-200/80 hover:border-slate-300"
+                  }`}
               >
                 <Avatar initials={m.avatar} color={m.color} size={48} />
                 <div className="min-w-0 flex-1">
@@ -112,41 +150,43 @@ export default function MentorTeam() {
                   <span className="block text-xs text-slate-500 truncate mb-2">{m.email}</span>
                   <div className="flex gap-2 flex-wrap">
                     {m.projects.map(proj => (
-                      <span key={proj.projectId} className="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold uppercase tracking-wider border border-blue-100">
+                      <span key={proj.projectId} className="badge badge-brand">
                         {proj.projectName}
                       </span>
                     ))}
                   </div>
                 </div>
-              </div>
+              </button>
             ))
           )}
         </div>
 
         {/* Member Profile Drawer */}
         {selectedMember && (
-          <div className="w-full lg:w-80 bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-6 shrink-0 relative animate-fade-in shadow-md">
+          <div className="card relative flex w-full shrink-0 flex-col gap-6 p-6 shadow-sm animate-fade-in lg:w-80">
             {/* Close */}
             <button
               onClick={() => setSelectedMember(null)}
-              className="absolute top-4 right-4 w-8 h-8 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center cursor-pointer border-none text-sm transition-colors"
+              aria-label="Close member details"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg
+                text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
             >
-              ✕
+              <Close size={16} />
             </button>
 
             {/* Avatar header */}
-            <div className="flex flex-col items-center text-center gap-3">
+            <div className="flex flex-col items-center gap-3 text-center">
               <Avatar initials={selectedMember.avatar} color={selectedMember.color} size={80} />
               <div>
-                <h3 className="m-0 text-lg font-bold text-slate-900 leading-tight">{selectedMember.name}</h3>
-                <span className="text-slate-500 text-sm">{selectedMember.email}</span>
+                <h3 className="m-0 font-display text-[17px] font-bold leading-tight text-slate-900">
+                  {selectedMember.name}
+                </h3>
+                <span className="text-[13px] text-slate-500">{selectedMember.email}</span>
               </div>
-              <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-md mt-1">
-                Active Member
-              </span>
+              <span className="badge badge-success">Active member</span>
             </div>
 
-            <hr className="border-0 border-t border-slate-200 m-0" />
+            <hr className="m-0 border-0 border-t border-slate-200" />
 
             {/* Project track info */}
             <div className="flex flex-col gap-2 overflow-y-auto max-h-[300px] pr-1">
@@ -155,7 +195,7 @@ export default function MentorTeam() {
                 <div key={proj.projectId} className="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col gap-3 mb-2 shrink-0">
                   <div className="flex justify-between items-center text-sm gap-2">
                     <span className="font-semibold text-slate-900 truncate" title={proj.projectName}>{proj.projectName}</span>
-                    <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-100 px-2 py-0.5 rounded border border-blue-200 shrink-0">{proj.projectStatus}</span>
+                    <span className="badge badge-info shrink-0">{proj.projectStatus}</span>
                   </div>
                   <div>
                     <div className="flex justify-between text-xs text-slate-500 font-medium mb-1.5">
@@ -163,22 +203,29 @@ export default function MentorTeam() {
                       <span className="font-semibold text-slate-900">{proj.progress}%</span>
                     </div>
                     <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-600 rounded-full" style={{ width: `${proj.progress}%` }} />
+                      <div
+                        className="h-full rounded-full bg-brand-500 transition-[width] duration-500 ease-out"
+                        style={{ width: `${proj.progress}%` }}
+                      />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <hr className="border-0 border-t border-slate-200 m-0" />
+            <hr className="m-0 border-0 border-t border-slate-200" />
 
-            <Button
-              as="a"
+            {/* Rendered as a real anchor — this was previously <Button as="a">,
+                which React rendered as a <button> with a stray `as` attribute,
+                so the mailto link never fired. */}
+            <a
               href={`mailto:${selectedMember.email}`}
-              className="w-full justify-center"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-brand-600
+                bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white no-underline shadow-xs
+                transition-colors duration-150 hover:border-brand-700 hover:bg-brand-700"
             >
-              ✉️ Send Workspace Alert
-            </Button>
+              <Mail size={16} /> Email mentee
+            </a>
           </div>
         )}
       </div>

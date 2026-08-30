@@ -3,11 +3,32 @@ import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useTemplateStore } from "../../store/templateStore";
 import Button from "../ui/Button";
+import StatCard from "../ui/StatCard";
+import {
+  ArrowLeft,
+  Plus,
+  Close,
+  Trash,
+  Edit,
+  Layers,
+  Flag,
+  CheckCircle,
+  AlertTriangle,
+  Lock,
+  Sparkle,
+} from "../ui/Icons";
 import { toast } from "react-toastify";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH"];
+
+/** Badge tone per priority — keeps the pill identical everywhere it appears. */
+const PRIORITY_BADGE = {
+  HIGH: "badge-danger",
+  MEDIUM: "badge-warning",
+  LOW: "badge-neutral",
+};
 
 /** Returns a fresh blank milestone object for the builder */
 const blankMilestone = () => ({
@@ -26,6 +47,53 @@ const blankTask = (milestoneKey = null) => ({
   description: "",
   priority: "MEDIUM",
 });
+
+// ── Presentational primitives (local to this file) ───────────────────────────
+
+/** Priority pill — dot + label so status is never carried by colour alone. */
+function PriorityBadge({ priority }) {
+  const value = priority || "MEDIUM";
+  return (
+    <span className={`badge ${PRIORITY_BADGE[value] || "badge-warning"}`}>
+      <span className="badge-dot" />
+      {value}
+    </span>
+  );
+}
+
+/** Small numbered chip used for milestone ordering. */
+function OrderChip({ children }) {
+  return (
+    <span className="w-6 h-6 shrink-0 rounded-md bg-brand-50 border border-brand-100 text-brand-700 text-[11px] font-bold flex items-center justify-center tabular-nums">
+      {children}
+    </span>
+  );
+}
+
+/** Icon-only destructive control used inside the builder rows. */
+function RemoveButton({ onClick, label, className = "" }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={`shrink-0 inline-flex items-center justify-center rounded-lg border border-transparent bg-transparent text-slate-500 cursor-pointer transition-colors hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200 ${className}`}
+    >
+      <Trash size={15} />
+    </button>
+  );
+}
+
+/** Inline spinner for buttons in a pending state. */
+function Spinner() {
+  return (
+    <span
+      aria-hidden="true"
+      className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin"
+    />
+  );
+}
 
 // ── Template Builder sub-component ───────────────────────────────────────────
 
@@ -74,152 +142,174 @@ function TemplateBuilder({ milestones, standaloneTasks, onMilestonesChange, onSt
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       {/* Milestones section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h4 className="m-0 text-sm font-bold text-slate-700">
-            Milestones ({milestones.length})
-          </h4>
-          <button
-            type="button"
-            onClick={addMilestone}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
-          >
-            + Add Milestone
-          </button>
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Flag size={16} className="text-slate-500" />
+            <h4 className="m-0 font-display text-[13px] font-bold tracking-tight text-slate-900">
+              Milestones
+            </h4>
+            <span className="badge badge-neutral tabular-nums">{milestones.length}</span>
+          </div>
+          <Button type="button" variant="subtle" size="sm" onClick={addMilestone}>
+            <Plus size={15} />
+            Add milestone
+          </Button>
         </div>
 
         {milestones.length === 0 && (
-          <p className="text-xs text-slate-400 italic">No milestones yet. Add one to group tasks by phase.</p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center">
+            <p className="m-0 text-[13px] text-slate-500 leading-relaxed">
+              No milestones yet. Add one to group tasks by phase.
+            </p>
+          </div>
         )}
 
         {milestones.map((m, mIdx) => (
-          <div key={m._key} className="border border-slate-300 rounded-xl p-4 bg-white flex flex-col gap-4">
+          <div key={m._key} className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-col gap-4">
             {/* Milestone header */}
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-md flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-                {mIdx + 1}
+              <div className="mt-8 hidden sm:block">
+                <OrderChip>{mIdx + 1}</OrderChip>
               </div>
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  required
-                  value={m.title}
-                  onChange={e => updateMilestone(m._key, "title", e.target.value)}
-                  placeholder="Milestone title *"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                />
-                <input
-                  type="number"
-                  value={m.order}
-                  onChange={e => updateMilestone(m._key, "order", e.target.value)}
-                  placeholder="Order (e.g. 1)"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                />
-                <input
-                  value={m.description}
-                  onChange={e => updateMilestone(m._key, "description", e.target.value)}
-                  placeholder="Description (optional)"
-                  className="sm:col-span-2 w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                />
+              <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="field-label">Milestone title *</label>
+                  <input
+                    required
+                    value={m.title}
+                    onChange={e => updateMilestone(m._key, "title", e.target.value)}
+                    placeholder="e.g. Literature review"
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="field-label">Order</label>
+                  <input
+                    type="number"
+                    value={m.order}
+                    onChange={e => updateMilestone(m._key, "order", e.target.value)}
+                    placeholder="1"
+                    className="input-field"
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="field-label">Description</label>
+                  <input
+                    value={m.description}
+                    onChange={e => updateMilestone(m._key, "description", e.target.value)}
+                    placeholder="What this phase covers (optional)"
+                    className="input-field"
+                  />
+                </div>
               </div>
-              <button
-                type="button"
+              <RemoveButton
                 onClick={() => removeMilestone(m._key)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer border-0 bg-transparent shrink-0"
-                title="Remove milestone"
-              >
-                ✕
-              </button>
+                label="Remove milestone"
+                className="w-9 h-9 mt-7"
+              />
             </div>
 
             {/* Milestone tasks */}
-            <div className="ml-9 flex flex-col gap-2">
+            <div className="sm:ml-9 pl-4 border-l border-slate-200 flex flex-col gap-2">
               {m.tasks.map((t) => (
-                <div key={t._key} className="flex items-center gap-2">
-                  <div className="w-4 border-l-2 border-b-2 border-slate-200 h-4 shrink-0 rounded-bl-md" />
+                <div key={t._key} className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <input
                     required
                     value={t.title}
                     onChange={e => updateMilestoneTask(m._key, t._key, "title", e.target.value)}
                     placeholder="Task title *"
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="input-field flex-1 py-2"
                   />
-                  <select
-                    value={t.priority}
-                    onChange={e => updateMilestoneTask(m._key, t._key, "priority", e.target.value)}
-                    className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs outline-none focus:border-blue-500 bg-white transition-colors"
-                  >
-                    {PRIORITY_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => removeTaskFromMilestone(m._key, t._key)}
-                    className="w-6 h-6 flex items-center justify-center rounded text-red-400 hover:text-red-600 cursor-pointer border-0 bg-transparent text-sm shrink-0"
-                  >✕</button>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={t.priority}
+                      onChange={e => updateMilestoneTask(m._key, t._key, "priority", e.target.value)}
+                      className="select-field w-full sm:w-36 py-2 text-[13px]"
+                      aria-label="Task priority"
+                    >
+                      {PRIORITY_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                    <RemoveButton
+                      onClick={() => removeTaskFromMilestone(m._key, t._key)}
+                      label="Remove task"
+                      className="w-8 h-8"
+                    />
+                  </div>
                 </div>
               ))}
               <button
                 type="button"
                 onClick={() => addTaskToMilestone(m._key)}
-                className="self-start text-xs text-slate-500 hover:text-blue-600 font-medium cursor-pointer bg-transparent border-0 transition-colors"
+                className="self-start inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-600 hover:text-brand-700 cursor-pointer bg-transparent border-0 p-0 transition-colors"
               >
-                + Add task to milestone
+                <Plus size={14} />
+                Add task to milestone
               </button>
             </div>
           </div>
         ))}
-      </div>
+      </section>
 
       {/* Standalone tasks section */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h4 className="m-0 text-sm font-bold text-slate-700">
-            Standalone Tasks ({standaloneTasks.length})
-          </h4>
-          <button
-            type="button"
-            onClick={addStandaloneTask}
-            className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors cursor-pointer"
-          >
-            + Add Task
-          </button>
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} className="text-slate-500" />
+            <h4 className="m-0 font-display text-[13px] font-bold tracking-tight text-slate-900">
+              Standalone tasks
+            </h4>
+            <span className="badge badge-neutral tabular-nums">{standaloneTasks.length}</span>
+          </div>
+          <Button type="button" variant="secondary" size="sm" onClick={addStandaloneTask}>
+            <Plus size={15} />
+            Add task
+          </Button>
         </div>
 
         {standaloneTasks.length === 0 && (
-          <p className="text-xs text-slate-400 italic">No standalone tasks yet. These are tasks not linked to any milestone.</p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-7 text-center">
+            <p className="m-0 text-[13px] text-slate-500 leading-relaxed">
+              No standalone tasks yet. These are tasks not linked to any milestone.
+            </p>
+          </div>
         )}
 
         {standaloneTasks.map((t) => (
-          <div key={t._key} className="flex items-center gap-2">
+          <div key={t._key} className="flex flex-col sm:flex-row sm:items-center gap-2">
             <input
               required
               value={t.title}
               onChange={e => updateStandaloneTask(t._key, "title", e.target.value)}
               placeholder="Task title *"
-              className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field flex-1"
             />
             <input
               value={t.description}
               onChange={e => updateStandaloneTask(t._key, "description", e.target.value)}
               placeholder="Description (optional)"
-              className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="input-field flex-1"
             />
-            <select
-              value={t.priority}
-              onChange={e => updateStandaloneTask(t._key, "priority", e.target.value)}
-              className="px-2 py-2 rounded-lg border border-slate-300 text-xs outline-none focus:border-blue-500 bg-white transition-colors"
-            >
-              {PRIORITY_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <button
-              type="button"
-              onClick={() => removeStandaloneTask(t._key)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 cursor-pointer border-0 bg-transparent transition-colors shrink-0"
-            >✕</button>
+            <div className="flex items-center gap-2">
+              <select
+                value={t.priority}
+                onChange={e => updateStandaloneTask(t._key, "priority", e.target.value)}
+                className="select-field w-full sm:w-36 text-[13px]"
+                aria-label="Task priority"
+              >
+                {PRIORITY_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <RemoveButton
+                onClick={() => removeStandaloneTask(t._key)}
+                label="Remove task"
+                className="w-9 h-9"
+              />
+            </div>
           </div>
         ))}
-      </div>
+      </section>
     </div>
   );
 }
@@ -230,89 +320,92 @@ function TemplateDetail({ template, isAdmin, onBack, onRefresh, onCreateProject 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4">
+      <div className="card px-5 py-5 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-start gap-4 min-w-0">
           <Button
             variant="secondary"
             onClick={onBack}
-            className="w-10 h-10 p-0 flex items-center justify-center text-lg rounded-lg"
+            className="w-10 h-10 p-0 shrink-0"
+            aria-label="Back to templates"
+            title="Back to templates"
           >
-            ←
+            <ArrowLeft size={18} />
           </Button>
-          <div>
-            <h2 className="m-0 text-lg font-bold text-slate-900">{template.name}</h2>
-            <p className="m-0 mt-1 text-slate-500 text-sm">Template detail view</p>
+          <div className="min-w-0">
+            <p className="eyebrow m-0">Template</p>
+            <h2 className="page-title m-0 mt-1 truncate">{template.name}</h2>
+            <p className="page-subtitle m-0 mt-1">
+              Everything this blueprint creates when it is applied to a project.
+            </p>
           </div>
         </div>
         {isAdmin && (
           <Button
             onClick={() => onCreateProject(template)}
-            className="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 text-white shrink-0"
+            className="shrink-0 w-full sm:w-auto"
           >
-            🚀 Create Project from Template
+            <Sparkle size={16} />
+            Create project from template
           </Button>
         )}
       </div>
 
       {/* Description */}
       {template.description && (
-        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-          <h3 className="m-0 mb-2 text-sm font-bold text-slate-700 uppercase tracking-wide">Description</h3>
-          <p className="m-0 text-slate-700 text-sm leading-relaxed">{template.description}</p>
+        <div className="card card-body">
+          <h3 className="section-title m-0 mb-2">Description</h3>
+          <p className="m-0 text-sm text-slate-700 leading-relaxed">{template.description}</p>
         </div>
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
-          <span className="block text-3xl font-bold text-indigo-600">{template.milestones?.length || 0}</span>
-          <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Milestones</span>
-        </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
-          <span className="block text-3xl font-bold text-blue-600">
-            {(template.milestones || []).reduce((s, m) => s + (m.tasks?.length || 0), 0)}
-          </span>
-          <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Milestone Tasks</span>
-        </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
-          <span className="block text-3xl font-bold text-emerald-600">{template.tasks?.length || 0}</span>
-          <span className="block text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Standalone Tasks</span>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard
+          icon={<Flag size={18} />}
+          label="Milestones"
+          value={template.milestones?.length || 0}
+        />
+        <StatCard
+          icon={<Layers size={18} />}
+          label="Milestone tasks"
+          value={(template.milestones || []).reduce((s, m) => s + (m.tasks?.length || 0), 0)}
+        />
+        <StatCard
+          icon={<CheckCircle size={18} />}
+          label="Standalone tasks"
+          value={template.tasks?.length || 0}
+        />
       </div>
 
       {/* Milestones breakdown */}
       {template.milestones && template.milestones.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
-            <h3 className="m-0 text-sm font-bold text-slate-900">Milestones</h3>
+        <div className="card overflow-hidden">
+          <div className="card-header">
+            <h3 className="section-title m-0">Milestones</h3>
+            <span className="badge badge-neutral tabular-nums">{template.milestones.length}</span>
           </div>
           <div className="divide-y divide-slate-100">
             {template.milestones.map((m, i) => (
-              <div key={i} className="px-6 py-4">
+              <div key={i} className="px-5 py-4 sm:px-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-md flex items-center justify-center text-xs font-bold shrink-0">
-                    {m.order || i + 1}
-                  </div>
-                  <span className="font-semibold text-slate-900 text-sm">{m.title}</span>
+                  <OrderChip>{m.order || i + 1}</OrderChip>
+                  <span className="font-semibold text-slate-900 text-sm truncate">{m.title}</span>
                   {m.tasks && m.tasks.length > 0 && (
-                    <span className="ml-auto text-xs text-slate-500">{m.tasks.length} task{m.tasks.length !== 1 ? "s" : ""}</span>
+                    <span className="ml-auto shrink-0 text-[12px] text-slate-500">
+                      {m.tasks.length} task{m.tasks.length !== 1 ? "s" : ""}
+                    </span>
                   )}
                 </div>
                 {m.description && (
-                  <p className="text-xs text-slate-500 ml-9 m-0 mb-2">{m.description}</p>
+                  <p className="text-[13px] text-slate-500 ml-9 m-0 mb-2 leading-relaxed">{m.description}</p>
                 )}
                 {m.tasks && m.tasks.length > 0 && (
-                  <div className="ml-9 flex flex-col gap-1.5">
+                  <div className="ml-9 pl-4 border-l border-slate-200 flex flex-col gap-2">
                     {m.tasks.map((t, ti) => (
-                      <div key={ti} className="flex items-center gap-2 text-sm">
-                        <span className="text-slate-400">└</span>
-                        <span className="text-slate-700 font-medium">{t.title}</span>
-                        <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wide ${
-                          t.priority === "HIGH" ? "bg-red-50 text-red-700 border-red-200" :
-                          t.priority === "LOW" ? "bg-slate-100 text-slate-600 border-slate-200" :
-                          "bg-amber-50 text-amber-700 border-amber-200"
-                        }`}>
-                          {t.priority || "MEDIUM"}
+                      <div key={ti} className="flex items-center gap-3 text-sm">
+                        <span className="text-slate-700 font-medium truncate">{t.title}</span>
+                        <span className="ml-auto shrink-0">
+                          <PriorityBadge priority={t.priority} />
                         </span>
                       </div>
                     ))}
@@ -326,27 +419,36 @@ function TemplateDetail({ template, isAdmin, onBack, onRefresh, onCreateProject 
 
       {/* Standalone tasks */}
       {template.tasks && template.tasks.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
-            <h3 className="m-0 text-sm font-bold text-slate-900">Standalone Tasks</h3>
+        <div className="card overflow-hidden">
+          <div className="card-header">
+            <h3 className="section-title m-0">Standalone tasks</h3>
+            <span className="badge badge-neutral tabular-nums">{template.tasks.length}</span>
           </div>
-          <div className="divide-y divide-slate-100">
-            {template.tasks.map((t, i) => (
-              <div key={i} className="px-6 py-3 flex items-center gap-3">
-                <span className="text-slate-400 text-sm">#{i + 1}</span>
-                <span className="text-sm font-medium text-slate-800 flex-1">{t.title}</span>
-                {t.description && (
-                  <span className="text-xs text-slate-500 truncate max-w-[200px]">{t.description}</span>
-                )}
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wide shrink-0 ${
-                  t.priority === "HIGH" ? "bg-red-50 text-red-700 border-red-200" :
-                  t.priority === "LOW" ? "bg-slate-100 text-slate-600 border-slate-200" :
-                  "bg-amber-50 text-amber-700 border-amber-200"
-                }`}>
-                  {t.priority || "MEDIUM"}
-                </span>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="w-12">#</th>
+                  <th>Task</th>
+                  <th>Description</th>
+                  <th className="text-right">Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                {template.tasks.map((t, i) => (
+                  <tr key={i}>
+                    <td className="text-slate-500 tabular-nums">{i + 1}</td>
+                    <td className="font-medium text-slate-900">{t.title}</td>
+                    <td className="text-slate-600 max-w-xs truncate">
+                      {t.description ? t.description : <span className="text-slate-400">—</span>}
+                    </td>
+                    <td className="text-right">
+                      <PriorityBadge priority={t.priority} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -408,45 +510,61 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-[200] p-4 bg-slate-900/60 backdrop-blur-sm"
+      className="modal-backdrop z-[200]"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl w-full max-w-lg flex flex-col shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
-        <div className="px-8 pt-8 pb-4 border-b border-slate-100">
-          <h2 className="m-0 text-xl font-bold text-slate-900">Create Project from Template</h2>
-          <p className="m-0 mt-1 text-slate-500 text-sm">
-            Using template: <strong className="text-indigo-600">{template.name}</strong>
-          </p>
+      <div className="modal-panel max-w-lg">
+        <div className="modal-header border-b border-slate-200/70">
+          <div className="min-w-0">
+            <h2 className="section-title m-0 text-base">Create project from template</h2>
+            <p className="m-0 mt-1 text-[13px] text-slate-500">
+              Using template: <strong className="font-semibold text-brand-700">{template.name}</strong>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close dialog"
+            title="Close"
+            className="shrink-0 w-8 h-8 inline-flex items-center justify-center rounded-lg border-0 bg-transparent text-slate-500 cursor-pointer transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            <Close size={18} />
+          </button>
         </div>
 
         {result ? (
           /* Success state */
-          <div className="p-8 flex flex-col gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-3">🎉</div>
-              <h3 className="m-0 text-lg font-bold text-slate-900">
-                {bulkCount > 1 ? `${bulkCount} Projects Created!` : "Project Created!"}
-              </h3>
-              <p className="m-0 mt-2 text-slate-500 text-sm">
-                {bulkCount > 1 ? (
-                  <span>
-                    Projects starting with <strong className="text-slate-700">"{result.project.title}"</strong> have been set up with:
-                  </span>
-                ) : (
-                  <span>
-                    <strong className="text-slate-700">"{result.project.title}"</strong> has been set up with:
-                  </span>
-                )}
-              </p>
+          <div className="px-6 py-6 flex flex-col gap-6">
+            <div className="flex flex-col items-center text-center gap-3">
+              <span className="w-12 h-12 rounded-full bg-success-50 border border-success-200 text-success-600 flex items-center justify-center">
+                <CheckCircle size={24} />
+              </span>
+              <div>
+                <h3 className="m-0 font-display text-base font-bold text-slate-900">
+                  {bulkCount > 1 ? `${bulkCount} projects created` : "Project created"}
+                </h3>
+                <p className="m-0 mt-1.5 text-[13px] text-slate-600 leading-relaxed">
+                  {bulkCount > 1 ? (
+                    <>
+                      Projects starting with{" "}
+                      <strong className="font-semibold text-slate-900">"{result.project.title}"</strong> have been set up with:
+                    </>
+                  ) : (
+                    <>
+                      <strong className="font-semibold text-slate-900">"{result.project.title}"</strong> has been set up with:
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
-                <span className="block text-2xl font-bold text-indigo-600">{result.milestonesCreated}</span>
-                <span className="block text-xs text-indigo-700 font-semibold mt-1 uppercase tracking-wide">Milestones</span>
+              <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 text-center">
+                <span className="block font-display text-2xl font-bold text-brand-700 tabular-nums">{result.milestonesCreated}</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-brand-700 mt-1">Milestones</span>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                <span className="block text-2xl font-bold text-blue-600">{result.tasksCreated}</span>
-                <span className="block text-xs text-blue-700 font-semibold mt-1 uppercase tracking-wide">Tasks</span>
+              <div className="rounded-xl border border-info-200 bg-info-50 p-4 text-center">
+                <span className="block font-display text-2xl font-bold text-info-700 tabular-nums">{result.tasksCreated}</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-info-700 mt-1">Tasks</span>
               </div>
             </div>
             <Button onClick={onClose} className="w-full justify-center">
@@ -454,129 +572,156 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-5">
-            {error && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                ⚠️ {error}
-              </div>
-            )}
+          <form onSubmit={handleSubmit} className="flex flex-col">
+            <div className="px-6 py-5 flex flex-col gap-5">
+              {error && (
+                <div className="notice notice-danger" role="alert">
+                  <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Project Title *</label>
-              <input
-                required
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                placeholder="e.g. ML Research Project - Batch 2026"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Description *</label>
-              <textarea
-                required
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Describe this project..."
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-colors"
-                style={{ minHeight: 72 }}
-                disabled={loading}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Start Date *</label>
+                <label className="field-label">Project title *</label>
                 <input
                   required
-                  type="date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="e.g. ML Research Project - Batch 2026"
+                  className="input-field"
                   disabled={loading}
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">End Date *</label>
-                <input
+                <label className="field-label">Description *</label>
+                <textarea
                   required
-                  type="date"
-                  value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Describe this project..."
+                  className="textarea-field min-h-20"
                   disabled={loading}
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Assign Mentor (optional)</label>
-              <select
-                value={mentorId}
-                onChange={e => setMentorId(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white transition-colors"
-                disabled={loading}
-              >
-                <option value="">-- No Mentor --</option>
-                {mentors.map(m => (
-                  <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
-                ))}
-              </select>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="field-label">Start date *</label>
+                  <input
+                    required
+                    type="date"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    className="input-field"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="field-label">End date *</label>
+                  <input
+                    required
+                    type="date"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    className="input-field"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Assign Mentees ({selectedMentees.length} selected)
-              </label>
-              <div className="border border-slate-300 rounded-lg p-3 max-h-36 overflow-y-auto flex flex-col gap-1.5 bg-white">
-                {mentees.length === 0 ? (
-                  <span className="text-xs text-slate-400 italic py-1">No mentees found.</span>
-                ) : (
-                  mentees.map(m => (
-                    <label key={m._id} className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 p-1.5 rounded-md transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={selectedMentees.includes(m._id)}
-                        onChange={() => toggleMentee(m._id)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
-                        disabled={loading}
-                      />
-                      <span className="text-sm font-medium text-slate-800">{m.name}</span>
-                      <span className="text-xs text-slate-500 ml-auto">{m.email}</span>
-                    </label>
-                  ))
-                )}
+              <div>
+                <label className="field-label">Assign mentor</label>
+                <select
+                  value={mentorId}
+                  onChange={e => setMentorId(e.target.value)}
+                  className="select-field"
+                  disabled={loading}
+                >
+                  <option value="">-- No Mentor --</option>
+                  {mentors.map(m => (
+                    <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
+                  ))}
+                </select>
+                <p className="field-hint">Optional — a mentor can be assigned later.</p>
+              </div>
+
+              <div>
+                <label className="field-label">
+                  Assign mentees ({selectedMentees.length} selected)
+                </label>
+                <div className="border border-slate-300 rounded-lg shadow-xs p-2 max-h-40 overflow-y-auto scrollbar-slim flex flex-col gap-0.5 bg-white">
+                  {mentees.length === 0 ? (
+                    <span className="text-[13px] text-slate-500 px-2 py-3 text-center">No mentees available yet.</span>
+                  ) : (
+                    mentees.map(m => (
+                      <label key={m._id} className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 px-2 py-1.5 rounded-md transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedMentees.includes(m._id)}
+                          onChange={() => toggleMentee(m._id)}
+                          className="w-4 h-4 rounded border-slate-300 accent-brand-600 cursor-pointer shrink-0"
+                          disabled={loading}
+                        />
+                        <span className="text-[13px] font-medium text-slate-800 truncate">{m.name}</span>
+                        <span className="text-[12px] text-slate-500 ml-auto truncate">{m.email}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="template-bulk-count" className="field-label">
+                  Number of projects to create
+                </label>
+                <input
+                  id="template-bulk-count"
+                  type="number"
+                  min="1"
+                  max="50"
+                  required
+                  value={bulkCount}
+                  onChange={e => setBulkCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                  className="input-field"
+                  disabled={loading}
+                />
+                <p className="field-hint">Create up to 50 projects from this template at once.</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">
-                Number of Projects to Create (Bulk Creation)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="50"
-                required
-                value={bulkCount}
-                onChange={e => setBulkCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white transition-colors"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end pt-2">
+            <div className="modal-footer">
               <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500">
+              <Button type="submit" disabled={loading}>
+                {loading && <Spinner />}
                 {loading ? "Creating..." : "Create Project"}
               </Button>
             </div>
           </form>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Loading placeholder for the template grid ────────────────────────────────
+
+function TemplateCardSkeleton() {
+  return (
+    <div className="card p-5 flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="skeleton w-10 h-10 rounded-xl shrink-0" />
+        <div className="flex-1 flex flex-col gap-2">
+          <div className="skeleton h-3.5 w-2/5" />
+          <div className="skeleton h-3 w-3/5" />
+        </div>
+      </div>
+      <div className="pt-3 border-t border-slate-100 flex items-center gap-4">
+        <div className="skeleton h-3 w-24" />
+        <div className="skeleton h-3 w-20" />
+        <div className="skeleton h-7 w-28 rounded-lg ml-auto" />
       </div>
     </div>
   );
@@ -787,8 +932,16 @@ export default function TemplatesSection() {
   // ── Gate for non-admin/mentor ─────────────────────────────────────────
   if (!canView) {
     return (
-      <div className="bg-white rounded-xl p-10 border border-slate-200 text-center text-slate-500 text-sm shadow-sm">
-        You do not have access to view templates.
+      <div className="card">
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <Lock size={20} />
+          </div>
+          <p className="empty-state-title">Templates are restricted</p>
+          <p className="empty-state-text">
+            You do not have access to view templates. Ask an administrator if you think this is a mistake.
+          </p>
+        </div>
       </div>
     );
   }
@@ -821,18 +974,22 @@ export default function TemplatesSection() {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="m-0 text-lg font-bold text-slate-900 tracking-tight">Project Templates</h2>
-          <p className="m-0 mt-1 text-slate-500 text-sm">
-            Reusable blueprints for projects with pre-defined milestones and tasks.
+      <div className="card px-5 py-5 sm:px-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="min-w-0">
+          <p className="eyebrow m-0">Library</p>
+          <h2 className="page-title m-0 mt-1">Project templates</h2>
+          <p className="page-subtitle m-0 mt-1">
+            Reusable blueprints for projects, with pre-defined milestones and tasks.
           </p>
         </div>
         {isAdmin && (
           <Button
             onClick={() => { setShowCreateForm(!showCreateForm); setEditingTemplate(null); resetForm(); }}
+            variant={showCreateForm ? "secondary" : "primary"}
+            className="shrink-0 w-full sm:w-auto"
           >
-            {showCreateForm ? "Cancel" : "+ New Template"}
+            {showCreateForm ? <Close size={16} /> : <Plus size={16} />}
+            {showCreateForm ? "Cancel" : "New template"}
           </Button>
         )}
       </div>
@@ -841,72 +998,105 @@ export default function TemplatesSection() {
       {(showCreateForm || editingTemplate) && isAdmin && (
         <form
           onSubmit={editingTemplate ? handleUpdateTemplate : handleCreateTemplate}
-          className="bg-indigo-50 border border-indigo-200 rounded-xl p-6 flex flex-col gap-6 shadow-sm"
+          className="card overflow-hidden animate-slide-up"
         >
-          <h3 className="m-0 text-base font-bold text-slate-900">
-            {editingTemplate ? "Edit Template" : "Create New Template"}
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="card-header">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Template Name *</label>
-              <input
-                required
-                value={formName}
-                onChange={e => setFormName(e.target.value)}
-                placeholder="e.g. ML Research Project Template"
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
-                disabled={formLoading}
-              />
+              <h3 className="section-title m-0">
+                {editingTemplate ? "Edit template" : "New template"}
+              </h3>
+              <p className="m-0 mt-0.5 text-[13px] text-slate-500">
+                Name the blueprint, then add the milestones and tasks it should create.
+              </p>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
-              <input
-                value={formDesc}
-                onChange={e => setFormDesc(e.target.value)}
-                placeholder="Optional description..."
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-white"
-                disabled={formLoading}
+            <span className={`badge ${editingTemplate ? "badge-warning" : "badge-brand"}`}>
+              <span className="badge-dot" />
+              {editingTemplate ? "Editing" : "Draft"}
+            </span>
+          </div>
+
+          <div className="card-body flex flex-col gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="field-label">Template name *</label>
+                <input
+                  required
+                  value={formName}
+                  onChange={e => setFormName(e.target.value)}
+                  placeholder="e.g. ML Research Project Template"
+                  className="input-field"
+                  disabled={formLoading}
+                />
+              </div>
+              <div>
+                <label className="field-label">Description</label>
+                <input
+                  value={formDesc}
+                  onChange={e => setFormDesc(e.target.value)}
+                  placeholder="What this template is for (optional)"
+                  className="input-field"
+                  disabled={formLoading}
+                />
+              </div>
+            </div>
+
+            {/* Builder */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+              <TemplateBuilder
+                milestones={formMilestones}
+                standaloneTasks={formStandaloneTasks}
+                onMilestonesChange={setFormMilestones}
+                onStandaloneTasksChange={setFormStandaloneTasks}
               />
             </div>
           </div>
 
-          {/* Builder */}
-          <div className="border border-indigo-200 rounded-xl p-5 bg-white">
-            <TemplateBuilder
-              milestones={formMilestones}
-              standaloneTasks={formStandaloneTasks}
-              onMilestonesChange={setFormMilestones}
-              onStandaloneTasksChange={setFormStandaloneTasks}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <Button type="submit" disabled={formLoading}>
-              {formLoading ? "Saving..." : editingTemplate ? "Update Template" : "Save Template"}
-            </Button>
+          <div className="modal-footer">
             {editingTemplate && (
               <Button type="button" variant="secondary" onClick={() => { setEditingTemplate(null); resetForm(); }}>
                 Cancel
               </Button>
             )}
+            <Button type="submit" disabled={formLoading}>
+              {formLoading && <Spinner />}
+              {formLoading ? "Saving..." : editingTemplate ? "Update Template" : "Save Template"}
+            </Button>
           </div>
         </form>
       )}
 
       {/* Templates list */}
       {loading ? (
-        <div className="p-10 text-center text-slate-500 text-sm">Loading templates...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5" aria-busy="true">
+          {[0, 1, 2, 3].map(i => <TemplateCardSkeleton key={i} />)}
+        </div>
       ) : error ? (
-        <div className="p-10 text-center text-red-600 text-sm">{error}</div>
+        <div className="notice notice-danger" role="alert">
+          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
       ) : templates.length === 0 ? (
-        <div className="bg-white rounded-xl p-10 border border-slate-200 text-center shadow-sm">
-          <div className="text-4xl mb-3">📋</div>
-          <p className="text-slate-500 text-sm m-0">
-            {isAdmin
-              ? "No templates yet. Create your first template to speed up project setup."
-              : "No templates available yet."}
-          </p>
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <Layers size={20} />
+            </div>
+            <p className="empty-state-title">No templates yet</p>
+            <p className="empty-state-text">
+              {isAdmin
+                ? "Create your first template to pre-load new projects with milestones and tasks."
+                : "No templates have been published yet. They will appear here once an administrator adds one."}
+            </p>
+            {isAdmin && (
+              <Button
+                className="mt-4"
+                onClick={() => { setShowCreateForm(true); setEditingTemplate(null); resetForm(); }}
+              >
+                <Plus size={16} />
+                New template
+              </Button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -919,64 +1109,68 @@ export default function TemplatesSection() {
             return (
               <div
                 key={t._id}
-                className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group flex flex-col gap-4"
+                className="card-interactive p-5 cursor-pointer group flex flex-col gap-4"
                 onClick={() => openDetail(t)}
               >
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <path d="M9 9h6M9 12h6M9 15h4" />
-                      </svg>
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                      <Layers size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="m-0 text-sm font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                      <h3 className="m-0 font-display text-[15px] font-bold tracking-tight text-slate-900 truncate group-hover:text-brand-700 transition-colors">
                         {t.name}
                       </h3>
                       {t.description && (
-                        <p className="m-0 mt-0.5 text-xs text-slate-500 truncate">{t.description}</p>
+                        <p className="m-0 mt-0.5 text-[13px] text-slate-500 truncate">{t.description}</p>
                       )}
                     </div>
                   </div>
 
                   {isAdmin && (
-                    <div className="flex gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-1 shrink-0" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => startEdit(t)}
-                        className="px-2.5 py-1 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors cursor-pointer border-0"
+                        title="Edit template"
+                        aria-label={`Edit ${t.name}`}
+                        className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-transparent bg-transparent text-slate-500 cursor-pointer transition-colors hover:bg-slate-100 hover:text-slate-900"
                       >
-                        Edit
+                        <Edit size={15} />
                       </button>
                       <button
                         onClick={() => handleDeleteTemplate(t._id)}
-                        className="px-2.5 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors cursor-pointer border-0"
+                        title="Delete template"
+                        aria-label={`Delete ${t.name}`}
+                        className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-transparent bg-transparent text-slate-500 cursor-pointer transition-colors hover:bg-danger-50 hover:text-danger-600 hover:border-danger-200"
                       >
-                        Delete
+                        <Trash size={15} />
                       </button>
                     </div>
                   )}
                 </div>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                    <span className="w-2 h-2 rounded-full bg-indigo-400 shrink-0" />
-                    <span><strong className="text-slate-800">{milestoneCount}</strong> milestone{milestoneCount !== 1 ? "s" : ""}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                    <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                    <span><strong className="text-slate-800">{totalTasks}</strong> task{totalTasks !== 1 ? "s" : ""}</span>
-                  </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-auto pt-3 border-t border-slate-100">
+                  <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-600">
+                    <Flag size={14} className="text-slate-400" />
+                    <span><strong className="font-semibold text-slate-900 tabular-nums">{milestoneCount}</strong> milestone{milestoneCount !== 1 ? "s" : ""}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-600">
+                    <CheckCircle size={14} className="text-slate-400" />
+                    <span><strong className="font-semibold text-slate-900 tabular-nums">{totalTasks}</strong> task{totalTasks !== 1 ? "s" : ""}</span>
+                  </span>
                   <div className="ml-auto">
                     {isAdmin && (
-                      <button
+                      <Button
+                        type="button"
+                        variant="subtle"
+                        size="sm"
                         onClick={e => { e.stopPropagation(); setCreateProjectFor(t); }}
-                        className="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer"
                       >
-                        🚀 Use Template
-                      </button>
+                        <Sparkle size={14} />
+                        Use template
+                      </Button>
                     )}
                   </div>
                 </div>

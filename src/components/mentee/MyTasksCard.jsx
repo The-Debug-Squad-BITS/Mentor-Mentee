@@ -1,83 +1,75 @@
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
+import { CheckCircle, ArrowRight } from "../ui/Icons";
 
 export default function MyTasksCard({ tasks, onManageTasks, onTaskClick }) {
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="m-0 text-lg font-bold text-slate-900">
-          My Tasks
-        </h2>
-        <Button variant="ghost" onClick={onManageTasks} className="text-sm px-3 py-1.5 text-blue-600 hover:text-blue-700">
-          Manage Tasks
+    <div className="card">
+      <div className="card-header">
+        <h2 className="section-title m-0">My Tasks</h2>
+        <Button variant="ghost" size="sm" onClick={onManageTasks}>
+          Manage Tasks <ArrowRight size={15} />
         </Button>
       </div>
 
-      {/* Scrollable on mobile */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse min-w-[500px]">
-          <thead>
-            <tr className="border-b border-slate-200">
-              {["Task Name", "Status", "Deadline", "Action"].map((h, i) => (
-                <th
-                  key={h}
-                  className={`pb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 ${i === 3 ? "text-right" : "text-left"}`}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {tasks.map((t) => {
-              return (
-                <tr
-                  key={t.id}
-                  className="hover:bg-slate-50 transition-colors duration-150"
-                >
-                  {/* Task name */}
-                  <td className="py-4 font-semibold text-slate-900 text-sm pr-4">
-                    {t.title}
-                  </td>
+      {tasks.length === 0 ? (
+        <div className="empty-state">
+          <span className="empty-state-icon">
+            <CheckCircle size={22} />
+          </span>
+          <p className="empty-state-title">Nothing due right now</p>
+          <p className="empty-state-text">
+            Tasks assigned to you by your mentor will appear here with their status and
+            deadline.
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="data-table min-w-[520px]">
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th className="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map((t) => {
+                return (
+                  <tr key={t.id}>
+                    {/* Task name */}
+                    <td className="font-semibold text-slate-900">{t.title}</td>
 
-                  {/* Status badge */}
-                  <td className="py-4">
-                    <StatusBadge status={t.status} />
-                  </td>
+                    {/* Status badge */}
+                    <td>
+                      <StatusBadge status={t.status} />
+                    </td>
 
-                  {/* Deadline */}
-                  <td
-                    className="py-4 text-sm font-medium"
-                    style={{
-                      color:
-                        t.status === "Revision Needed" ? "#ef4444" : "#64748b",
-                    }}
-                  >
-                    {t.deadline}
-                  </td>
+                    {/* Deadline — a revision request is the one state worth colouring */}
+                    <td
+                      className={`font-medium ${
+                        t.status === "Revision Needed" ? "text-danger-600" : "text-slate-600"
+                      }`}
+                    >
+                      {t.deadline}
+                    </td>
 
-                  {/* Action */}
-                  <td className="py-4 text-right">
-                    {t.status !== "Completed" &&
-                      t.status !== "Under Review" && (
-                        <Button
-                          variant="secondary"
-                          onClick={() => onTaskClick(t)}
-                          className="text-xs px-3 py-1.5"
-                        >
-                          {t.status === "Revision Needed"
-                            ? "Resubmit"
-                            : "Submit"}
+                    {/* Action */}
+                    <td className="text-right">
+                      {t.status !== "Completed" && t.status !== "Under Review" && (
+                        <Button variant="secondary" size="sm" onClick={() => onTaskClick(t)}>
+                          {t.status === "Revision Needed" ? "Resubmit" : "Submit"}
                         </Button>
                       )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

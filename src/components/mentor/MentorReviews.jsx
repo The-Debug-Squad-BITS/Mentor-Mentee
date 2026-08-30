@@ -4,6 +4,14 @@ import { toast } from "react-toastify";
 import Button from "../ui/Button";
 import { formatUIDate } from "../../lib/datetime";
 import CommentSection from "../ui/CommentSection";
+import {
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  ExternalLink,
+  Inbox,
+} from "../ui/Icons";
 
 export default function MentorReviews() {
   const [submissions, setSubmissions] = useState([]);
@@ -98,9 +106,9 @@ export default function MentorReviews() {
   );
 
   const statusStyles = {
-    PENDING_REVIEW:  "bg-amber-50 text-amber-700 border-amber-200",
-    APPROVED:        "bg-emerald-50 text-emerald-700 border-emerald-200",
-    REVISION_NEEDED: "bg-red-50 text-red-700 border-red-200",
+    PENDING_REVIEW:  "bg-warning-50 text-warning-700 border-warning-200",
+    APPROVED:        "bg-success-50 text-success-700 border-success-200",
+    REVISION_NEEDED: "bg-danger-50 text-danger-700 border-danger-200",
   };
 
   const statusLabels = {
@@ -110,30 +118,25 @@ export default function MentorReviews() {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-5 animate-fade-in">
 
       {/* Header */}
-      <div className="bg-white rounded-xl p-6 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="m-0 text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-            Reviews Center
-          </h1>
-          <p className="m-0 mt-1 text-slate-500 text-sm">
-            Inspect submitted student deliverable files and approve milestones or request revisions.
+          <h1 className="page-title m-0">Reviews</h1>
+          <p className="page-subtitle mt-1">
+            Inspect submitted deliverables, then approve them or request a revision.
           </p>
         </div>
 
         {/* Subtabs */}
-        <div className="flex gap-2 bg-slate-100 p-1 rounded-lg shrink-0 overflow-x-auto max-w-full">
+        <div className="tab-strip max-w-full shrink-0 overflow-x-auto scrollbar-none">
           {["Pending", "History"].map((tab) => (
             <button
               key={tab}
               onClick={() => setReviewTab(tab)}
-              className={`px-4 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all ${
-                reviewTab === tab
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "bg-transparent text-slate-600 hover:text-slate-900"
-              }`}
+              aria-pressed={reviewTab === tab}
+              className={`tab-item ${reviewTab === tab ? "tab-item-active" : ""}`}
             >
               {tab === "Pending"
                 ? `Pending Queue (${pending.length})`
@@ -145,22 +148,36 @@ export default function MentorReviews() {
 
       {/* Error banner */}
       {error && (
-        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-          ⚠️ {error}
+        <div className="notice notice-danger">
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-5 shadow-sm">
+      <div className="card flex flex-col gap-5 p-5 sm:p-6">
         {loading ? (
-          <div className="text-center py-12 text-slate-500 text-sm">
-            Loading submissions...
+          <div className="flex flex-col gap-4">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-5">
+                <span className="skeleton h-5 w-48" />
+                <span className="skeleton h-4 w-32" />
+                <span className="skeleton h-20 w-full" />
+                <span className="skeleton h-9 w-full" />
+              </div>
+            ))}
           </div>
         ) : reviewTab === "Pending" ? (
           /* ── Pending Queue ── */
           pending.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 text-sm">
-              🎉 Excellent work! The review queue is empty.
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <CheckCircle size={22} />
+              </span>
+              <p className="empty-state-title">Review queue is clear</p>
+              <p className="empty-state-text">
+                Nothing is waiting on you. New submissions from your mentees will land here.
+              </p>
             </div>
           ) : (
             <div className="flex flex-col gap-6">
@@ -169,42 +186,39 @@ export default function MentorReviews() {
                 return (
                   <div
                     key={sub._id}
-                    className="border border-slate-200 rounded-xl p-6 flex flex-col gap-5 bg-slate-50"
+                    className="flex flex-col gap-5 rounded-xl border border-slate-200 bg-slate-50/60 p-5"
                   >
                     {/* Header row */}
-                    <div className="flex justify-between items-start flex-wrap gap-2">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <span className="text-slate-900 text-sm font-bold">
+                        <span className="text-[14.5px] font-semibold text-slate-900">
                           {sub.taskId?.title || "Task"}
                         </span>
-                        <span className="block text-xs text-slate-500 mt-1">
+                        <span className="mt-1 block text-[12.5px] text-slate-500">
                           Submitted by:{" "}
                           <span className="font-semibold text-slate-700">
                             {sub.submittedBy?.name || "Unknown"}
                           </span>
                         </span>
-                        <span className="block text-xs text-slate-500 mt-0.5">
+                        <span className="mt-0.5 block text-[12.5px] text-slate-500">
                           {sub.submittedAt
                             ? new Date(sub.submittedAt).toLocaleString()
                             : ""}
                         </span>
                       </div>
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-md border uppercase tracking-wider ${
-                          statusStyles[sub.status] || ""
-                        }`}
-                      >
+                      <span className={`badge ${statusStyles[sub.status] || "badge-neutral"}`}>
+                        <span className="badge-dot" />
                         {statusLabels[sub.status] || sub.status}
                       </span>
                     </div>
 
                     {/* Mentee notes */}
                     {sub.notes && (
-                      <div className="p-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 leading-relaxed">
-                        <span className="block text-[10px] text-slate-500 font-bold uppercase mb-1.5 tracking-wider">
-                          Student Notes:
+                      <div className="rounded-lg border border-slate-200 bg-white p-4 text-[13.5px] leading-relaxed text-slate-700">
+                        <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-400">
+                          Student Notes
                         </span>
-                        "{sub.notes}"
+                        &ldquo;{sub.notes}&rdquo;
                       </div>
                     )}
 
@@ -227,47 +241,45 @@ export default function MentorReviews() {
                           href={sub.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-blue-600 font-semibold text-sm hover:text-blue-800 transition-colors w-fit bg-blue-50 px-3 py-1.5 rounded-md border border-blue-100"
+                          className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-slate-200
+                            bg-white px-3 py-2 text-[13px] font-semibold text-brand-600 no-underline
+                            transition-colors hover:border-brand-200 hover:bg-brand-50"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                          </svg>
-                          {sub.mimeType?.startsWith("image/") ? "Open Full Image ↗" : "Open PDF ↗"}
+                          <FileText size={14} />
+                          {sub.mimeType?.startsWith("image/") ? "Open full image" : "Open PDF"}
+                          <ExternalLink size={13} />
                         </a>
                       </div>
                     )}
 
                     {/* URL submission — clickable chip */}
                     {sub.submissionType === "url" && sub.submissionUrl && (
-                      <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                        </svg>
-                        <span className="text-sm font-medium text-blue-800 flex-1 truncate">
+                      <div className="flex items-center gap-3 rounded-lg border border-brand-100 bg-brand-50 px-4 py-3">
+                        <ExternalLink size={16} className="shrink-0 text-brand-600" />
+                        <span className="flex-1 truncate text-[13.5px] font-medium text-brand-800">
                           {sub.submissionUrl}
                         </span>
                         <a
                           href={sub.submissionUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors shrink-0"
+                          className="shrink-0 text-[13px] font-semibold text-brand-600 transition-colors hover:text-brand-800"
                         >
-                          Open Link ↗
+                          Open link
                         </a>
                       </div>
                     )}
 
                     {/* Per-submission error */}
                     {actionError[sub._id] && (
-                      <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 shadow-sm">
-                        ⚠️ {actionError[sub._id]}
+                      <div className="notice notice-danger">
+                        <AlertCircle size={16} className="mt-px shrink-0" />
+                        <span>{actionError[sub._id]}</span>
                       </div>
                     )}
 
                     {/* Feedback textarea + action buttons */}
-                    <div className="flex flex-col gap-3 mt-2">
+                    <div className="mt-1 flex flex-col gap-3">
                       <textarea
                         placeholder="Add feedback (required before approving or requesting revision)..."
                         value={feedbackMap[sub._id] || ""}
@@ -277,25 +289,26 @@ export default function MentorReviews() {
                             [sub._id]: e.target.value,
                           }))
                         }
-                        className="px-4 py-3 text-sm rounded-lg border border-slate-300 outline-none w-full bg-white resize-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm"
-                        style={{ minHeight: 80 }}
+                        aria-label="Review feedback"
+                        className="textarea-field min-h-20 resize-none"
                         disabled={isActioning}
                       />
-                      <div className="flex flex-wrap sm:flex-nowrap gap-3 justify-end">
+                      <div className="flex flex-wrap justify-end gap-3 sm:flex-nowrap">
                         <Button
-                          variant="danger"
+                          variant="secondary"
                           onClick={() => handleRequestRevision(sub._id)}
                           disabled={isActioning}
-                          className="w-full sm:w-auto justify-center text-sm py-2"
+                          className="w-full sm:w-auto"
                         >
                           {actionLoading[sub._id] === "revision"
                             ? "Sending..."
                             : "Request Changes"}
                         </Button>
                         <Button
+                          variant="success"
                           onClick={() => handleApprove(sub._id)}
                           disabled={isActioning}
-                          className="w-full sm:w-auto justify-center text-sm py-2 bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
+                          className="w-full sm:w-auto"
                         >
                           {actionLoading[sub._id] === "approve"
                             ? "Approving..."
@@ -314,72 +327,67 @@ export default function MentorReviews() {
         ) : (
           /* ── Review History tab ── */
           history.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 text-sm">
-              No graded submission history found.
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <Inbox size={22} />
+              </span>
+              <p className="empty-state-title">No review history yet</p>
+              <p className="empty-state-text">
+                Once you approve a submission or request a revision, the decision is recorded here.
+              </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[700px]">
+            <div className="-mx-5 overflow-x-auto sm:-mx-6">
+              <table className="data-table min-w-[700px]">
                 <thead>
-                  <tr className="bg-slate-50">
+                  <tr>
                     {["Task Title", "Mentee", "File", "Status", "Feedback Given", "Date"].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200"
-                      >
-                        {h}
-                      </th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {history.map((sub) => (
-                    <tr
-                      key={sub._id}
-                      className="hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-semibold text-slate-900 text-sm">
+                    <tr key={sub._id}>
+                      <td className="font-semibold text-slate-900">
                         {sub.taskId?.title || "Task"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
-                        {sub.submittedBy?.name || "Unknown"}
-                      </td>
-                      <td className="px-6 py-4">
+                      <td>{sub.submittedBy?.name || "Unknown"}</td>
+                      <td>
                         {sub.submissionType === "file" && sub.fileUrl ? (
                           <a
                             href={sub.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+                            className="inline-flex items-center gap-1.5 font-medium text-brand-600 transition-colors hover:text-brand-800"
                           >
-                            {sub.mimeType?.startsWith("image/") ? "🖼 View Image ↗" : "📄 View PDF ↗"}
+                            <FileText size={14} />
+                            {sub.mimeType?.startsWith("image/") ? "View image" : "View PDF"}
                           </a>
                         ) : sub.submissionType === "url" && sub.submissionUrl ? (
                           <a
                             href={sub.submissionUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+                            className="inline-flex items-center gap-1.5 font-medium text-brand-600 transition-colors hover:text-brand-800"
                           >
-                            🔗 Open Link ↗
+                            <ExternalLink size={14} />
+                            Open link
                           </a>
                         ) : (
-                          <span className="text-slate-400 text-sm">—</span>
+                          <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${
-                            statusStyles[sub.status] || ""
-                          }`}
-                        >
+                      <td>
+                        <span className={`badge ${statusStyles[sub.status] || "badge-neutral"}`}>
+                          <span className="badge-dot" />
                           {statusLabels[sub.status] || sub.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 italic max-w-xs truncate">
-                        {sub.feedback ? `"${sub.feedback}"` : "—"}
+                      <td className="max-w-xs truncate italic text-slate-600">
+                        {sub.feedback ? `“${sub.feedback}”` : "—"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 font-medium">
+                      <td className="whitespace-nowrap text-slate-500">
                         {sub.submittedAt
                           ? formatUIDate(new Date(sub.submittedAt))
                           : "—"}

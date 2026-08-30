@@ -3,6 +3,7 @@ import StatCard from "../ui/StatCard";
 import ProgressBar from "../ui/ProgressBar";
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
+import { Icon } from "../ui/Icons";
 import api from "../../lib/api";
 import { formatActivityLine } from "./ActivityLogs";
 
@@ -99,54 +100,59 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
     }
   };
 
+  // Presentational slices of exactly the data the table / list already rendered.
+  // Case-insensitive so an "ARCHIVED" status from the API is filtered too.
+  const visibleProjects = projects.filter(p => p.status?.toUpperCase() !== "ARCHIVED");
+  const pendingInvitations = invitationsList.filter(i => i.status === "PENDING");
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Dynamic Stat cards */}
       <div className="flex gap-4 flex-wrap">
         <StatCard
-          icon="🎓"
+          icon={<Icon.GraduationCap size={18} />}
           label="Total Mentors"
           value={totalMentors.toString()}
           badge="Network"
           badgeColor="green"
         />
         <StatCard
-          icon="👥"
+          icon={<Icon.Users size={18} />}
           label="Total Mentees"
           value={totalMentees.toString()}
           badge="Learners"
           badgeColor="blue"
         />
         <StatCard
-          icon="📋"
+          icon={<Icon.Folder size={18} />}
           label="Total Projects"
           value={totalProjects.toString()}
           badge="Active"
           badgeColor="blue"
         />
         <StatCard
-          icon="✉️"
+          icon={<Icon.Mail size={18} />}
           label="Pending Invites"
           value={pendingInvites.toString()}
           badge="Queue"
           badgeColor="green"
         />
         <StatCard
-          icon="🏁"
+          icon={<Icon.Flag size={18} />}
           label="Total Milestones"
           value={(apiStats?.totalMilestones ?? 0).toString()}
           badge="Checkpoints"
           badgeColor="purple"
         />
         <StatCard
-          icon="📈"
+          icon={<Icon.BarChart size={18} />}
           label="Milestone Completion"
           value={`${apiStats?.milestoneCompletionRate ?? 0}%`}
           badge="Progress"
-          badgeColor="emerald"
+          badgeColor="green"
         />
         <StatCard
-          icon="💬"
+          icon={<Icon.MessageSquare size={18} />}
           label="Active Chat Rooms"
           value={(apiStats?.activeChatRooms ?? 0).toString()}
           badge="Chats"
@@ -159,238 +165,277 @@ export default function DashboardOverview({ projects, logs, onAddProject, apiSta
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         {/* Left Column: Active Projects List */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-slate-50/50">
+          <section className="card overflow-hidden">
+            <div className="card-header">
               <div>
-                <h2 className="m-0 text-base font-bold text-slate-900">
-                  Projects Overview
-                </h2>
-                <p className="m-0 text-slate-500 text-sm mt-1">Overview of organizational project tracks.</p>
+                <h2 className="section-title m-0">Projects overview</h2>
+                <p className="m-0 mt-0.5 text-[13px] text-slate-500">
+                  Every project track across the organisation.
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => setShowCreateModal(true)}>+ Create Project</Button>
-              </div>
+              <Button onClick={() => setShowCreateModal(true)} className="shrink-0">
+                <Icon.Plus size={16} />
+                Create project
+              </Button>
             </div>
 
-            {/* Scrollable table */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse min-w-[600px] text-sm">
-                <thead>
-                  <tr className="bg-slate-50">
-                    {["Project Name", "Lead Mentor", "Status", "Progress"].map((h) => (
-                      <th
-                        key={h}
-                        className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {projects.filter(p => p.status?.toUpperCase() !== "ARCHIVED").map((p) => (
-                    <tr
-                       key={p._id}
-                       className="hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-semibold text-slate-900">
-                        {p.title}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {p.mentorId?.name || "Unassigned"}
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={p.status} />
-                      </td>
-                      <td className="px-6 py-4 w-48">
-                        <ProgressBar value={p.progress || 0} />
-                      </td>
+            {visibleProjects.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">
+                  <Icon.Folder size={22} />
+                </div>
+                <p className="empty-state-title">No projects yet</p>
+                <p className="empty-state-text">
+                  Create the first project to start tracking milestones, tasks and reviews.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="data-table min-w-[600px]">
+                  <thead>
+                    <tr>
+                      {["Project Name", "Lead Mentor", "Status", "Progress"].map((h) => (
+                        <th key={h}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          
+                  </thead>
+                  <tbody>
+                    {visibleProjects.map((p) => (
+                      <tr key={p._id}>
+                        <td className="font-semibold text-slate-900">{p.title}</td>
+                        <td className="text-slate-600">{p.mentorId?.name || "Unassigned"}</td>
+                        <td>
+                          <StatusBadge status={p.status} />
+                        </td>
+                        <td className="w-48">
+                          <ProgressBar value={p.progress || 0} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
           <UpcomingMeetingsWidget meetings={apiStats?.upcomingMeetings} onNavigate={onNavigate} />
         </div>
 
         {/* Right Column: Side Actions & Feeds */}
         <div className="flex flex-col gap-6">
           {/* Quick Invite Form */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <div className="mb-4">
-              <h2 className="m-0 text-base font-bold text-slate-900">
-                Quick Invite Member
-              </h2>
-              <p className="m-0 text-slate-500 text-sm mt-1">Issue credentials to joining users.</p>
+          <section className="card">
+            <div className="card-header">
+              <div>
+                <h2 className="section-title m-0">Invite a member</h2>
+                <p className="m-0 mt-0.5 text-[13px] text-slate-500">
+                  Send workspace access to a mentor, mentee or admin.
+                </p>
+              </div>
             </div>
-            
-            {inviteSuccess && (
-              <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium p-3 rounded-lg mb-4">
-                ✓ Invite dispatched successfully!
-              </div>
-            )}
 
-            {inviteError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-3 rounded-lg mb-4">
-                ⚠️ {inviteError}
-              </div>
-            )}
+            <div className="card-body flex flex-col gap-4">
+              {inviteSuccess && (
+                <div className="notice notice-success">
+                  <Icon.CheckCircle size={16} />
+                  <span>Invite dispatched successfully!</span>
+                </div>
+              )}
 
-            <form onSubmit={handleQuickInvite} className="flex flex-col gap-3">
-              <input
-                required
-                type="email"
-                placeholder="User email address..."
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-              />
-              <div className="flex gap-2">
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                  className="px-3 py-2.5 rounded-lg border border-slate-300 text-sm bg-white flex-1 font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                >
-                  <option value="MENTEE">Mentee</option>
-                  <option value="MENTOR">Mentor</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-                <Button type="submit">Invite</Button>
-              </div>
-            </form>
-          </div>
+              {inviteError && (
+                <div className="notice notice-danger">
+                  <Icon.AlertTriangle size={16} />
+                  <span>{inviteError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleQuickInvite} className="flex flex-col gap-4">
+                <div>
+                  <label className="field-label" htmlFor="quick-invite-email">Email address</label>
+                  <input
+                    id="quick-invite-email"
+                    required
+                    type="email"
+                    placeholder="name@institution.edu"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label className="field-label" htmlFor="quick-invite-role">Role</label>
+                  <div className="flex gap-2">
+                    <select
+                      id="quick-invite-role"
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value)}
+                      className="select-field flex-1"
+                    >
+                      <option value="MENTEE">Mentee</option>
+                      <option value="MENTOR">Mentor</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                    <Button type="submit" className="shrink-0">
+                      <Icon.Send size={16} />
+                      Invite
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
 
           {/* Pending Invitations Panel */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <div className="mb-4">
-              <h2 className="m-0 text-base font-bold text-slate-900">
-                Pending Invitations <span className="text-slate-400 font-normal">({pendingInvites})</span>
-              </h2>
+          <section className="card">
+            <div className="card-header">
+              <h2 className="section-title m-0">Pending invitations</h2>
+              <span className="badge badge-neutral">{pendingInvites}</span>
             </div>
-            
-            <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto">
-              {invitationsList.filter(i => i.status === "PENDING").length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-sm">No pending invitations.</div>
-              ) : (
-                invitationsList.filter(i => i.status === "PENDING").map(inv => (
-                  <div key={inv.id} className="flex justify-between items-center bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <div className="min-w-0">
-                      <span className="block font-semibold text-slate-900 text-sm truncate">{inv.email}</span>
-                      <span className="block text-xs text-slate-500 uppercase tracking-wide mt-0.5">{inv.role}</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded-full uppercase">
-                      Pending
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
 
-          {/* Activity feed */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <div className="mb-4">
-              <h2 className="m-0 text-base font-bold text-slate-900">
-                Recent Operations Feed
-              </h2>
-            </div>
-            
-            <div className="flex flex-col max-h-[300px] overflow-y-auto">
-              {!apiStats?.recentActivities || apiStats.recentActivities.length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-sm">No activities logged.</div>
-              ) : (
-                apiStats.recentActivities.map((act, idx) => (
-                  <div key={act._id || idx} className="flex gap-4 items-start border-b border-slate-100 py-3 last:border-0 last:pb-0">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-slate-100 text-slate-600 border border-slate-200 text-sm">
-                      {act.action?.includes("PROJECT") ? "🗂️" :
-                       act.action?.includes("TASK") ? "✅" :
-                       act.action?.includes("SUBMISSION") ? "📤" :
-                       act.action?.includes("MILESTONE") ? "🏁" :
-                       act.action?.includes("COMMENT") ? "💬" :
-                       act.action?.includes("TEMPLATE") ? "📋" :
-                       act.action?.includes("USER") ? "👤" : "⚡"}
+            <div className="card-body">
+              <div className="flex flex-col gap-2.5 max-h-[220px] overflow-y-auto">
+                {pendingInvitations.length === 0 ? (
+                  <div className="empty-state py-8">
+                    <div className="empty-state-icon">
+                      <Icon.Inbox size={22} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="m-0 text-sm text-slate-800 leading-snug">
-                        {formatActivityLine(act)}
-                      </p>
-                      <span className="text-xs text-slate-500 mt-1 block font-medium">
-                        {new Date(act.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    <p className="empty-state-title">Nothing awaiting acceptance</p>
+                    <p className="empty-state-text">
+                      Invites you send are listed here until the recipient joins.
+                    </p>
+                  </div>
+                ) : (
+                  pendingInvitations.map(inv => (
+                    <div key={inv.id} className="flex justify-between items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3">
+                      <div className="min-w-0">
+                        <span className="block font-semibold text-slate-900 text-sm truncate">{inv.email}</span>
+                        <span className="block text-xs text-slate-500 uppercase tracking-wide mt-0.5">{inv.role}</span>
+                      </div>
+                      <span className="badge badge-info shrink-0">
+                        <span className="badge-dot" aria-hidden="true" />
+                        Pending
                       </span>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
-          </div>
+          </section>
+
+          {/* Activity feed */}
+          <section className="card">
+            <div className="card-header">
+              <h2 className="section-title m-0">Recent activity</h2>
+              <span className="text-slate-400" aria-hidden="true">
+                <Icon.Activity size={16} />
+              </span>
+            </div>
+
+            <div className="card-body">
+              <div className="flex flex-col max-h-[300px] overflow-y-auto">
+                {!apiStats?.recentActivities || apiStats.recentActivities.length === 0 ? (
+                  <div className="empty-state py-8">
+                    <div className="empty-state-icon">
+                      <Icon.Activity size={22} />
+                    </div>
+                    <p className="empty-state-title">No activity yet</p>
+                    <p className="empty-state-text">
+                      Project, task and milestone events across the workspace appear here.
+                    </p>
+                  </div>
+                ) : (
+                  apiStats.recentActivities.map((act, idx) => (
+                    <div key={act._id || idx} className="flex gap-3.5 items-start border-b border-slate-100 py-3 first:pt-0 last:border-0 last:pb-0">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-slate-50 text-slate-500 border border-slate-200">
+                        {act.action?.includes("PROJECT") ? <Icon.Folder size={15} /> :
+                         act.action?.includes("TASK") ? <Icon.CheckCircle size={15} /> :
+                         act.action?.includes("SUBMISSION") ? <Icon.Upload size={15} /> :
+                         act.action?.includes("MILESTONE") ? <Icon.Flag size={15} /> :
+                         act.action?.includes("COMMENT") ? <Icon.MessageSquare size={15} /> :
+                         act.action?.includes("TEMPLATE") ? <Icon.FileText size={15} /> :
+                         act.action?.includes("USER") ? <Icon.User size={15} /> : <Icon.Activity size={15} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="m-0 text-sm text-slate-800 leading-snug">
+                          {formatActivityLine(act)}
+                        </p>
+                        <span className="text-xs text-slate-500 mt-1 block font-medium">
+                          {new Date(act.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
       {/* Creation Modal Overlay */}
       {showCreateModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
-          <div className="bg-white rounded-xl p-8 w-full max-w-md flex flex-col gap-6 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowCreateModal(false)}>
+          <div className="modal-panel max-w-md flex flex-col gap-6 p-6 sm:p-7" onClick={e => e.stopPropagation()}>
             <div>
-              <h3 className="m-0 text-xl font-bold text-slate-900">Create New Project</h3>
-              <p className="m-0 mt-1 text-slate-500 text-sm">Launch a new organizational tracking workspace.</p>
+              <h3 className="m-0 font-display text-[17px] font-bold tracking-tight text-slate-900">Create project</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">Set up a new project workspace for a supervisor and team.</p>
             </div>
 
             {createError && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                ⚠️ {createError}
+              <div className="notice notice-danger" role="alert">
+                <Icon.AlertTriangle size={16} className="mt-px shrink-0" />
+                <span>{createError}</span>
               </div>
             )}
 
             <div className="flex flex-col gap-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Project Title</label>
+                <label className="field-label">Project Title</label>
                 <input
                   value={newProjectTitle}
                   onChange={(e) => setNewProjectTitle(e.target.value)}
                   placeholder="e.g. AI Chatbot Project"
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="input-field"
                   disabled={createLoading}
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">Description</label>
+                <label className="field-label">Description</label>
                 <textarea
                   value={newProjectDesc}
                   onChange={(e) => setNewProjectDesc(e.target.value)}
                   placeholder="Describe project details..."
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
-                  style={{ minHeight: 80 }}
+                  className="textarea-field min-h-20 resize-none"
                   disabled={createLoading}
                 />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">Start Date</label>
+                  <label className="field-label">Start Date</label>
                   <input
                     type="date"
                     value={newProjectStartDate}
                     onChange={(e) => setNewProjectStartDate(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="input-field"
                     disabled={createLoading}
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-semibold text-slate-700 mb-2">End Date</label>
+                  <label className="field-label">End Date</label>
                   <input
                     type="date"
                     value={newProjectEndDate}
                     onChange={(e) => setNewProjectEndDate(e.target.value)}
                     min={newProjectStartDate}
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="input-field"
                     disabled={createLoading}
                   />
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-3 mt-2 justify-end">
+            <div className="modal-footer">
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -434,74 +479,76 @@ function UpcomingMeetingsWidget({ meetings = [], onNavigate }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col gap-5 mt-6">
-      <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+    <section className="card">
+      <div className="card-header">
         <div>
-          <h2 className="m-0 text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>📅</span> Upcoming Meetings
-          </h2>
-          <p className="m-0 text-slate-500 text-xs mt-1">Scheduled video and audio syncs.</p>
+          <h2 className="section-title m-0">Upcoming meetings</h2>
+          <p className="m-0 mt-0.5 text-[13px] text-slate-500">Scheduled video and audio syncs.</p>
         </div>
         {onNavigate && (
-          <Button
-            variant="ghost"
-            onClick={() => onNavigate("Meetings")}
-            className="text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 px-2.5 py-1.5 rounded-lg border border-transparent font-semibold transition-all"
-          >
-            View All
+          <Button variant="ghost" size="sm" onClick={() => onNavigate("Meetings")}>
+            View all
+            <Icon.ArrowRight size={14} />
           </Button>
         )}
       </div>
 
-      <div className="flex flex-col gap-3">
-        {!meetings || meetings.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-lg border border-slate-200">
-            No upcoming meetings scheduled.
-          </div>
-        ) : (
-          meetings.map((meeting) => (
-            <div
-              key={meeting._id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 hover:bg-slate-50 border border-slate-200/60 rounded-xl gap-3 transition-colors"
-            >
-              <div className="flex gap-3 items-start min-w-0">
-                <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-blue-50 text-blue-600 font-semibold text-sm border border-blue-100 shadow-sm">
-                  {meeting.type === "AUDIO" ? "🎙️" : "🎥"}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="m-0 text-sm font-bold text-slate-900 truncate">
-                    {meeting.title}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
-                    <span className="font-semibold text-slate-700">{formatWhen(meeting.scheduledAt)}</span>
-                    <span className="text-slate-300">•</span>
-                    <span>{meeting.duration || 30} mins</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="truncate">Host: {meeting.hostId?.name || "Unknown"}</span>
+      <div className="card-body">
+        <div className="flex flex-col gap-3">
+          {!meetings || meetings.length === 0 ? (
+            <div className="empty-state py-10">
+              <div className="empty-state-icon">
+                <Icon.Calendar size={22} />
+              </div>
+              <p className="empty-state-title">No meetings scheduled</p>
+              <p className="empty-state-text">
+                Sessions booked by mentors and mentees appear here with their join links.
+              </p>
+            </div>
+          ) : (
+            meetings.map((meeting) => (
+              <div
+                key={meeting._id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl gap-3 transition-colors"
+              >
+                <div className="flex gap-3 items-start min-w-0">
+                  <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-brand-50 text-brand-600 border border-brand-100">
+                    {meeting.type === "AUDIO" ? <Icon.Users size={18} /> : <Icon.Video size={18} />}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="m-0 text-sm font-bold text-slate-900 truncate">
+                      {meeting.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
+                      <span className="font-semibold text-slate-700">{formatWhen(meeting.scheduledAt)}</span>
+                      <span className="text-slate-300" aria-hidden="true">•</span>
+                      <span>{meeting.duration || 30} mins</span>
+                      <span className="text-slate-300" aria-hidden="true">•</span>
+                      <span className="truncate">Host: {meeting.hostId?.name || "Unknown"}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                {meeting.meetingLink ? (
-                  <a
-                    href={meeting.meetingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all no-underline inline-flex items-center gap-1"
-                  >
-                    <span>Join</span> ↗
-                  </a>
-                ) : (
-                  <span className="px-2.5 py-1.5 text-xs font-medium text-slate-500 bg-slate-100 rounded-lg">
-                    No Link
-                  </span>
-                )}
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                  {meeting.meetingLink ? (
+                    <a
+                      href={meeting.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-[13px] font-semibold rounded-lg bg-brand-600 hover:bg-brand-700 text-white shadow-xs transition-colors no-underline inline-flex items-center gap-1.5"
+                    >
+                      Join
+                      <Icon.ArrowUpRight size={14} />
+                    </a>
+                  ) : (
+                    <span className="badge badge-neutral">No link</span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

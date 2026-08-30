@@ -14,10 +14,20 @@ import MenteeProfile from "../components/mentee/MenteeProfile";
 import ChatSection from "../components/chat/ChatSection";
 import MeetingsSection from "../components/meetings/MeetingsSection";
 import CalendarSection from "../components/calendar/CalendarSection";
+import { Layers } from "../components/ui/Icons";
 import { useAuthStore } from "../store/authStore";
+import useSeo from "../hooks/useSeo";
+import { pageMeta } from "../lib/pageMeta";
 
 export default function MenteeDashboard() {
   const [activeNav, setActiveNav] = useState("Dashboard");
+
+  // Behind a login, so never indexed; the title tracks the open section.
+  useSeo({
+    title: `${pageMeta("MENTEE", activeNav).title} — Trellis`,
+    path: "/mentee/dashboard",
+    noindex: true,
+  });
   const [menteeTasks, setMenteeTasks] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -83,16 +93,24 @@ export default function MenteeDashboard() {
         return <MenteeProfile />;
       default:
         return (
-          <div className="bg-white rounded-2xl p-8 text-center border border-slate-100 text-slate-400">
-            <h2 className="m-0 text-slate-700">{activeNav}</h2>
-            <p className="m-0 text-xs">Section is loading...</p>
+          <div className="card">
+            <div className="empty-state">
+              <span className="empty-state-icon">
+                <Layers size={22} />
+              </span>
+              <p className="empty-state-title">{activeNav}</p>
+              <p className="empty-state-text">
+                This section isn&apos;t available yet. Pick another item from the sidebar to
+                carry on.
+              </p>
+            </div>
           </div>
         );
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans overflow-x-hidden w-full">
+    <div className="flex min-h-screen bg-canvas font-sans overflow-x-hidden w-full">
       <MenteeSidebar
         activeNav={activeNav}
         setActiveNav={handleActiveNavChange}
@@ -102,7 +120,7 @@ export default function MenteeDashboard() {
 
       <main
         className="flex-1 min-h-screen min-w-0
-        ml-0 md:ml-55 lg:ml-64
+        ml-0 md:ml-56 lg:ml-64
         p-4 sm:p-6 lg:p-8
         pt-16 md:pt-8"
       >
@@ -111,15 +129,18 @@ export default function MenteeDashboard() {
           mobileOpen={mobileOpen}
         />
 
-        <MenteeHeader
-          activeNav={activeNav}
-          onMessageMentor={() => handleActiveNavChange("Feedback")}
-          userName={user?.name}
-          onLogout={handleLogout}
-        />
-        
-        <div className="mt-6 md:mt-4">
-          {renderSection()}
+        <div className="mx-auto w-full max-w-[1600px]">
+          <MenteeHeader
+            activeNav={activeNav}
+            onMessageMentor={() => handleActiveNavChange("Messages")}
+            onRequestMeeting={() => handleActiveNavChange("Meetings")}
+            userName={user?.name}
+            onLogout={handleLogout}
+          />
+
+          <div className="mt-6 md:mt-4 animate-fade-in">
+            {renderSection()}
+          </div>
         </div>
       </main>
     </div>
