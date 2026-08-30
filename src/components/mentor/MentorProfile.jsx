@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 import Avatar from "../ui/Avatar";
 import StatCard from "../ui/StatCard";
 import Button from "../ui/Button";
-import { Folder, FileText, BarChart, Check } from "../ui/Icons";
+import { Folder, FileText, BarChart, Check, AlertCircle } from "../ui/Icons";
 import { useAuthStore } from "../../store/authStore";
+import api from "../../lib/api";
 
 export default function MentorProfile() {
   const [profileName, setProfileName] = useState("Sarah Connor");
   const [profileEmail, setProfileEmail] = useState("mentor@demo.com");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const currentUser = user || {
     id: "2",
     name: "Sarah Connor",
@@ -25,13 +28,42 @@ export default function MentorProfile() {
     setProfileEmail(currentUser.email || "mentor@demo.com");
   }, [currentUser]);
 
-  const handleSave = (e) => {
+  /* PATCH /auth/me is the self-service endpoint: it only ever writes the
+     caller's own name. PATCH /users/:id is deliberately not used here — it is
+     coordinator-only and can change a role. */
+  const handleSave = async (e) => {
     e.preventDefault();
-    // Stubbed until integrated with backend API
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-    }, 3000);
+    const trimmed = profileName.trim();
+
+    setSaveSuccess(false);
+    setSaveError(null);
+
+    if (!trimmed) {
+      setSaveError("Please enter your name.");
+      return;
+    }
+    if (trimmed === (currentUser.name || "").trim()) {
+      setSaveError("That is already your name — nothing to save.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await api.patch("/auth/me", { name: trimmed });
+      const updated = res.data?.data?.user;
+
+      /* Keep the persisted session in step so the sidebar, header and avatar
+         show the new name immediately rather than after the next sign-in. */
+      updateUser({ name: updated?.name ?? trimmed });
+      setProfileName(updated?.name ?? trimmed);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err) {
+      const fieldError = err.response?.data?.errors?.[0]?.message;
+      setSaveError(fieldError || err.userMessage || "Could not save your profile. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const mentoredProjects = [];
@@ -76,9 +108,16 @@ export default function MentorProfile() {
       {/* Settings Form */}
       <form onSubmit={handleSave} className="card flex flex-col gap-7 p-6 md:p-8">
         {saveSuccess && (
-          <div className="notice notice-success animate-fade-in">
+          <div className="notice notice-success animate-fade-in" role="status">
             <Check size={16} className="mt-px shrink-0" />
-            <span>Profile updated successfully. Changes will take effect on next reload.</span>
+            <span>Your name has been updated.</span>
+          </div>
+        )}
+
+        {saveError && (
+          <div className="notice notice-danger animate-fade-in" role="alert">
+            <AlertCircle size={16} className="mt-px shrink-0" />
+            <span>{saveError}</span>
           </div>
         )}
 
@@ -119,7 +158,9 @@ export default function MentorProfile() {
         </div>
 
         <div className="border-t border-slate-200 pt-5">
-          <Button type="submit">Save Profile Updates</Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? "Saving…" : "Save Profile Updates"}
+          </Button>
         </div>
       </form>
     </div>

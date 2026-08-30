@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Lock,
   Sparkle,
+  Info,
 } from "../ui/Icons";
 import { toast } from "react-toastify";
 
@@ -316,7 +317,7 @@ function TemplateBuilder({ milestones, standaloneTasks, onMilestonesChange, onSt
 
 // ── Template Detail View ──────────────────────────────────────────────────────
 
-function TemplateDetail({ template, isAdmin, onBack, onRefresh, onCreateProject }) {
+function TemplateDetail({ template, canCreateProject, onBack, onRefresh, onCreateProject: onCreate }) {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Header */}
@@ -339,9 +340,9 @@ function TemplateDetail({ template, isAdmin, onBack, onRefresh, onCreateProject 
             </p>
           </div>
         </div>
-        {isAdmin && (
+        {canCreateProject && (
           <Button
-            onClick={() => onCreateProject(template)}
+            onClick={() => onCreate(template)}
             className="shrink-0 w-full sm:w-auto"
           >
             <Sparkle size={16} />
@@ -458,7 +459,7 @@ function TemplateDetail({ template, isAdmin, onBack, onRefresh, onCreateProject 
 
 // ── Create-Project-from-Template Modal ────────────────────────────────────────
 
-function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, onSuccess }) {
+function CreateProjectFromTemplateModal({ template, mentors, mentees, canAssignMentor = true, onClose, onSuccess }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -468,13 +469,36 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
   const [bulkCount, setBulkCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  /* Per-field messages returned by the validator, so the form can point at the
+     input that is actually wrong instead of only showing a banner. */
+  const [fieldErrors, setFieldErrors] = useState({});
   const [result, setResult] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !startDate || !endDate) return;
-    setLoading(true);
+
+    /* Clear the previous outcome before doing anything else. This used to sit
+       after the required-field guard, so a submit that bailed out early left
+       the last error on screen with no new request behind it — the form looked
+       like it had just failed again when in fact nothing had been sent. */
     setError(null);
+    setFieldErrors({});
+
+    const missing = [];
+    if (!title.trim()) missing.push("project title");
+    if (!description.trim()) missing.push("description");
+    if (!startDate) missing.push("start date");
+    if (!endDate) missing.push("end date");
+    if (missing.length) {
+      setError(`Please fill in the ${missing.join(", ")} before creating.`);
+      return;
+    }
+    if (new Date(endDate) < new Date(startDate)) {
+      setError("The end date cannot be before the start date.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await api.post(`/templates/${template._id}/create-project`, {
@@ -495,8 +519,20 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
       }
       if (onSuccess) onSuccess(project);
     } catch (err) {
-      const msg = err.response?.data?.message || "Failed to create project from template.";
-      setError(msg);
+      /* "Validation failed" on its own is useless to the person filling the
+         form — the backend puts the detail in `errors`, so surface that. It is
+         also emitted by two different layers (express-validator and the
+         Mongoose schema), which is why the bare message never identified the
+         field at fault. */
+      const detail = err.response?.data?.errors;
+      if (Array.isArray(detail) && detail.length) {
+        const mapped = {};
+        detail.forEach((e) => { if (e.field) mapped[e.field] = e.message || e.msg; });
+        setFieldErrors(mapped);
+        setError(detail.map((e) => e.message || e.msg).join(" "));
+      } else {
+        setError(err.response?.data?.message || err.userMessage || "Failed to create project from template.");
+      }
     } finally {
       setLoading(false);
     }
@@ -588,9 +624,10 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. ML Research Project - Batch 2026"
-                  className="input-field"
+                  className={`input-field ${fieldErrors.title ? "input-field-error" : ""}`}
                   disabled={loading}
                 />
+                {fieldErrors.title && <span className="field-error block">{fieldErrors.title}</span>}
               </div>
 
               <div>
@@ -600,9 +637,10 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Describe this project..."
-                  className="textarea-field min-h-20"
+                  className={`textarea-field min-h-20 ${fieldErrors.description ? "input-field-error" : ""}`}
                   disabled={loading}
                 />
+                {fieldErrors.description && <span className="field-error block">{fieldErrors.description}</span>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -613,9 +651,10 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                     type="date"
                     value={startDate}
                     onChange={e => setStartDate(e.target.value)}
-                    className="input-field"
+                    className={`input-field ${fieldErrors.startDate ? "input-field-error" : ""}`}
                     disabled={loading}
                   />
+                  {fieldErrors.startDate && <span className="field-error block">{fieldErrors.startDate}</span>}
                 </div>
                 <div>
                   <label className="field-label">End date *</label>
@@ -624,27 +663,37 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, onClose, o
                     type="date"
                     value={endDate}
                     onChange={e => setEndDate(e.target.value)}
-                    className="input-field"
+                    className={`input-field ${fieldErrors.endDate ? "input-field-error" : ""}`}
                     disabled={loading}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="field-label">Assign mentor</label>
-                <select
-                  value={mentorId}
-                  onChange={e => setMentorId(e.target.value)}
-                  className="select-field"
-                  disabled={loading}
-                >
-                  <option value="">-- No Mentor --</option>
-                  {mentors.map(m => (
-                    <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
-                  ))}
-                </select>
-                <p className="field-hint">Optional — a mentor can be assigned later.</p>
-              </div>
+              {canAssignMentor ? (
+                <div>
+                  <label className="field-label">Assign mentor</label>
+                  <select
+                    value={mentorId}
+                    onChange={e => setMentorId(e.target.value)}
+                    className="select-field"
+                    disabled={loading}
+                  >
+                    <option value="">-- No Mentor --</option>
+                    {mentors.map(m => (
+                      <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
+                    ))}
+                  </select>
+                  <p className="field-hint">Optional — a mentor can be assigned later.</p>
+                </div>
+              ) : (
+                /* A supervisor is always assigned to the project they create
+                   from a template, so there is no choice to offer. Say so
+                   rather than showing a control that would be ignored. */
+                <div className="notice notice-info">
+                  <Info size={16} className="mt-px shrink-0" />
+                  <span>You will be assigned as the supervisor for {bulkCount > 1 ? 'these projects' : 'this project'}.</span>
+                </div>
+              )}
 
               <div>
                 <label className="field-label">
@@ -735,6 +784,11 @@ export default function TemplatesSection() {
 
   const isAdmin = user?.role === "ADMIN";
   const isMentor = user?.role === "MENTOR";
+  /* Authoring a template encodes the department's process, so it stays with
+     the coordinator. Running one is ordinary supervision work, so a supervisor
+     may instantiate a template for a project they will then supervise — the
+     API pins them as that project's supervisor. */
+  const canCreateProject = isAdmin || isMentor;
   const canView = isAdmin || isMentor;
 
   // ── List + detail state ───────────────────────────────────────────────
@@ -787,10 +841,10 @@ export default function TemplatesSection() {
   useEffect(() => {
     if (canView) {
       loadTemplates();
-      if (isAdmin) loadUsersForModal();
+      if (canCreateProject) loadUsersForModal();
     }
     return () => setCurrentTemplate(null);
-  }, [canView, isAdmin, loadTemplates, loadUsersForModal, setCurrentTemplate]);
+  }, [canView, canCreateProject, loadTemplates, loadUsersForModal, setCurrentTemplate]);
 
   // ── Serialise builder state → API payload ─────────────────────────────
   const buildPayload = () => ({
@@ -952,16 +1006,17 @@ export default function TemplatesSection() {
       <>
         <TemplateDetail
           template={currentTemplate}
-          isAdmin={isAdmin}
+          canCreateProject={canCreateProject}
           onBack={() => setCurrentTemplate(null)}
           onRefresh={loadTemplates}
           onCreateProject={(t) => setCreateProjectFor(t)}
         />
-        {createProjectFor && isAdmin && (
+        {createProjectFor && canCreateProject && (
           <CreateProjectFromTemplateModal
             template={createProjectFor}
             mentors={mentors}
             mentees={mentees}
+            canAssignMentor={isAdmin}
             onClose={() => setCreateProjectFor(null)}
             onSuccess={() => setCreateProjectFor(null)}
           />
@@ -1161,7 +1216,7 @@ export default function TemplatesSection() {
                     <span><strong className="font-semibold text-slate-900 tabular-nums">{totalTasks}</strong> task{totalTasks !== 1 ? "s" : ""}</span>
                   </span>
                   <div className="ml-auto">
-                    {isAdmin && (
+                    {canCreateProject && (
                       <Button
                         type="button"
                         variant="subtle"
@@ -1181,11 +1236,12 @@ export default function TemplatesSection() {
       )}
 
       {/* Create Project from Template modal */}
-      {createProjectFor && isAdmin && (
+      {createProjectFor && canCreateProject && (
         <CreateProjectFromTemplateModal
           template={createProjectFor}
           mentors={mentors}
           mentees={mentees}
+          canAssignMentor={isAdmin}
           onClose={() => setCreateProjectFor(null)}
           onSuccess={() => setCreateProjectFor(null)}
         />

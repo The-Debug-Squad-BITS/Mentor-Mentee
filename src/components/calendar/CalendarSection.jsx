@@ -33,18 +33,44 @@ export default function CalendarSection() {
   const [selectedDefaultDate, setSelectedDefaultDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Fetch month events
+  /* The grid always shows more than one month: the first row is padded with
+     the tail of the previous month and the last row with the head of the next.
+     Fetching only /calendar/month/:year/:month left those padding cells empty,
+     so an event on a visible date simply did not appear.
+
+     Fetch the range the grid actually renders instead. The bounds are computed
+     the same way getCalendarDays builds the grid, so the query can never drift
+     from what is on screen. */
+  const getGridRange = (year, month) => {
+    const firstOfMonth = new Date(year, month - 1, 1);
+    const gridStart = new Date(year, month - 1, 1 - firstOfMonth.getDay());
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const cellsSoFar = firstOfMonth.getDay() + daysInMonth;
+    const trailing = (7 - (cellsSoFar % 7)) % 7;
+    const gridEnd = new Date(year, month - 1, daysInMonth + trailing);
+
+    /* Whole local days: from 00:00 on the first cell to 23:59:59.999 on the
+       last, so an event late on the final visible day is still included. */
+    gridStart.setHours(0, 0, 0, 0);
+    gridEnd.setHours(23, 59, 59, 999);
+    return { gridStart, gridEnd };
+  };
+
   const fetchMonthEvents = async (year, month) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get(`/calendar/month/${year}/${month}`);
+      const { gridStart, gridEnd } = getGridRange(year, month);
+      const res = await api.get("/calendar", {
+        params: { startDate: gridStart.toISOString(), endDate: gridEnd.toISOString() },
+      });
       const loadedEvents = res.data.data.events || [];
       setEvents(loadedEvents);
       setView(year, month);
     } catch (err) {
       console.error("Failed to fetch calendar events:", err);
-      setError("Failed to load calendar events");
+      setError(err.userMessage || "Failed to load calendar events.");
     } finally {
       setLoading(false);
     }

@@ -21,6 +21,12 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
   const [newProjectDesc, setNewProjectDesc] = useState("");
   const [newProjectStartDate, setNewProjectStartDate] = useState("");
   const [newProjectEndDate, setNewProjectEndDate] = useState("");
+  /* Optional student assignment at creation time, so a coordinator does not
+     have to create the project and then reopen it just to staff it. */
+  const [availableMentees, setAvailableMentees] = useState([]);
+  const [menteesLoading, setMenteesLoading] = useState(false);
+  const [menteesError, setMenteesError] = useState(null);
+  const [selectedMentees, setSelectedMentees] = useState([]);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState(null);
   const [updatingProjectId, setUpdatingProjectId] = useState(null);
@@ -48,6 +54,34 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
     loadProjects();
   }, [loadProjects]);
 
+  // ── Students available for assignment ───────────────────────────────
+  const loadMentees = useCallback(async () => {
+    setMenteesLoading(true);
+    setMenteesError(null);
+    try {
+      const res = await api.get("/users", { params: { role: "MENTEE", limit: 100 } });
+      setAvailableMentees(res.data?.data?.users || []);
+    } catch (err) {
+      console.error("Failed to load students for assignment:", err);
+      setMenteesError(err.userMessage || "Could not load the student list.");
+    } finally {
+      setMenteesLoading(false);
+    }
+  }, []);
+
+  const toggleMentee = (id) => {
+    setSelectedMentees((prev) =>
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+    );
+  };
+
+  const openCreateModal = () => {
+    setCreateError(null);
+    setSelectedMentees([]);
+    setShowCreateModal(true);
+    loadMentees();
+  };
+
   // ── Create project ──────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!newProjectTitle.trim()) return;
@@ -64,12 +98,14 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
         description: newProjectDesc.trim(),
         startDate: newProjectStartDate,
         endDate: newProjectEndDate,
+        mentees: selectedMentees,
       });
       // Reset form and close modal
       setNewProjectTitle("");
       setNewProjectDesc("");
       setNewProjectStartDate("");
       setNewProjectEndDate("");
+      setSelectedMentees([]);
       setShowCreateModal(false);
       loadProjects(); // Refresh list
       if (onRefresh) onRefresh();
@@ -190,7 +226,7 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
         </div>
 
         <Button
-          onClick={() => setShowCreateModal(true)}
+          onClick={openCreateModal}
           className="px-4 py-2 text-sm font-medium"
         >
           + Create Project
@@ -360,6 +396,55 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="field-label">
+                  Assign students ({selectedMentees.length} selected)
+                </label>
+
+                {menteesLoading && (
+                  <p className="field-hint">Loading students…</p>
+                )}
+
+                {menteesError && !menteesLoading && (
+                  <div className="notice notice-danger mt-1">
+                    <AlertTriangle size={16} className="mt-px shrink-0" />
+                    <span>
+                      {menteesError}{" "}
+                      <button type="button" className="underline" onClick={loadMentees}>
+                        Retry
+                      </button>
+                    </span>
+                  </div>
+                )}
+
+                {!menteesLoading && !menteesError && availableMentees.length === 0 && (
+                  <p className="field-hint">
+                    No students in this workspace yet. Invite them from Members first.
+                  </p>
+                )}
+
+                {!menteesLoading && !menteesError && availableMentees.length > 0 && (
+                  <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
+                    {availableMentees.map((m) => (
+                      <label
+                        key={m._id}
+                        className="flex items-center gap-3 px-3 py-2 text-[13px] cursor-pointer hover:bg-slate-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedMentees.includes(m._id)}
+                          onChange={() => toggleMentee(m._id)}
+                          disabled={createLoading}
+                        />
+                        <span className="font-medium text-slate-800">{m.name}</span>
+                        <span className="ml-auto text-slate-500">{m.email}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <p className="field-hint">Optional — students can also be assigned later.</p>
+              </div>
             </div>
             
             <div className="flex gap-3 mt-2 justify-end">
@@ -371,6 +456,7 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
                   setNewProjectDesc("");
                   setNewProjectStartDate("");
                   setNewProjectEndDate("");
+                  setSelectedMentees([]);
                   setCreateError(null);
                 }}
                 disabled={createLoading}
