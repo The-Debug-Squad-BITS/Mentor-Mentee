@@ -363,6 +363,77 @@ export const whyTrellis = {
 
 /* ── FAQ ────────────────────────────────────────────────────────────────── */
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Product roadmap.
+
+   Phase 1 is the product as it exists today. Phases 2 and 3 are direction, not
+   functionality — every item in them is written as an intention and the UI
+   labels them so. Nothing here should imply a capability that is not built.
+   ────────────────────────────────────────────────────────────────────────── */
+export const roadmapSection = {
+  eyebrow: "Roadmap",
+  title: "Built on the record Trellis already keeps",
+  subtitle:
+    "Every milestone, submission, review decision and comment in Trellis is " +
+    "structured data. That record is what makes the next two phases possible — " +
+    "each one builds on the phase before it.",
+};
+
+export const roadmap = [
+  {
+    phase: "Phase 1",
+    status: "delivered",
+    statusLabel: "Available now",
+    icon: "CheckCircle",
+    title: "Trellis",
+    summary:
+      "The supervision cycle end to end, running in production today.",
+    points: [
+      "Role-based workspaces for coordinators, supervisors and students",
+      "Milestone and task planning, with submissions behind a review gate",
+      "Revision as a real state, carrying written feedback back to the student",
+      "Templates, real-time chat, notifications, meetings and calendar",
+      "An append-only activity log across the organisation",
+    ],
+  },
+  {
+    phase: "Phase 2",
+    status: "planned",
+    statusLabel: "Planned",
+    icon: "Sparkle",
+    title: "AI-assisted Trellis",
+    summary:
+      "Assistance layered onto the existing workflow. The way work moves does " +
+      "not change; the effort of running it falls.",
+    points: [
+      "Project summaries drawn from milestones, submissions and review history",
+      "Progress insights showing which projects have gone quiet or are slipping",
+      "Review assistance drafting a first-pass note for a supervisor to edit or discard",
+      "Task assistance suggesting a breakdown from comparable past projects",
+      "Automated end-of-term and per-cohort reporting from the activity log",
+      "Natural-language questions asked directly of project information",
+    ],
+  },
+  {
+    phase: "Phase 3",
+    status: "future",
+    statusLabel: "Future vision",
+    icon: "Compass",
+    title: "Intelligent AI SaaS platform",
+    summary:
+      "Built on Phases 1 and 2 together — moving from describing what happened " +
+      "to anticipating what will.",
+    points: [
+      "Predictive insight flagging a project at risk early enough to act",
+      "Workflow automation for routing reviews and escalating stalled work",
+      "Personalised guidance for the student's next step and the supervisor's highest-value one",
+      "Supervision support tracking feedback quality and consistency",
+      "Organisation-level analytics on throughput, outcomes and workload",
+      "Multi-institution scale, with the governance and audit controls that requires",
+    ],
+  },
+];
+
 export const faqSection = {
   eyebrow: "FAQ",
   title: "Questions worth answering first",

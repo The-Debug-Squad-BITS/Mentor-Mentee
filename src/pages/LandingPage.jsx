@@ -8,6 +8,7 @@ import FeaturesSection from "../components/sections/FeaturesSection";
 import HowItWorksSection from "../components/sections/HowItWorksSection";
 import RolesSection from "../components/sections/RolesSection";
 import ProductComparisonSection from "../components/sections/ProductComparisonSection";
+import RoadmapSection from "../components/sections/RoadmapSection";
 import FaqSection from "../components/sections/FaqSection";
 import FinalCtaSection from "../components/sections/FinalCtaSection";
 import useSeo from "../hooks/useSeo";
@@ -61,6 +62,7 @@ export default function LandingPage() {
           <HowItWorksSection />
           <RolesSection />
           <ProductComparisonSection />
+          <RoadmapSection />
           <FaqSection />
           <FinalCtaSection />
         </div>
