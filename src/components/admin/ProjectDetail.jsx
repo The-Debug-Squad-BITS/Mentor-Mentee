@@ -7,6 +7,7 @@ import {
 import Avatar from "../ui/Avatar";
 import StatusBadge from "../ui/StatusBadge";
 import Button from "../ui/Button";
+import MultiSelect from "../ui/MultiSelect";
 import api from "../../lib/api";
 import { toast } from "react-toastify";
 import MilestonesSection from "./MilestonesSection";
@@ -155,6 +156,12 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
   const [menteeAssignLoading, setMenteeAssignLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
+  /* The two pickers used to fail silently: if /users could not be read the
+     lists were simply empty, which is indistinguishable from a department that
+     has no supervisors or students in it. */
+  const [peopleLoading, setPeopleLoading] = useState(false);
+  const [peopleError, setPeopleError] = useState(null);
+
   // Helper to generate avatar initials from name
   const getInitials = (name) => {
     if (!name) return "?";
@@ -207,6 +214,8 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
 
   // ── Load mentors and mentees for assignment dropdowns ────────────────
   const loadUsersForDropdowns = useCallback(async () => {
+    setPeopleLoading(true);
+    setPeopleError(null);
     try {
       const [mentorsRes, menteesRes] = await Promise.all([
         api.get("/users", { params: { role: "MENTOR", limit: 100 } }),
@@ -216,6 +225,11 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
       setMentees(menteesRes.data.data.users || []);
     } catch (err) {
       console.error("Error loading users for dropdowns:", err);
+      setPeopleError(
+        err.response?.data?.message || "Could not load the member list."
+      );
+    } finally {
+      setPeopleLoading(false);
     }
   }, []);
 
@@ -224,34 +238,68 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
     loadUsersForDropdowns();
   }, [refreshProjectData, loadUsersForDropdowns]);
 
+  /* The server's message is far more useful than "Failed to …" — it names the
+     account that was rejected, or says the project is gone. Only fall back to
+     a generic line when there is nothing to report. */
+  const describeError = (err, fallback) =>
+    err.response?.data?.message ||
+    (err.code === "ECONNABORTED" || !err.response
+      ? "The server did not respond. Check your connection and try again."
+      : fallback);
+
+  /* Choosing "-- Choose Mentor --" is how a coordinator takes a supervisor off
+     a project. The endpoint accepts a null mentorId for exactly that, but the
+     button used to be disabled whenever nothing was selected, so the only
+     reachable operation was assigning someone new. */
+  const assignedMentorId = project?.mentorId?._id || "";
+  const mentorSelectionChanged = selectedMentor !== assignedMentorId;
+
   // ── Assign Mentor ───────────────────────────────────────────────────
   const handleAssignMentor = async () => {
-    if (!selectedMentor) return;
+    if (!mentorSelectionChanged) return;
+    const removing = !selectedMentor;
     setMentorAssignLoading(true);
     try {
-      await api.patch(`/projects/${projectId}/assign-mentor`, { mentorId: selectedMentor });
-      refreshProjectData();
+      await api.patch(`/projects/${projectId}/assign-mentor`, {
+        mentorId: selectedMentor || null,
+      });
+      await refreshProjectData();
       if (onRefresh) onRefresh();
-      toast.success("Mentor assigned successfully.");
+      toast.success(
+        removing ? "Mentor removed from this project." : "Mentor assigned successfully."
+      );
     } catch (err) {
-      toast.error("Failed to assign mentor.");
+      toast.error(describeError(err, "Failed to assign mentor."));
       console.error("Assign mentor error:", err);
     } finally {
       setMentorAssignLoading(false);
     }
   };
 
+  /* Saving an empty selection is how a coordinator removes the last student
+     from a project, so it is a legitimate action rather than a no-op — the
+     button used to be disabled in exactly that case, leaving no way to do it. */
+  const assignedMenteeIds = (project?.mentees || []).map((m) => m._id);
+  const menteeSelectionChanged =
+    assignedMenteeIds.length !== selectedMentees.length ||
+    assignedMenteeIds.some((id) => !selectedMentees.includes(id));
+
   // ── Assign Mentees ──────────────────────────────────────────────────
   const handleAssignMentees = async () => {
-    if (selectedMentees.length === 0) return;
+    if (!menteeSelectionChanged) return;
+    const removingAll = selectedMentees.length === 0 && assignedMenteeIds.length > 0;
     setMenteeAssignLoading(true);
     try {
       await api.patch(`/projects/${projectId}/assign-mentees`, { mentees: selectedMentees });
-      refreshProjectData();
+      await refreshProjectData();
       if (onRefresh) onRefresh();
-      toast.success("Mentees assigned successfully.");
+      toast.success(
+        removingAll
+          ? "All mentees removed from this project."
+          : "Mentees assigned successfully."
+      );
     } catch (err) {
-      toast.error("Failed to assign mentees.");
+      toast.error(describeError(err, "Failed to assign mentees."));
       console.error("Assign mentees error:", err);
     } finally {
       setMenteeAssignLoading(false);
@@ -347,27 +395,53 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
             {/* Assign Mentor Column */}
             <div className="flex flex-col justify-between bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="assign-mentor-select"
+                  className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide"
+                >
                   Assign Mentor
                 </label>
                 <select
+                  id="assign-mentor-select"
                   value={selectedMentor}
                   onChange={(e) => setSelectedMentor(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-slate-300 text-sm bg-white outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/12 transition-colors"
+                  disabled={peopleLoading || mentorAssignLoading}
+                  className="select-field"
                 >
-                  <option value="">-- Choose Mentor --</option>
+                  <option value="">
+                    {peopleLoading ? "Loading mentors…" : "-- Choose Mentor --"}
+                  </option>
                   {mentors.map(m => (
                     <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
                   ))}
                 </select>
+                {!peopleLoading && peopleError && (
+                  <p className="field-error">
+                    {peopleError}{" "}
+                    <button
+                      type="button"
+                      onClick={loadUsersForDropdowns}
+                      className="underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-danger-700"
+                    >
+                      Retry
+                    </button>
+                  </p>
+                )}
+                {!peopleLoading && !peopleError && mentors.length === 0 && (
+                  <p className="field-hint">No mentors in this organisation yet.</p>
+                )}
               </div>
               <div className="mt-4 flex justify-end">
                 <Button
                   onClick={handleAssignMentor}
-                  disabled={!selectedMentor || mentorAssignLoading}
+                  disabled={!mentorSelectionChanged || mentorAssignLoading || peopleLoading}
                   className="w-full sm:w-auto"
                 >
-                  {mentorAssignLoading ? "Saving..." : "Save Mentor"}
+                  {mentorAssignLoading
+                    ? "Saving..."
+                    : !selectedMentor && assignedMentorId
+                      ? "Remove Mentor"
+                      : "Save Mentor"}
                 </Button>
               </div>
             </div>
@@ -375,45 +449,41 @@ export default function ProjectDetail({ projectId, onBack, onRefresh }) {
             {/* Assign Mentees Column */}
             <div className="flex flex-col justify-between bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                <label
+                  htmlFor="assign-mentees-select"
+                  className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide"
+                >
                   Assign Mentees ({selectedMentees.length} selected)
                 </label>
-                <div className="border border-slate-300 rounded-lg p-3 max-h-48 overflow-y-auto flex flex-col gap-2 bg-white shadow-inner">
-                  {mentees.length === 0 ? (
-                    <div className="text-sm text-slate-500 italic py-2">No mentees available.</div>
-                  ) : (
-                    mentees.map(st => {
-                      const isChecked = selectedMentees.includes(st._id);
-                      return (
-                        <label key={st._id} className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {
-                              if (isChecked) {
-                                setSelectedMentees(selectedMentees.filter(id => id !== st._id));
-                              } else {
-                                setSelectedMentees([...selectedMentees, st._id]);
-                              }
-                            }}
-                            className="rounded border-slate-300 accent-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
-                          />
-                          <span className="text-sm font-medium text-slate-800">{st.name}</span>
-                          <span className="text-xs text-slate-500 ml-auto">{st.email}</span>
-                        </label>
-                      );
-                    })
-                  )}
-                </div>
+                <MultiSelect
+                  id="assign-mentees-select"
+                  options={mentees}
+                  value={selectedMentees}
+                  onChange={setSelectedMentees}
+                  placeholder="-- Choose Mentees --"
+                  noun="mentee"
+                  loading={peopleLoading}
+                  error={peopleError}
+                  onRetry={loadUsersForDropdowns}
+                  emptyMessage="No mentees in this organisation yet."
+                  disabled={menteeAssignLoading}
+                />
               </div>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex flex-col items-end gap-1.5">
                 <Button
                   onClick={handleAssignMentees}
-                  disabled={selectedMentees.length === 0 || menteeAssignLoading}
-                  className="mt-4 w-full sm:w-auto"
+                  disabled={!menteeSelectionChanged || menteeAssignLoading || peopleLoading}
+                  className="w-full sm:w-auto"
                 >
                   {menteeAssignLoading ? "Saving..." : "Save Mentees"}
                 </Button>
+                {!menteeAssignLoading && !menteeSelectionChanged && (
+                  <span className="text-[12px] text-slate-500">
+                    {selectedMentees.length === 0
+                      ? "No mentees assigned."
+                      : "Already saved."}
+                  </span>
+                )}
               </div>
             </div>
           </div>

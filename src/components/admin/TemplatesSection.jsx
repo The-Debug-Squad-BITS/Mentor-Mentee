@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import MultiSelect from "../ui/MultiSelect";
 import api from "../../lib/api";
 import { useAuthStore } from "../../store/authStore";
 import { useTemplateStore } from "../../store/templateStore";
@@ -459,7 +460,17 @@ function TemplateDetail({ template, canCreateProject, onBack, onRefresh, onCreat
 
 // ── Create-Project-from-Template Modal ────────────────────────────────────────
 
-function CreateProjectFromTemplateModal({ template, mentors, mentees, canAssignMentor = true, onClose, onSuccess }) {
+function CreateProjectFromTemplateModal({
+  template,
+  mentors,
+  mentees,
+  canAssignMentor = true,
+  peopleLoading = false,
+  peopleError = null,
+  onReloadPeople,
+  onClose,
+  onSuccess,
+}) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -536,12 +547,6 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, canAssignM
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleMentee = (id) => {
-    setSelectedMentees(prev =>
-      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
-    );
   };
 
   return (
@@ -676,14 +681,31 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, canAssignM
                     value={mentorId}
                     onChange={e => setMentorId(e.target.value)}
                     className="select-field"
-                    disabled={loading}
+                    disabled={loading || peopleLoading}
                   >
-                    <option value="">-- No Mentor --</option>
+                    <option value="">
+                      {peopleLoading ? "Loading mentors…" : "-- No Mentor --"}
+                    </option>
                     {mentors.map(m => (
                       <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
                     ))}
                   </select>
-                  <p className="field-hint">Optional — a mentor can be assigned later.</p>
+                  {!peopleLoading && peopleError ? (
+                    <p className="field-error">
+                      {peopleError}{" "}
+                      {onReloadPeople && (
+                        <button
+                          type="button"
+                          onClick={onReloadPeople}
+                          className="underline font-semibold bg-transparent border-0 p-0 cursor-pointer text-danger-700"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="field-hint">Optional — a mentor can be assigned later.</p>
+                  )}
                 </div>
               ) : (
                 /* A supervisor is always assigned to the project they create
@@ -696,28 +718,23 @@ function CreateProjectFromTemplateModal({ template, mentors, mentees, canAssignM
               )}
 
               <div>
-                <label className="field-label">
+                <label htmlFor="template-project-mentees" className="field-label">
                   Assign mentees ({selectedMentees.length} selected)
                 </label>
-                <div className="border border-slate-300 rounded-lg shadow-xs p-2 max-h-40 overflow-y-auto scrollbar-slim flex flex-col gap-0.5 bg-white">
-                  {mentees.length === 0 ? (
-                    <span className="text-[13px] text-slate-500 px-2 py-3 text-center">No mentees available yet.</span>
-                  ) : (
-                    mentees.map(m => (
-                      <label key={m._id} className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 px-2 py-1.5 rounded-md transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={selectedMentees.includes(m._id)}
-                          onChange={() => toggleMentee(m._id)}
-                          className="w-4 h-4 rounded border-slate-300 accent-brand-600 cursor-pointer shrink-0"
-                          disabled={loading}
-                        />
-                        <span className="text-[13px] font-medium text-slate-800 truncate">{m.name}</span>
-                        <span className="text-[12px] text-slate-500 ml-auto truncate">{m.email}</span>
-                      </label>
-                    ))
-                  )}
-                </div>
+                <MultiSelect
+                  id="template-project-mentees"
+                  options={mentees}
+                  value={selectedMentees}
+                  onChange={setSelectedMentees}
+                  placeholder="Choose mentees…"
+                  noun="mentee"
+                  loading={peopleLoading}
+                  error={peopleError}
+                  onRetry={onReloadPeople}
+                  emptyMessage="No mentees available yet."
+                  disabled={loading}
+                />
+                <p className="field-hint">Optional — mentees can also be assigned later.</p>
               </div>
 
               <div>
@@ -808,6 +825,10 @@ export default function TemplatesSection() {
   const [createProjectFor, setCreateProjectFor] = useState(null);
   const [mentors, setMentors] = useState([]);
   const [mentees, setMentees] = useState([]);
+  /* The modal's two pickers used to come up empty and silent when /users
+     failed, which reads as "this department has nobody in it". */
+  const [peopleLoading, setPeopleLoading] = useState(false);
+  const [peopleError, setPeopleError] = useState(null);
 
   // ── Load templates ────────────────────────────────────────────────────
   const loadTemplates = useCallback(async () => {
@@ -826,6 +847,8 @@ export default function TemplatesSection() {
 
   // ── Load mentors/mentees for the create-from-template modal ──────────
   const loadUsersForModal = useCallback(async () => {
+    setPeopleLoading(true);
+    setPeopleError(null);
     try {
       const [mr, mee] = await Promise.all([
         api.get("/users", { params: { role: "MENTOR", limit: 100 } }),
@@ -835,6 +858,9 @@ export default function TemplatesSection() {
       setMentees(mee.data.data.users || []);
     } catch (err) {
       console.error("Error loading users for modal:", err);
+      setPeopleError(err.userMessage || "Could not load the member list.");
+    } finally {
+      setPeopleLoading(false);
     }
   }, []);
 
@@ -897,7 +923,11 @@ export default function TemplatesSection() {
   // ── Update template ───────────────────────────────────────────────────
   const handleUpdateTemplate = async (e) => {
     e.preventDefault();
-    if (!editingTemplate || !formName.trim()) return;
+    if (!editingTemplate) return;
+    if (!formName.trim()) {
+      toast.error("Give the template a name before saving.");
+      return;
+    }
     setFormLoading(true);
     try {
       await api.patch(`/templates/${editingTemplate._id}`, {
@@ -905,17 +935,30 @@ export default function TemplatesSection() {
         description: formDesc.trim() || undefined,
         ...buildPayload(),
       });
-      toast.success("Template updated!");
-      resetForm();
-      setEditingTemplate(null);
-      loadTemplates();
-      // Refresh detail if viewing
-      if (currentTemplate?._id === editingTemplate._id) {
-        const r = await api.get(`/templates/${editingTemplate._id}`);
+    } catch (err) {
+      toast.error(err.userMessage || "Failed to update template.");
+      setFormLoading(false);
+      return;
+    }
+
+    /* Past this point the template really is saved, so nothing below may
+       report a failure. Re-reading the detail view is a convenience; when it
+       fails the update still happened, and saying otherwise put a red "Failed
+       to update template." directly under the green confirmation. */
+    toast.success("Template updated!");
+    const wasViewingThis = currentTemplate?._id === editingTemplate._id;
+    const savedId = editingTemplate._id;
+    resetForm();
+    setEditingTemplate(null);
+    loadTemplates();
+    try {
+      if (wasViewingThis) {
+        const r = await api.get(`/templates/${savedId}`);
         setCurrentTemplate(r.data.data.template);
       }
     } catch (err) {
-      toast.error("Failed to update template.");
+      console.error("Template saved, but reloading its detail failed:", err);
+      toast.info("Saved. Reopen the template to see the latest version.");
     } finally {
       setFormLoading(false);
     }
@@ -1017,6 +1060,9 @@ export default function TemplatesSection() {
             mentors={mentors}
             mentees={mentees}
             canAssignMentor={isAdmin}
+            peopleLoading={peopleLoading}
+            peopleError={peopleError}
+            onReloadPeople={loadUsersForModal}
             onClose={() => setCreateProjectFor(null)}
             onSuccess={() => setCreateProjectFor(null)}
           />
@@ -1242,6 +1288,9 @@ export default function TemplatesSection() {
           mentors={mentors}
           mentees={mentees}
           canAssignMentor={isAdmin}
+          peopleLoading={peopleLoading}
+          peopleError={peopleError}
+          onReloadPeople={loadUsersForModal}
           onClose={() => setCreateProjectFor(null)}
           onSuccess={() => setCreateProjectFor(null)}
         />

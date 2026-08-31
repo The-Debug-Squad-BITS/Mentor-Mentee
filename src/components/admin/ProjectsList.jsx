@@ -3,6 +3,7 @@ import { Close, AlertTriangle, AlertCircle, Inbox, Folder, Target, CheckCircle, 
 import StatusBadge from "../ui/StatusBadge";
 import StatCard from "../ui/StatCard";
 import Button from "../ui/Button";
+import MultiSelect from "../ui/MultiSelect";
 import api from "../../lib/api";
 import { useProjectStore } from "../../store/projectStore";
 import { toast } from "react-toastify";
@@ -69,12 +70,6 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
     }
   }, []);
 
-  const toggleMentee = (id) => {
-    setSelectedMentees((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
-    );
-  };
-
   const openCreateModal = () => {
     setCreateError(null);
     setSelectedMentees([]);
@@ -84,22 +79,38 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
 
   // ── Create project ──────────────────────────────────────────────────
   const handleCreate = async () => {
-    if (!newProjectTitle.trim()) return;
+    /* Cleared before the guards, not after them. Clearing afterwards meant a
+       submission that failed a guard left the *previous* attempt's banner on
+       screen, describing a request that was never sent. */
+    setCreateError(null);
+
+    /* The button is always clickable, so every reason it cannot proceed has to
+       say so. Silently returning is what made "Launch Project" look broken. */
+    const missing = [];
+    if (!newProjectTitle.trim()) missing.push("a title");
+    if (!newProjectDesc.trim()) missing.push("a description");
+    if (missing.length > 0) {
+      setCreateError(
+        `The project needs ${missing.join(" and ")} before it can be created.`
+      );
+      return;
+    }
     if (newProjectStartDate && newProjectEndDate && new Date(newProjectEndDate) < new Date(newProjectStartDate)) {
-      setCreateError("End date cannot be before start date");
+      setCreateError("End date cannot be before start date.");
       return;
     }
     setCreateLoading(true);
-    setCreateError(null);
 
     try {
-      await api.post("/projects", {
+      const res = await api.post("/projects", {
         title: newProjectTitle.trim(),
         description: newProjectDesc.trim(),
         startDate: newProjectStartDate,
         endDate: newProjectEndDate,
         mentees: selectedMentees,
       });
+      const created = res.data?.data?.project;
+      const assigned = selectedMentees.length;
       // Reset form and close modal
       setNewProjectTitle("");
       setNewProjectDesc("");
@@ -107,13 +118,30 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
       setNewProjectEndDate("");
       setSelectedMentees([]);
       setShowCreateModal(false);
-      loadProjects(); // Refresh list
+      await loadProjects(); // Refresh list
       if (onRefresh) onRefresh();
+
+      /* Confirmed by name, because an active status filter or a search term can
+         keep the new row out of the table it was just added to — with no
+         confirmation that looks exactly like the create having failed. */
+      toast.success(
+        `“${created?.title || newProjectTitle.trim()}” created${
+          assigned > 0 ? ` with ${assigned} student${assigned === 1 ? "" : "s"} assigned` : ""
+        }.`
+      );
+      if (statusFilter !== "All" || searchQuery.trim()) {
+        toast.info("Clear the filters to see it in the list.");
+      }
     } catch (err) {
-      if (err.response?.status === 400) {
-        setCreateError(err.response.data.message || "Validation error. Check all fields.");
+      /* express-validator returns one entry per rejected field. Showing only
+         the summary line ("Validation failed") named nothing at all. */
+      const fieldErrors = err.response?.data?.errors;
+      if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+        setCreateError(
+          fieldErrors.map((e) => e.msg || e.message).filter(Boolean).join(" · ")
+        );
       } else {
-        setCreateError("Failed to create project. Please try again.");
+        setCreateError(err.userMessage || "Failed to create project. Please try again.");
       }
       console.error("Create project error:", err);
     } finally {
@@ -398,51 +426,22 @@ export default function ProjectsList({ onViewProject, onRefresh }) {
               </div>
 
               <div>
-                <label className="field-label">
+                <label htmlFor="create-project-mentees" className="field-label">
                   Assign students ({selectedMentees.length} selected)
                 </label>
-
-                {menteesLoading && (
-                  <p className="field-hint">Loading students…</p>
-                )}
-
-                {menteesError && !menteesLoading && (
-                  <div className="notice notice-danger mt-1">
-                    <AlertTriangle size={16} className="mt-px shrink-0" />
-                    <span>
-                      {menteesError}{" "}
-                      <button type="button" className="underline" onClick={loadMentees}>
-                        Retry
-                      </button>
-                    </span>
-                  </div>
-                )}
-
-                {!menteesLoading && !menteesError && availableMentees.length === 0 && (
-                  <p className="field-hint">
-                    No students in this workspace yet. Invite them from Members first.
-                  </p>
-                )}
-
-                {!menteesLoading && !menteesError && availableMentees.length > 0 && (
-                  <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
-                    {availableMentees.map((m) => (
-                      <label
-                        key={m._id}
-                        className="flex items-center gap-3 px-3 py-2 text-[13px] cursor-pointer hover:bg-slate-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedMentees.includes(m._id)}
-                          onChange={() => toggleMentee(m._id)}
-                          disabled={createLoading}
-                        />
-                        <span className="font-medium text-slate-800">{m.name}</span>
-                        <span className="ml-auto text-slate-500">{m.email}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                <MultiSelect
+                  id="create-project-mentees"
+                  options={availableMentees}
+                  value={selectedMentees}
+                  onChange={setSelectedMentees}
+                  placeholder="Choose students…"
+                  noun="student"
+                  loading={menteesLoading}
+                  error={menteesError}
+                  onRetry={loadMentees}
+                  emptyMessage="No students in this workspace yet. Invite them from Members first."
+                  disabled={createLoading}
+                />
                 <p className="field-hint">Optional — students can also be assigned later.</p>
               </div>
             </div>
