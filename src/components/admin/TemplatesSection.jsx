@@ -850,19 +850,31 @@ export default function TemplatesSection() {
     setPeopleLoading(true);
     setPeopleError(null);
     try {
-      const [mr, mee] = await Promise.all([
-        api.get("/users", { params: { role: "MENTOR", limit: 100 } }),
-        api.get("/users", { params: { role: "MENTEE", limit: 100 } }),
-      ]);
-      setMentors(mr.data.data.users || []);
-      setMentees(mee.data.data.users || []);
+      /* GET /users is coordinator-only. A supervisor may instantiate a
+         template but is pinned as its supervisor, so they never need the
+         mentor list — and for students they must use /users/mentees, which is
+         the endpoint their role is allowed to call. Asking for /users as a
+         supervisor produced two guaranteed 403s on every visit to this screen
+         and left the student picker permanently showing an error. */
+      if (isAdmin) {
+        const [mr, mee] = await Promise.all([
+          api.get("/users", { params: { role: "MENTOR", limit: 100 } }),
+          api.get("/users", { params: { role: "MENTEE", limit: 100 } }),
+        ]);
+        setMentors(mr.data.data.users || []);
+        setMentees(mee.data.data.users || []);
+      } else {
+        const mee = await api.get("/users/mentees", { params: { limit: 100 } });
+        setMentors([]);
+        setMentees(mee.data.data.users || []);
+      }
     } catch (err) {
       console.error("Error loading users for modal:", err);
       setPeopleError(err.userMessage || "Could not load the member list.");
     } finally {
       setPeopleLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (canView) {
